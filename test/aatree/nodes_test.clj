@@ -26,8 +26,11 @@
 (println (new-map-entry-seq m1))
 (println (new-map-entry-seq m13))
 (println (new-map-entry-seq m123))
+(println (new-map-entry-reverse-seq m123))
 (println (new-map-key-seq m123))
+(println (new-map-key-reverse-seq m123))
 (println (new-map-value-seq m123))
+(println (new-map-value-reverse-seq m123))
 
 (println "")
 (def mi (new-map-entry-iterator m123))

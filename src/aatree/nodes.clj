@@ -18,6 +18,7 @@
   (^IMapEntry predecessor-t2 [this])
   (^IMapEntry successor-t2 [this])
   (^IMapEntry next-t2 [this x])
+  (^IMapEntry prior-t2 [this x])
   (^IMapEntry get-t2 [this x])
   (decrease-level [this])
   (delete [this x]))
@@ -43,9 +44,13 @@
     (emty? (.-right this)) (.-t2 this)
     :else (recur (.-right this))))
 
+(defn key-of [^IMapEntry e] (.getKey e))
+
+(defn value-of [^IMapEntry e] (.getValue e))
+
 (deftype map-entry-iterator [node
-                       ^{:volatile-mutable true IMapEntry true} lst
-                       ^{:volatile-mutable true int true} cnt]
+                             ^{:volatile-mutable true IMapEntry true} lst
+                             ^{:volatile-mutable true int true} cnt]
   Iterator
   (hasNext [this]
     (> cnt 0))
@@ -62,10 +67,6 @@
 (defn ^map-entry-iterator new-map-entry-iterator [node]
   (->map-entry-iterator node nil (.-cnt node)))
 
-(defn key-of [^IMapEntry e] (.getKey e))
-
-(defn value-of [^IMapEntry e] (.getValue e))
- 
 (defn ^MapSequence new-map-entry-seq [node]
   (MapSequence/create (new-map-entry-iterator node) identity))
 
@@ -74,6 +75,34 @@
 
 (defn ^MapSequence new-map-value-seq [node]
   (MapSequence/create (new-map-entry-iterator node) value-of))
+
+(deftype map-entry-reverse-iterator [node
+                             ^{:volatile-mutable true IMapEntry true} lst
+                             ^{:volatile-mutable true int true} cnt]
+  Iterator
+  (hasNext [this]
+    (> cnt 0))
+  (next [this]
+    (if (nil? lst)
+      (set! lst (last-t2 node))
+      (set! lst (.prior-t2 node (.getKey lst))))
+    (set! cnt (- cnt 1))
+    lst)
+
+  Counted
+  (count [this] cnt))
+
+(defn ^map-entry-reverse-iterator new-map-entry-reverse-iterator [node]
+  (->map-entry-reverse-iterator node nil (.-cnt node)))
+
+(defn ^MapSequence new-map-entry-reverse-seq [node]
+  (MapSequence/create (new-map-entry-reverse-iterator node) identity))
+
+(defn ^MapSequence new-map-key-reverse-seq [node]
+  (MapSequence/create (new-map-entry-reverse-iterator node) key-of))
+
+(defn ^MapSequence new-map-value-reverse-seq [node]
+  (MapSequence/create (new-map-entry-reverse-iterator node) value-of))
 
 (defn snodev [this]
   (if (emty? this)
@@ -186,6 +215,18 @@
           (zero? c) (.successor-t2 this)
           (> c 0) (.next-t2 (.right-node this) x)
           :else (let [t-2 (.next-t2 (.left-node this) x)]
+                  (if (nil? t-2)
+                    t2
+                    t-2))))))
+
+  (prior-t2 [this x]
+    (if (emty? this)
+      nil
+      (let [c (.cmpr this x)]
+        (cond
+          (zero? c) (.predecessor-t2 this)
+          (< c 0) (.prior-t2 (.left-node this) x)
+          :else (let [t-2 (.prior-t2 (.right-node this) x)]
                   (if (nil? t-2)
                     t2
                     t-2))))))
