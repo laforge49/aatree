@@ -1,6 +1,7 @@
 (ns aatree.core
-  (:import (aatree AAMap)))
+  (:import (aatree AAMap)
+           (java.util Comparator)))
 
 (defn create-aamap
   ([] (new AAMap))
-  ([comparator] (new AAMap comparator)))
+  ([^Comparator comparator] (new AAMap comparator)))

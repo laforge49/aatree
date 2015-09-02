@@ -122,13 +122,13 @@
           l (get m :left (.left-node this))
           r (get m :right (.right-node this))
           c (+ 1 (.count l) (.count r))]
-      (if (or (not= (.getKey t-2) (.getKey t2))
-              (not= (.getValue t-2) (.getValue t2))
-              (not= lev level)
-              (not= l (.left-node this))
-              (not= r (.right-node this)))
-        (.new-node this t-2 lev l r c)
-        this)))
+      (if (and (= (.getKey t-2) (.getKey t2))
+               (identical? (.getValue t-2) (.getValue t2))
+               (= lev level)
+               (identical? l (.left-node this))
+               (identical? r (.right-node this)))
+        this
+        (.new-node this t-2 lev l r c))))
 
   (skew
     [this]
