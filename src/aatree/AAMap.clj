@@ -69,3 +69,6 @@
 
 (defn -seq [this]
   (new-map-entry-seq (.-node (.-state this))))
+
+(defn -empty [this]
+  (new AAMap (.-meta (.-state this)) nil (.emty (.-node (.-state this)))))

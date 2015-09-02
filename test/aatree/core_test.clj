@@ -12,3 +12,7 @@
 (println (.entryAt x2 1))
 (println (.containsKey x2 1))
 (println (.seq x1))
+(def x3 (.empty x1))
+(println (.entryAt x3 1))
+(println (.containsKey x3 1))
+(println (.seq x3))
