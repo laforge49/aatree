@@ -2,7 +2,7 @@
   (:gen-class
     :main false
     :extends clojure.lang.APersistentMap
-    :implements [clojure.lang.IObj clojure.lang.Reversible clojure.lang.Sorted]
+    :implements [clojure.lang.IObj clojure.lang.Reversible clojure.lang.Sorted clojure.lang.Counted]
     :constructors {[]
                    []
                    [java.util.Comparator]
@@ -81,8 +81,14 @@
 (defn -empty [this]
   (new AAMap (.-meta (.-state this)) nil (.emty (.-node (.-state this)))))
 
+(defn -count [this]
+  (.-cnt (.-node (.-state this))))
+
 (defn -comparator [this]
   (.-comparator (.-node (.-state this))))
 
 (defn -entryKey [this entry]
   (.getKey entry))
+
+(defn -iterator [this]
+  (.new-map-entry-iterator (.-node (.-state this))))

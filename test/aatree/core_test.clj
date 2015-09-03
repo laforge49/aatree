@@ -21,4 +21,5 @@
 (println (.containsKey x12 1))
 (println (.seq x12))
 (println (.rseq x12))
+(println (.count x12))
 
