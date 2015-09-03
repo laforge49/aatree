@@ -75,3 +75,9 @@
 
 (defn -empty [this]
   (new AAMap (.-meta (.-state this)) nil (.emty (.-node (.-state this)))))
+
+(defn -comparator [this]
+  (.-comparator (.-node (.-state this))))
+
+(defn -entryKey [this entry]
+  (.getKey entry))
