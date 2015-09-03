@@ -67,11 +67,16 @@
       this
       (new AAMap (.-meta (.-state this)) nil n1))))
 
-(defn -seq [this]
-  (new-map-entry-seq (.-node (.-state this))))
-
 (defn -rseq [this]
   (new-map-entry-reverse-seq (.-node (.-state this))))
+
+(defn -seq
+  ([this]
+   (new-map-entry-seq (.-node (.-state this))))
+  ([this ascending]
+   (if ascending
+     (-seq this)
+     (-rseq this))))
 
 (defn -empty [this]
   (new AAMap (.-meta (.-state this)) nil (.emty (.-node (.-state this)))))
