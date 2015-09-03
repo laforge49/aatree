@@ -41,3 +41,8 @@
 (println (.hasNext mi))
 (println (.next mi))
 (println (.hasNext mi))
+(println (.index-of m123 "0"))
+(println (.index-of m123 "1"))
+(println (.index-of m123 "2"))
+(println (.index-of m123 "3"))
+(println (.index-of m123 "4"))

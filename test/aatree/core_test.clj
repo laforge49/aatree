@@ -22,4 +22,7 @@
 (println (.seq x12))
 (println (.rseq x12))
 (println (.count x12))
-
+(def x123 (.assoc x12 3 1003))
+(println x123)
+(println (.seqFrom x123 2 true))
+(println (.seqFrom x123 2 false))

@@ -78,6 +78,11 @@
      (-seq this)
      (-rseq this))))
 
+(defn -seqFrom [this key ascending]
+  (if ascending
+    (new-map-entry-seq (.-node (.-state this)) key)
+    (new-map-entry-reverse-seq (.-node (.-state this)) key)))
+
 (defn -empty [this]
   (new AAMap (.-meta (.-state this)) nil (.emty (.-node (.-state this)))))
 

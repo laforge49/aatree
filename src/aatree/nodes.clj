@@ -21,7 +21,8 @@
   (^IMapEntry prior-t2 [this x])
   (^IMapEntry get-t2 [this x])
   (decrease-level [this])
-  (delete [this x]))
+  (delete [this x])
+  (^int index-of [this x]))
 
 (defn emty? [x]
   (or (nil? x) (zero? (.-level x))))
@@ -64,11 +65,20 @@
   Counted
   (count [this] cnt))
 
-(defn ^map-entry-iterator new-map-entry-iterator [node]
+(defn ^map-entry-iterator new-map-entry-iterator
+  ([node]
   (->map-entry-iterator node nil (.-cnt node)))
+  ([node x]
+   (let [ndx (.index_of node x)
+         p (.prior-t2 node x)]
+     (->map-entry-iterator node p (- (.-cnt node) ndx))))
+  )
 
-(defn ^MapSequence new-map-entry-seq [node]
-  (MapSequence/create (new-map-entry-iterator node) identity))
+(defn ^MapSequence new-map-entry-seq
+  ([node]
+   (MapSequence/create (new-map-entry-iterator node) identity))
+  ([node x]
+   (MapSequence/create (new-map-entry-iterator node x) identity)))
 
 (defn ^MapSequence new-map-key-seq [node]
   (MapSequence/create (new-map-entry-iterator node) key-of))
@@ -92,11 +102,19 @@
   Counted
   (count [this] cnt))
 
-(defn ^map-entry-reverse-iterator new-map-entry-reverse-iterator [node]
-  (->map-entry-reverse-iterator node nil (.-cnt node)))
+(defn ^map-entry-reverse-iterator new-map-entry-reverse-iterator
+  ([node]
+   (->map-entry-reverse-iterator node nil (.-cnt node)))
+  ([node x]
+   (let [ndx (.index_of node x)
+         n (.next-t2 node x)]
+     (->map-entry-reverse-iterator node n (+ 1 ndx)))))
 
-(defn ^MapSequence new-map-entry-reverse-seq [node]
-  (MapSequence/create (new-map-entry-reverse-iterator node) identity))
+(defn ^MapSequence new-map-entry-reverse-seq
+  ([node]
+   (MapSequence/create (new-map-entry-reverse-iterator node) identity))
+  ([node x]
+   (MapSequence/create (new-map-entry-reverse-iterator node x) identity)))
 
 (defn ^MapSequence new-map-key-reverse-seq [node]
   (MapSequence/create (new-map-entry-reverse-iterator node) key-of))
@@ -275,4 +293,18 @@
                 t (.split t)
                 t (.revise t [:right (.split (.right-node t))])]
             t)))))
+
+  (index-of [this x]
+    (if (emty? this)
+      0
+      (let [c (.cmpr this x)]
+        (cond
+          (< c 0)
+          (.index-of (.left-node this) x)
+          (= c 0)
+          (.-cnt (.left-node this))
+          :else
+          (+ 1
+             (.-cnt (.left-node this))
+             (.index-of (.right-node this) x))))))
   )
