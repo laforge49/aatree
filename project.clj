@@ -4,4 +4,5 @@
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.7.0"]]
-  :aot [aatree.MapSequence aatree.nodes aatree.AAMap aatree.core])
+  :aot [aatree.MapSequence aatree.nodes aatree.AAMap aatree.core]
+  :profiles {:dev {:dependencies [[collection-check "0.1.6"]]}})

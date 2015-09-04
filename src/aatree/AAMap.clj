@@ -96,4 +96,4 @@
   (.getKey entry))
 
 (defn -iterator [this]
-  (.new-map-entry-iterator (.-node (.-state this))))
+  (new-map-entry-iterator (.-node (.-state this))))

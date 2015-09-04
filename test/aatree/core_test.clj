@@ -1,6 +1,8 @@
 (ns aatree.core-test
   (:require [clojure.test :refer :all]
-            [aatree.core :refer :all]))
+            [aatree.core :refer :all]
+            [collection-check :refer :all]
+            [clojure.test.check.generators :as gen]))
 
 (def x (create-aamap))
 (println (.entryAt x 1))
@@ -26,3 +28,9 @@
 (println x123)
 (println (.seqFrom x123 2 true))
 (println (.seqFrom x123 2 false))
+
+(def gen-element
+  (gen/tuple gen/int))
+
+(assert-map-like 100 (create-aamap)
+                 gen-element gen-element)
