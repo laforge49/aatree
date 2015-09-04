@@ -32,10 +32,11 @@
 (def gen-element
   (gen/tuple gen/int))
 
-(assert-map-like (create-aamap)
-                 gen-element gen-element
-     ;            {:base (sorted-map) :ordered? true}
-                 )
+(deftest tests
+  (assert-map-like (create-aamap)
+                   gen-element gen-element
+                   ;           {:base (sorted-map) :ordered? true}
+                   ))
 
 (println)
 (def t1 (create-aamap))
