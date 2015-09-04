@@ -1,6 +1,6 @@
 (ns aatree.nodes
 (:import (clojure.lang IMapEntry)
-         (clojure.lang Counted IMapEntry RT)
+         (clojure.lang Counted IMapEntry RT MapEntry)
          (java.util Iterator Comparator)
          (aatree MapSequence)))
 
@@ -217,7 +217,7 @@
                                r (.insert oldr t-2)]
                            (.revise this [:right r]))
                          :else
-                         (.revise this [:t2 t-2])))))))
+                         (.revise this [:t2 (new MapEntry (.getKey t2) (.getValue t-2))])))))))
 
   (predecessor-t2 [this]
     (last-t2 (.left-node this)))

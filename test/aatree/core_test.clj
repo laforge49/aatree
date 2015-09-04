@@ -32,5 +32,30 @@
 (def gen-element
   (gen/tuple gen/int))
 
-(assert-map-like 100 (create-aamap)
-                 gen-element gen-element)
+(assert-map-like (create-aamap)
+                 gen-element gen-element
+     ;            {:base (sorted-map) :ordered? true}
+                 )
+
+(println)
+(def t1 (create-aamap))
+(def t2 (assoc t1 3 -3))
+(println t2)
+(def t3 (assoc t2 3 2))
+(println t3)
+(def t4 (assoc t3 -2 2))
+(println t4 (count t4))
+
+(def t8 (-> {}
+            (assoc (clojure.core/with-meta [0] {:foo 0}) (clojure.core/with-meta [0] {:foo 0}))
+            (assoc (clojure.core/with-meta [0] {:foo 0}) (clojure.core/with-meta [0] {:foo nil}))))
+(println t8)
+(println (meta (first (seq (keys t8)))))
+(println (meta (first (seq (vals t8)))))
+
+(def t9 (-> (create-aamap)
+            (assoc (clojure.core/with-meta [0] {:foo 0}) (clojure.core/with-meta [0] {:foo 0}))
+            (assoc (clojure.core/with-meta [0] {:foo 0}) (clojure.core/with-meta [0] {:foo nil}))))
+(println t9)
+(println (meta (first (seq (keys t9)))))
+(println (meta (first (seq (vals t9)))))
