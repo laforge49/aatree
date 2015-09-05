@@ -13,3 +13,5 @@ map.
 
 Validation of aamap has been done using 
 [collection-check](https://github.com/ztellman/collection-check).
+
+Compiled AOT with Clojure 1.7.0.
