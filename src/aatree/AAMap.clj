@@ -2,7 +2,11 @@
   (:gen-class
     :main false
     :extends clojure.lang.APersistentMap
-    :implements [clojure.lang.IObj clojure.lang.Reversible clojure.lang.Sorted clojure.lang.Counted]
+    :implements [clojure.lang.IObj
+                 clojure.lang.Reversible
+                 clojure.lang.Sorted
+                 clojure.lang.Counted
+                 clojure.lang.IMapIterable]
     :constructors {[]
                    []
                    [java.util.Comparator]
@@ -77,6 +81,12 @@
    (if ascending
      (-seq this)
      (-rseq this))))
+
+(defn -keyIterator [this]
+  (new-map-key-seq (.-node (.-state this))))
+
+(defn -valIterator [this]
+  (new-map-value-seq (.-node (.-state this))))
 
 (defn -seqFrom [this key ascending]
   (if ascending
