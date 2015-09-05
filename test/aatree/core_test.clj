@@ -60,3 +60,10 @@
 (println t9)
 (println (meta (first (seq (keys t9)))))
 (println (meta (first (seq (vals t9)))))
+
+(println)
+(println (nth x123 -1 nil))
+(println (nth x123 0 nil))
+(println (nth x123 1 nil))
+(println (nth x123 2 nil))
+(println (nth x123 3 nil))

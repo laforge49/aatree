@@ -6,7 +6,7 @@
                  clojure.lang.Reversible
                  clojure.lang.Sorted
                  clojure.lang.Counted
-                 clojure.lang.IMapIterable]
+                 clojure.lang.Indexed]
     :constructors {[]
                    []
                    [java.util.Comparator]
@@ -107,3 +107,11 @@
 
 (defn -iterator [this]
   (new-map-entry-iterator (.-node (.-state this))))
+
+(defn -nth
+  ([this i]
+   (.nth-t2 (.-node (.-state this)) i))
+  ([this i notFound]
+   (if (and (>= i 0) (< i (.count this)))
+     (.nth this i)
+     notFound)))
