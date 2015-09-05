@@ -46,3 +46,6 @@
 (println (.index-of m123 "2"))
 (println (.index-of m123 "3"))
 (println (.index-of m123 "4"))
+(println (.nth-t2 m123 0))
+(println (.nth-t2 m123 1))
+(println (.nth-t2 m123 2))

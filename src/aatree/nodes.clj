@@ -1,6 +1,6 @@
 (ns aatree.nodes
 (:import (clojure.lang IMapEntry)
-         (clojure.lang Counted IMapEntry RT MapEntry)
+         (clojure.lang Counted IMapEntry RT MapEntry Indexed)
          (java.util Iterator Comparator)
          (aatree MapSequence)))
 
@@ -22,7 +22,8 @@
   (^IMapEntry get-t2 [this x])
   (decrease-level [this])
   (delete [this x])
-  (^int index-of [this x]))
+  (^int index-of [this x])
+  (^MapEntry nth-t2 [this ^int i]))
 
 (defn emty? [x]
   (or (nil? x) (zero? (.-level x))))
@@ -307,4 +308,17 @@
           (+ 1
              (.-cnt (.left-node this))
              (.index-of (.right-node this) x))))))
+
+  (nth-t2 [this i]
+    (if (emty? this)
+      (throw (IndexOutOfBoundsException.))
+      (let [l (.left_node this)
+            p (.-cnt l)]
+        (cond
+          (< i p)
+          (.nth-t2 l i)
+          (> i p)
+          (.nth-t2 (.right_node this) (- i p 1))
+          :else
+          t2))))
   )
