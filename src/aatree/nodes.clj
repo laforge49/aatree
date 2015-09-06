@@ -40,6 +40,22 @@
     (empty-node? (.-right this)) (.-t2 this)
     :else (recur (.-right this))))
 
+(deftype counted-iterator
+  [node
+   ^{:volatile-mutable true int true} ndx
+   ^int cnt]
+
+  Counted
+  (count [this] cnt)
+
+  Iterator
+  (hasNext [this]
+    (< ndx cnt))
+  (next [this]
+    (let [i ndx]
+      (set! ndx (+ 1 i))
+      (.nth-t2 node i))))
+
 (deftype map-entry-iterator [node
                              ^{:volatile-mutable true IMapEntry true} lst
                              ^{:volatile-mutable true int true} cnt]
@@ -58,7 +74,7 @@
 
 (defn ^map-entry-iterator new-map-entry-iterator
   ([node]
-  (->map-entry-iterator node nil (.-cnt node)))
+  (->counted-iterator node 0 (.-cnt node)))
   ([node x]
    (let [ndx (.index_of node x)
          p (.prior-t2 node x)]
