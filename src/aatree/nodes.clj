@@ -56,37 +56,6 @@
       (set! ndx (+ 1 i))
       (.nth-t2 node i))))
 
-(deftype map-entry-iterator [node
-                             ^{:volatile-mutable true IMapEntry true} lst
-                             ^{:volatile-mutable true int true} cnt]
-  Iterator
-  (hasNext [this]
-    (> cnt 0))
-  (next [this]
-    (if (nil? lst)
-      (set! lst (first-t2 node))
-      (set! lst (.next-t2 node (.getKey lst))))
-    (set! cnt (- cnt 1))
-    lst)
-
-  Counted
-  (count [this] cnt))
-
-(defn ^map-entry-iterator new-map-entry-iterator
-  ([node]
-  (->counted-iterator node 0 (.-cnt node)))
-  ([node x]
-   (let [ndx (.index_of node x)
-         p (.prior-t2 node x)]
-     (->map-entry-iterator node p (- (.-cnt node) ndx))))
-  )
-
-(defn ^CountedSequence new-map-entry-seq
-  ([node]
-   (CountedSequence/create (new-map-entry-iterator node) identity))
-  ([node x]
-   (CountedSequence/create (new-map-entry-iterator node x) identity)))
-
 (deftype map-entry-reverse-iterator [node
                              ^{:volatile-mutable true IMapEntry true} lst
                              ^{:volatile-mutable true int true} cnt]
@@ -102,20 +71,6 @@
 
   Counted
   (count [this] cnt))
-
-(defn ^map-entry-reverse-iterator new-map-entry-reverse-iterator
-  ([node]
-   (->map-entry-reverse-iterator node nil (.-cnt node)))
-  ([node x]
-   (let [ndx (.index_of node x)
-         n (.next-t2 node x)]
-     (->map-entry-reverse-iterator node n (+ 1 ndx)))))
-
-(defn ^CountedSequence new-map-entry-reverse-seq
-  ([node]
-   (CountedSequence/create (new-map-entry-reverse-iterator node) identity))
-  ([node x]
-   (CountedSequence/create (new-map-entry-reverse-iterator node x) identity)))
 
 (defn snodev [this]
   (if (empty-node? this)
