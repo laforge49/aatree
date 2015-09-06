@@ -28,12 +28,6 @@
 (defn emty? [x]
   (or (nil? x) (zero? (.-level x))))
 
-(declare ->MapNode)
-
-(defn create-empty-map-node
-  ([] (create-empty-map-node RT/DEFAULT_COMPARATOR))
-  ([^Comparator comparator] (->MapNode nil 0 nil nil 0 comparator nil)))
-
 (defn first-t2 [this]
   (cond
     (emty? this) nil
@@ -130,6 +124,8 @@
 
 (defn pnodev [this dsc]
   (println dsc (snodev this)))
+
+(declare ->MapNode)
 
 (deftype MapNode [^IMapEntry t2 ^int level left right ^int cnt ^Comparator comparator nada]
 
@@ -322,3 +318,7 @@
           :else
           t2))))
   )
+
+(defn create-empty-map-node
+  ([] (create-empty-map-node RT/DEFAULT_COMPARATOR))
+  ([^Comparator comparator] (->MapNode nil 0 nil nil 0 comparator nil)))
