@@ -40,10 +40,6 @@
     (empty-node? (.-right this)) (.-t2 this)
     :else (recur (.-right this))))
 
-(defn key-of [^IMapEntry e] (.getKey e))
-
-(defn value-of [^IMapEntry e] (.getValue e))
-
 (deftype map-entry-iterator [node
                              ^{:volatile-mutable true IMapEntry true} lst
                              ^{:volatile-mutable true int true} cnt]
@@ -75,12 +71,6 @@
   ([node x]
    (CountedSequence/create (new-map-entry-iterator node x) identity)))
 
-(defn ^CountedSequence new-map-key-seq [node]
-  (CountedSequence/create (new-map-entry-iterator node) key-of))
-
-(defn ^CountedSequence new-map-value-seq [node]
-  (CountedSequence/create (new-map-entry-iterator node) value-of))
-
 (deftype map-entry-reverse-iterator [node
                              ^{:volatile-mutable true IMapEntry true} lst
                              ^{:volatile-mutable true int true} cnt]
@@ -110,12 +100,6 @@
    (CountedSequence/create (new-map-entry-reverse-iterator node) identity))
   ([node x]
    (CountedSequence/create (new-map-entry-reverse-iterator node x) identity)))
-
-(defn ^CountedSequence new-map-key-reverse-seq [node]
-  (CountedSequence/create (new-map-entry-reverse-iterator node) key-of))
-
-(defn ^CountedSequence new-map-value-reverse-seq [node]
-  (CountedSequence/create (new-map-entry-reverse-iterator node) value-of))
 
 (defn snodev [this]
   (if (empty-node? this)

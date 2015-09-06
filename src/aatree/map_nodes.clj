@@ -1,7 +1,8 @@
 (ns aatree.map-nodes
   (:require [aatree.nodes :refer :all])
   (:import (java.util Comparator)
-           (clojure.lang RT IMapEntry Counted MapEntry)))
+           (clojure.lang RT IMapEntry Counted MapEntry)
+           (aatree CountedSequence)))
 
 (declare ->MapNode)
 
@@ -200,3 +201,19 @@
 (defn create-empty-map-node
   ([] (create-empty-map-node RT/DEFAULT_COMPARATOR))
   ([^Comparator comparator] (->MapNode nil 0 nil nil 0 comparator nil)))
+
+(defn key-of [^IMapEntry e] (.getKey e))
+
+(defn value-of [^IMapEntry e] (.getValue e))
+
+(defn ^CountedSequence new-map-key-seq [node]
+  (CountedSequence/create (new-map-entry-iterator node) key-of))
+
+(defn ^CountedSequence new-map-value-seq [node]
+  (CountedSequence/create (new-map-entry-iterator node) value-of))
+
+(defn ^CountedSequence new-map-key-reverse-seq [node]
+  (CountedSequence/create (new-map-entry-reverse-iterator node) key-of))
+
+(defn ^CountedSequence new-map-value-reverse-seq [node]
+  (CountedSequence/create (new-map-entry-reverse-iterator node) value-of))
