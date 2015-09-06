@@ -25,19 +25,19 @@
   (^int index-of [this x])
   (^MapEntry nth-t2 [this ^int i]))
 
-(defn emty? [x]
+(defn empty-node? [x]
   (or (nil? x) (zero? (.-level x))))
 
 (defn first-t2 [this]
   (cond
-    (emty? this) nil
-    (emty? (.-left this)) (.-t2 this)
+    (empty-node? this) nil
+    (empty-node? (.-left this)) (.-t2 this)
     :else (recur (.-left this))))
 
 (defn ^IMapEntry last-t2 [this]
   (cond
-    (emty? this) nil
-    (emty? (.-right this)) (.-t2 this)
+    (empty-node? this) nil
+    (empty-node? (.-right this)) (.-t2 this)
     :else (recur (.-right this))))
 
 (defn key-of [^IMapEntry e] (.getKey e))
@@ -118,7 +118,7 @@
   (CountedSequence/create (new-map-entry-reverse-iterator node) value-of))
 
 (defn snodev [this]
-  (if (emty? this)
+  (if (empty-node? this)
     ""
     (str (snodev (.-left this)) " <" (.-t2 this) " " (.level this) "> " (snodev (.-right this)))))
 

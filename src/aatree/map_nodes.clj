@@ -10,14 +10,14 @@
   Counted
 
   (count [this]
-    (if (emty? this)
+    (if (empty-node? this)
       0
       cnt))
 
   IMapNode
 
   (emty [this]
-    (if (emty? this)
+    (if (empty-node? this)
       this
       nada))
 
@@ -25,12 +25,12 @@
     (.compare comparator x (.getKey t2)))
 
   (right-node [this]
-    (if (emty? right)
+    (if (empty-node? right)
       (.emty this)
       right))
 
   (left-node [this]
-    (if (emty? (.-left this))
+    (if (empty-node? (.-left this))
       (.emty this)
       (.-left this)))
 
@@ -55,9 +55,9 @@
   (skew
     [this]
     (cond
-      (emty? this)
+      (empty-node? this)
       this
-      (emty? left)
+      (empty-node? left)
       this
       (= (.-level left) level)
       (let [l left]
@@ -67,9 +67,9 @@
 
   (split [this]
     (cond
-      (emty? this)
+      (empty-node? this)
       this
-      (or (emty? right) (emty? (.-right right)))
+      (or (empty-node? right) (empty-node? (.-right right)))
       this
       (= level (.-level (.-right right)))
       (.revise right
@@ -79,7 +79,7 @@
       this))
 
   (insert [this t-2]
-    (if (emty? this)
+    (if (empty-node? this)
       (.new-node this t-2 1 nil nil 1)
       (let [c (.cmpr this (.getKey t-2))]
         (.split (.skew (cond
@@ -101,7 +101,7 @@
     (first-t2 (.right-node this)))
 
   (next-t2 [this x]
-    (if (emty? this)
+    (if (empty-node? this)
       nil
       (let [c (.cmpr this x)]
         (cond
@@ -113,7 +113,7 @@
                     t-2))))))
 
   (prior-t2 [this x]
-    (if (emty? this)
+    (if (empty-node? this)
       nil
       (let [c (.cmpr this x)]
         (cond
@@ -125,7 +125,7 @@
                     t-2))))))
 
   (get-t2 [this x]
-    (if (emty? this)
+    (if (empty-node? this)
       nil
       (let [c (.cmpr this x)]
         (cond
@@ -145,7 +145,7 @@
           (.revise this [:right rn :level should-be])))))
 
   (delete [this x]
-    (if (emty? this)
+    (if (empty-node? this)
       this
       (let [c (.cmpr this x)]
         (if (and (= c 0) (= 1 level))
@@ -162,7 +162,7 @@
                 t (.skew t)
                 t (.revise t [:right (.skew (.right-node t))])
                 r (.right-node t)
-                t (if (emty? r)
+                t (if (empty-node? r)
                     t
                     (.revise t [:right (.revise r [:right (.skew (.right-node r))])]))
                 t (.split t)
@@ -170,7 +170,7 @@
             t)))))
 
   (index-of [this x]
-    (if (emty? this)
+    (if (empty-node? this)
       0
       (let [c (.cmpr this x)]
         (cond
@@ -184,7 +184,7 @@
              (.index-of (.right-node this) x))))))
 
   (nth-t2 [this i]
-    (if (emty? this)
+    (if (empty-node? this)
       (throw (IndexOutOfBoundsException.))
       (let [l (.left_node this)
             p (.-cnt l)]
