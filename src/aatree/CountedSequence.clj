@@ -1,4 +1,4 @@
-(ns aatree.MapSequence
+(ns aatree.CountedSequence
   (:gen-class
     :main false
     :extends clojure.lang.ASeq
@@ -9,13 +9,12 @@
                    [clojure.lang.IPersistentMap]}
     :init init
     :state state
-    :methods [^:static [create [java.util.Iterator clojure.lang.IFn] Object]]
-    :exposes-methods {count superCount})
+    :methods [^:static [create [java.util.Iterator clojure.lang.IFn] Object]])
   )
 
 (defn -create [iter styp]
   (if (.hasNext iter)
-    (new aatree.MapSequence iter styp)
+    (new aatree.CountedSequence iter styp)
     nil))
 
 (deftype seq-state [iter styp val rst])
@@ -30,7 +29,7 @@
    [[meta] s])
   )
 
-(defn -withMeta [this meta] (new aatree.MapSequence meta nil (.-state this)))
+(defn -withMeta [this meta] (new aatree.CountedSequence meta nil (.-state this)))
 
 (defn -first [this]
   (let [s (.-state this)
@@ -49,6 +48,4 @@
 
 (defn -count [this]
   (let [iter (.iter (.-state this))]
-    (if (counted? iter)
-      (.count iter)
-      (.superCount this))))
+      (.count iter)))

@@ -2,7 +2,7 @@
 (:import (clojure.lang IMapEntry)
          (clojure.lang Counted IMapEntry RT MapEntry Indexed)
          (java.util Iterator Comparator)
-         (aatree MapSequence)))
+         (aatree CountedSequence)))
 
 
 (defprotocol IMapNode
@@ -75,17 +75,17 @@
      (->map-entry-iterator node p (- (.-cnt node) ndx))))
   )
 
-(defn ^MapSequence new-map-entry-seq
+(defn ^CountedSequence new-map-entry-seq
   ([node]
-   (MapSequence/create (new-map-entry-iterator node) identity))
+   (CountedSequence/create (new-map-entry-iterator node) identity))
   ([node x]
-   (MapSequence/create (new-map-entry-iterator node x) identity)))
+   (CountedSequence/create (new-map-entry-iterator node x) identity)))
 
-(defn ^MapSequence new-map-key-seq [node]
-  (MapSequence/create (new-map-entry-iterator node) key-of))
+(defn ^CountedSequence new-map-key-seq [node]
+  (CountedSequence/create (new-map-entry-iterator node) key-of))
 
-(defn ^MapSequence new-map-value-seq [node]
-  (MapSequence/create (new-map-entry-iterator node) value-of))
+(defn ^CountedSequence new-map-value-seq [node]
+  (CountedSequence/create (new-map-entry-iterator node) value-of))
 
 (deftype map-entry-reverse-iterator [node
                              ^{:volatile-mutable true IMapEntry true} lst
@@ -111,17 +111,17 @@
          n (.next-t2 node x)]
      (->map-entry-reverse-iterator node n (+ 1 ndx)))))
 
-(defn ^MapSequence new-map-entry-reverse-seq
+(defn ^CountedSequence new-map-entry-reverse-seq
   ([node]
-   (MapSequence/create (new-map-entry-reverse-iterator node) identity))
+   (CountedSequence/create (new-map-entry-reverse-iterator node) identity))
   ([node x]
-   (MapSequence/create (new-map-entry-reverse-iterator node x) identity)))
+   (CountedSequence/create (new-map-entry-reverse-iterator node x) identity)))
 
-(defn ^MapSequence new-map-key-reverse-seq [node]
-  (MapSequence/create (new-map-entry-reverse-iterator node) key-of))
+(defn ^CountedSequence new-map-key-reverse-seq [node]
+  (CountedSequence/create (new-map-entry-reverse-iterator node) key-of))
 
-(defn ^MapSequence new-map-value-reverse-seq [node]
-  (MapSequence/create (new-map-entry-reverse-iterator node) value-of))
+(defn ^CountedSequence new-map-value-reverse-seq [node]
+  (CountedSequence/create (new-map-entry-reverse-iterator node) value-of))
 
 (defn snodev [this]
   (if (emty? this)
