@@ -56,6 +56,15 @@
       (set! ndx (+ 1 i))
       (.nth-t2 node i))))
 
+(defn ^counted-iterator new-counted-iterator
+  ([node]
+   (->counted-iterator node 0 (.-cnt node)))
+  )
+
+(defn ^CountedSequence new-counted-seq
+  ([node]
+   (CountedSequence/create (new-counted-iterator node) identity)))
+
 (deftype counted-reverse-iterator
   [node
    ^{:volatile-mutable true int true} ndx]
@@ -70,6 +79,15 @@
     (let [i ndx]
       (set! ndx (- i 1))
       (.nth-t2 node i))))
+
+(defn ^counted-reverse-iterator new-counted-reverse-iterator
+  ([node]
+   (->counted-reverse-iterator node (- (.-cnt node) 1)))
+  )
+
+(defn ^CountedSequence new-counted-reverse-seq
+  ([node]
+   (CountedSequence/create (new-counted-reverse-iterator node) identity)))
 
 (defn snodev [this]
   (if (empty-node? this)

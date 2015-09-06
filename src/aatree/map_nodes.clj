@@ -207,39 +207,31 @@
 (defn value-of [^IMapEntry e] (.getValue e))
 
 (defn ^counted-iterator new-map-entry-iterator
-  ([node]
-   (->counted-iterator node 0 (.-cnt node)))
   ([node x]
    (->counted-iterator node (.index_of node x) (.-cnt node)))
   )
 
 (defn ^CountedSequence new-map-entry-seq
-  ([node]
-   (CountedSequence/create (new-map-entry-iterator node) identity))
   ([node x]
    (CountedSequence/create (new-map-entry-iterator node x) identity)))
 
 (defn ^CountedSequence new-map-key-seq [node]
-  (CountedSequence/create (new-map-entry-iterator node) key-of))
+  (CountedSequence/create (new-counted-iterator node) key-of))
 
 (defn ^CountedSequence new-map-value-seq [node]
-  (CountedSequence/create (new-map-entry-iterator node) value-of))
+  (CountedSequence/create (new-counted-iterator node) value-of))
 
 (defn ^counted-reverse-iterator new-map-entry-reverse-iterator
-  ([node]
-   (->counted-reverse-iterator node (- (.-cnt node) 1)))
   ([node x]
    (->counted-reverse-iterator node (.index_of node x)))
   )
 
 (defn ^CountedSequence new-map-entry-reverse-seq
-  ([node]
-   (CountedSequence/create (new-map-entry-reverse-iterator node) identity))
   ([node x]
    (CountedSequence/create (new-map-entry-reverse-iterator node x) identity)))
 
 (defn ^CountedSequence new-map-key-reverse-seq [node]
-  (CountedSequence/create (new-map-entry-reverse-iterator node) key-of))
+  (CountedSequence/create (new-counted-reverse-iterator node) key-of))
 
 (defn ^CountedSequence new-map-value-reverse-seq [node]
-  (CountedSequence/create (new-map-entry-reverse-iterator node) value-of))
+  (CountedSequence/create (new-counted-reverse-iterator node) value-of))

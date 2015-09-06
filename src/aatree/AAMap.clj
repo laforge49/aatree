@@ -73,11 +73,11 @@
       (new AAMap (.-meta (.-state this)) nil n1))))
 
 (defn -rseq [this]
-  (new-map-entry-reverse-seq (.-node (.-state this))))
+  (new-counted-reverse-seq (.-node (.-state this))))
 
 (defn -seq
   ([this]
-   (new-map-entry-seq (.-node (.-state this))))
+   (new-counted-seq (.-node (.-state this))))
   ([this ascending]
    (if ascending
      (-seq this)
@@ -107,7 +107,7 @@
   (.getKey entry))
 
 (defn -iterator [this]
-  (new-map-entry-iterator (.-node (.-state this))))
+  (new-counted-iterator (.-node (.-state this))))
 
 (defn -nth
   ([this i]
