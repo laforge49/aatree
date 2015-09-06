@@ -1,6 +1,7 @@
-(ns aatree.nodes-test
+(ns aatree.map-nodes-test
   (:require [clojure.test :refer :all]
-            [aatree.nodes :refer :all])
+            [aatree.nodes :refer :all]
+            [aatree.map-nodes :refer :all])
   (:import (clojure.lang MapEntry)))
 
 (def m0 (create-empty-map-node))

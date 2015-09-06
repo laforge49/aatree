@@ -17,7 +17,8 @@
                    []}
     :init init
     :state state)
-  (:require [aatree.nodes :refer :all])
+  (:require [aatree.nodes :refer :all]
+            [aatree.map-nodes :refer :all])
   (:import (aatree AAMap)
            (clojure.lang MapEntry)))
 
