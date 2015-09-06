@@ -26,11 +26,11 @@
 
 (defn -init
   ([]
-   [[] (->map-state (emty-node) nil)])
+   [[] (->map-state (create-empty-map-node) nil)])
   ([comp]
-   [[] (->map-state (emty-node comp) nil)])
+   [[] (->map-state (create-empty-map-node comp) nil)])
   ([meta comp]
-   [[] (->map-state (emty-node comp) meta)])
+   [[] (->map-state (create-empty-map-node comp) meta)])
   ([meta _ node]
    [[] (->map-state node meta)]))
 

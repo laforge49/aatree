@@ -3,7 +3,7 @@
             [aatree.nodes :refer :all])
   (:import (clojure.lang MapEntry)))
 
-(def m0 (emty-node))
+(def m0 (create-empty-map-node))
 
 (def m1 (.insert m0 (new MapEntry "1" 1001)))
 (pnodev m1 "m1")

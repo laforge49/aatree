@@ -30,8 +30,8 @@
 
 (declare ->MapNode)
 
-(defn emty-node
-  ([] (emty-node RT/DEFAULT_COMPARATOR))
+(defn create-empty-map-node
+  ([] (create-empty-map-node RT/DEFAULT_COMPARATOR))
   ([^Comparator comparator] (->MapNode nil 0 nil nil 0 comparator nil)))
 
 (defn first-t2 [this]
