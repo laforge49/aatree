@@ -2,7 +2,7 @@
   (:require [aatree.nodes :refer :all])
   (:import (java.util Comparator)
            (clojure.lang RT IMapEntry Counted MapEntry)
-           (aatree nodes.counted-iterator nodes.map-entry-reverse-iterator CountedSequence)))
+           (aatree nodes.counted-iterator nodes.counted-reverse-iterator CountedSequence)))
 
 (declare ->MapNode)
 
@@ -210,8 +210,7 @@
   ([node]
    (->counted-iterator node 0 (.-cnt node)))
   ([node x]
-   (let [ndx (.index_of node x)]
-     (->counted-iterator node ndx (.-cnt node))))
+   (->counted-iterator node (.index_of node x) (.-cnt node)))
   )
 
 (defn ^CountedSequence new-map-entry-seq
@@ -226,13 +225,12 @@
 (defn ^CountedSequence new-map-value-seq [node]
   (CountedSequence/create (new-map-entry-iterator node) value-of))
 
-(defn ^map-entry-reverse-iterator new-map-entry-reverse-iterator
+(defn ^counted-reverse-iterator new-map-entry-reverse-iterator
   ([node]
-   (->map-entry-reverse-iterator node nil (.-cnt node)))
+   (->counted-reverse-iterator node (- (.-cnt node) 1)))
   ([node x]
-   (let [ndx (.index_of node x)
-         n (.next-t2 node x)]
-     (->map-entry-reverse-iterator node n (+ 1 ndx)))))
+   (->counted-reverse-iterator node (.index_of node x)))
+  )
 
 (defn ^CountedSequence new-map-entry-reverse-seq
   ([node]

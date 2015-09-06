@@ -46,7 +46,7 @@
    ^int cnt]
 
   Counted
-  (count [this] cnt)
+  (count [this] (- cnt ndx))
 
   Iterator
   (hasNext [this]
@@ -56,21 +56,20 @@
       (set! ndx (+ 1 i))
       (.nth-t2 node i))))
 
-(deftype map-entry-reverse-iterator [node
-                             ^{:volatile-mutable true IMapEntry true} lst
-                             ^{:volatile-mutable true int true} cnt]
-  Iterator
-  (hasNext [this]
-    (> cnt 0))
-  (next [this]
-    (if (nil? lst)
-      (set! lst (last-t2 node))
-      (set! lst (.prior-t2 node (.getKey lst))))
-    (set! cnt (- cnt 1))
-    lst)
+(deftype counted-reverse-iterator
+  [node
+   ^{:volatile-mutable true int true} ndx]
 
   Counted
-  (count [this] cnt))
+  (count [this] (+ 1 ndx))
+
+  Iterator
+  (hasNext [this]
+    (>= ndx 0))
+  (next [this]
+    (let [i ndx]
+      (set! ndx (- i 1))
+      (.nth-t2 node i))))
 
 (defn snodev [this]
   (if (empty-node? this)
