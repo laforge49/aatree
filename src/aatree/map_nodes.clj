@@ -20,20 +20,6 @@
   (new-node [this t2 level left right cnt]
     (->MapNode t2 level left right cnt (.-comparator this) (empty-node this)))
 
-  (revise [this args]
-    (let [m (apply array-map args)
-          t-2 (get m :t2 t2)
-          lev (get m :level level)
-          l (get m :left (left-node this))
-          r (get m :right (right-node this))
-          c (+ 1 (.count l) (.count r))]
-      (if (and (identical? t-2 t2)
-               (= lev level)
-               (identical? l (left-node this))
-               (identical? r (right-node this)))
-        this
-        (.new-node this t-2 lev l r c))))
-
   (skew
     [this]
     (cond
@@ -43,7 +29,7 @@
       this
       (= (.-level left) level)
       (let [l left]
-        (.revise l [:right (.revise this [:left (right-node l)])]))
+        (revise l [:right (revise this [:left (right-node l)])]))
       :else
       this))
 
@@ -54,9 +40,9 @@
       (or (empty-node? right) (empty-node? (.-right right)))
       this
       (= level (.-level (.-right right)))
-      (.revise right
+      (revise right
                [:level (+ 1 (.-level right))
-                :left (.revise this [:right (.-left right)])])
+                :left (revise this [:right (.-left right)])])
       :else
       this))
 
@@ -74,8 +60,8 @@
         (let [rn (right-node this)
               rn (if (>= should-be (.-level (right-node this)))
                    rn
-                   (.revise rn [:level should-be]))]
-          (.revise this [:right rn :level should-be])))))
+                   (revise rn [:level should-be]))]
+          (revise this [:right rn :level should-be])))))
 
   (nth-t2 [this i]
     (if (empty-node? this)
@@ -154,15 +140,15 @@
                              (< c 0)
                              (let [oldl (left-node this)
                                    l (insert oldl t-2)]
-                               (.revise this [:left l]))
+                               (revise this [:left l]))
                              (> c 0)
                              (let [oldr (right-node this)
                                    r (insert oldr t-2)]
-                               (.revise this [:right r]))
+                               (revise this [:right r]))
                              :else
                              (if (identical? (.getValue t-2)(.getValue (.t2 this)))
                                this
-                               (.revise this [:t2 (new MapEntry (.getKey (.-t2 this)) (.getValue t-2))]))))))))
+                               (revise this [:t2 (new MapEntry (.getKey (.-t2 this)) (.getValue t-2))]))))))))
 
 (defn get-t2 [this x]
         (if (empty-node? this)
@@ -181,19 +167,19 @@
         (right-node this)
         (let [t (cond
                   (> c 0)
-                  (.revise this [:right (del (right-node this) x)])
+                  (revise this [:right (del (right-node this) x)])
                   (< c 0)
-                  (.revise this [:left (del (left-node this) x)])
+                  (revise this [:left (del (left-node this) x)])
                   :else
                   (let [p (.predecessor-t2 this)]
-                    (.revise this [:t2 p :left (del (left-node this) (.getKey p))])))
+                    (revise this [:t2 p :left (del (left-node this) (.getKey p))])))
               t (.decrease-level t)
               t (.skew t)
-              t (.revise t [:right (.skew (right-node t))])
+              t (revise t [:right (.skew (right-node t))])
               r (right-node t)
               t (if (empty-node? r)
                   t
-                  (.revise t [:right (.revise r [:right (.skew (right-node r))])]))
+                  (revise t [:right (revise r [:right (.skew (right-node r))])]))
               t (.split t)
-              t (.revise t [:right (.split (right-node t))])]
+              t (revise t [:right (.split (right-node t))])]
           t)))))

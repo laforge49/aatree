@@ -6,7 +6,6 @@
 
 (defprotocol INode
   (new-node [this t2 ^int level left right ^int cnt])
-  (revise [this args])
   (skew [this])
   (split [this])
   (predecessor-t2 [this])
@@ -43,6 +42,20 @@
   (if (empty-node? (.-right this))
     (empty-node this)
     (.-right this)))
+
+(defn revise [this args]
+  (let [m (apply array-map args)
+        t-2 (get m :t2 (.-t2 this))
+        lev (get m :level (.-level this))
+        l (get m :left (left-node this))
+        r (get m :right (right-node this))
+        c (+ 1 (.count l) (.count r))]
+    (if (and (identical? t-2 (.-t2 this))
+             (= lev (.-level this))
+             (identical? l (left-node this))
+             (identical? r (right-node this)))
+      this
+      (.new-node this t-2 lev l r c))))
 
 (deftype counted-iterator
   [node
