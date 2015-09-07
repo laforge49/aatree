@@ -6,7 +6,6 @@
 
 (defprotocol INode
   (new-node [this t2 ^int level left right ^int cnt])
-  (split [this])
   (predecessor-t2 [this])
   (successor-t2 [this])
   (decrease-level [this])
@@ -66,6 +65,19 @@
     (= (.-level (.-left this)) (.-level this))
     (let [l (.-left this)]
       (revise l [:right (revise this [:left (right-node l)])]))
+    :else
+    this))
+
+(defn split [this]
+  (cond
+    (empty-node? this)
+    this
+    (or (empty-node? (.-right this)) (empty-node? (.-right (.-right this))))
+    this
+    (= (.-level this) (.-level (.-right (.-right this))))
+    (revise (.-right this)
+            [:level (+ 1 (.-level (.-right this)))
+             :left (revise this [:right (.-left (.-right this))])])
     :else
     this))
 
