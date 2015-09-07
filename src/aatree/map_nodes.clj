@@ -6,7 +6,7 @@
 
 (declare ->MapNode)
 
-(deftype MapNode [^IMapEntry t2 ^int level left right ^int cnt ^Comparator comparator nada]
+(defrecord MapNode [^IMapEntry t2 ^int level left right ^int cnt ^Comparator comparator nada]
 
   INode
 
