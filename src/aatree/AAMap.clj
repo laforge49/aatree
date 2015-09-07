@@ -111,7 +111,7 @@
 
 (defn -nth
   ([this i]
-   (.nth-t2 (.-node (.-state this)) i))
+   (nth-t2 (.-node (.-state this)) i))
   ([this i notFound]
    (if (and (>= i 0) (< i (.count this)))
      (.nth this i)

@@ -5,8 +5,7 @@
 
 
 (defprotocol INode
-  (new-node [this t2 ^int level left right ^int cnt])
-  (nth-t2 [this ^int i]))
+  (new-node [this t2 ^int level left right ^int cnt]))
 
 (defn empty-node? [n]
   (or (nil? n) (zero? (.-level n))))
@@ -86,6 +85,19 @@
                  (revise rn [:level should-be]))]
         (revise this [:right rn :level should-be])))))
 
+(defn nth-t2 [this i]
+  (if (empty-node? this)
+    (throw (IndexOutOfBoundsException.))
+    (let [l (left-node this)
+          p (.-cnt l)]
+      (cond
+        (< i p)
+        (nth-t2 l i)
+        (> i p)
+        (nth-t2 (right-node this) (- i p 1))
+        :else
+        (.-t2 this)))))
+
 (deftype counted-iterator
   [node
    ^{:volatile-mutable true int true} ndx
@@ -100,7 +112,7 @@
   (next [this]
     (let [i ndx]
       (set! ndx (+ 1 i))
-      (.nth-t2 node i))))
+      (nth-t2 node i))))
 
 (defn ^counted-iterator new-counted-iterator
   ([node]
@@ -124,7 +136,7 @@
   (next [this]
     (let [i ndx]
       (set! ndx (- i 1))
-      (.nth-t2 node i))))
+      (nth-t2 node i))))
 
 (defn ^counted-reverse-iterator new-counted-reverse-iterator
   ([node]

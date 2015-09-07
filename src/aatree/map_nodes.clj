@@ -19,19 +19,6 @@
 
   (new-node [this t2 level left right cnt]
     (->MapNode t2 level left right cnt (.-comparator this) (empty-node this)))
-
-  (nth-t2 [this i]
-    (if (empty-node? this)
-      (throw (IndexOutOfBoundsException.))
-      (let [l (left-node this)
-            p (.-cnt l)]
-        (cond
-          (< i p)
-          (.nth-t2 l i)
-          (> i p)
-          (.nth-t2 (right-node this) (- i p 1))
-          :else
-          t2))))
   )
 
 (defn create-empty-map-node
