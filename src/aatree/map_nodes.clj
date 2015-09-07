@@ -20,17 +20,6 @@
   (new-node [this t2 level left right cnt]
     (->MapNode t2 level left right cnt (.-comparator this) (empty-node this)))
 
-  (decrease-level [this]
-    (let [should-be (+ 1 (min (.-level (left-node this))
-                              (.-level (right-node this))))]
-      (if (>= should-be level)
-        this
-        (let [rn (right-node this)
-              rn (if (>= should-be (.-level (right-node this)))
-                   rn
-                   (revise rn [:level should-be]))]
-          (revise this [:right rn :level should-be])))))
-
   (nth-t2 [this i]
     (if (empty-node? this)
       (throw (IndexOutOfBoundsException.))
@@ -141,7 +130,7 @@
                   :else
                   (let [p (predecessor-t2 this)]
                     (revise this [:t2 p :left (del (left-node this) (.getKey p))])))
-              t (.decrease-level t)
+              t (decrease-level t)
               t (skew t)
               t (revise t [:right (skew (right-node t))])
               r (right-node t)
