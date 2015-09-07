@@ -20,19 +20,6 @@
   (new-node [this t2 level left right cnt]
     (->MapNode t2 level left right cnt (.-comparator this) (empty-node this)))
 
-  (skew
-    [this]
-    (cond
-      (empty-node? this)
-      this
-      (empty-node? left)
-      this
-      (= (.-level left) level)
-      (let [l left]
-        (revise l [:right (revise this [:left (right-node l)])]))
-      :else
-      this))
-
   (split [this]
     (cond
       (empty-node? this)
@@ -136,7 +123,7 @@
         (if (empty-node? this)
           (.new-node this t-2 1 nil nil 1)
           (let [c (cmpr this (.getKey t-2))]
-            (.split (.skew (cond
+            (.split (skew (cond
                              (< c 0)
                              (let [oldl (left-node this)
                                    l (insert oldl t-2)]
@@ -174,12 +161,12 @@
                   (let [p (.predecessor-t2 this)]
                     (revise this [:t2 p :left (del (left-node this) (.getKey p))])))
               t (.decrease-level t)
-              t (.skew t)
-              t (revise t [:right (.skew (right-node t))])
+              t (skew t)
+              t (revise t [:right (skew (right-node t))])
               r (right-node t)
               t (if (empty-node? r)
                   t
-                  (revise t [:right (revise r [:right (.skew (right-node r))])]))
+                  (revise t [:right (revise r [:right (skew (right-node r))])]))
               t (.split t)
               t (revise t [:right (.split (right-node t))])]
           t)))))

@@ -6,7 +6,6 @@
 
 (defprotocol INode
   (new-node [this t2 ^int level left right ^int cnt])
-  (skew [this])
   (split [this])
   (predecessor-t2 [this])
   (successor-t2 [this])
@@ -56,6 +55,19 @@
              (identical? r (right-node this)))
       this
       (.new-node this t-2 lev l r c))))
+
+(defn skew
+  [this]
+  (cond
+    (empty-node? this)
+    this
+    (empty-node? (.-left this))
+    this
+    (= (.-level (.-left this)) (.-level this))
+    (let [l (.-left this)]
+      (revise l [:right (revise this [:left (right-node l)])]))
+    :else
+    this))
 
 (deftype counted-iterator
   [node
