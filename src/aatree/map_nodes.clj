@@ -95,20 +95,6 @@
                    (.revise rn [:level should-be]))]
           (.revise this [:right rn :level should-be])))))
 
-  (index-of [this x]
-    (if (empty-node? this)
-      0
-      (let [c (.cmpr this x)]
-        (cond
-          (< c 0)
-          (.index-of (.left-node this) x)
-          (= c 0)
-          (.-cnt (.left-node this))
-          :else
-          (+ 1
-             (.-cnt (.left-node this))
-             (.index-of (.right-node this) x))))))
-
   (nth-t2 [this i]
     (if (empty-node? this)
       (throw (IndexOutOfBoundsException.))
@@ -131,9 +117,23 @@
 
 (defn value-of [^IMapEntry e] (.getValue e))
 
+(defn index-of [this x]
+  (if (empty-node? this)
+    0
+    (let [c (.cmpr this x)]
+      (cond
+        (< c 0)
+        (index-of (.left-node this) x)
+        (= c 0)
+        (.-cnt (.left-node this))
+        :else
+        (+ 1
+           (.-cnt (.left-node this))
+           (index-of (.right-node this) x))))))
+
 (defn ^counted-iterator new-map-entry-iterator
   ([node x]
-   (->counted-iterator node (.index_of node x) (.-cnt node)))
+   (->counted-iterator node (index-of node x) (.-cnt node)))
   )
 
 (defn ^CountedSequence new-map-entry-seq
@@ -148,7 +148,7 @@
 
 (defn ^counted-reverse-iterator new-map-entry-reverse-iterator
   ([node x]
-   (->counted-reverse-iterator node (.index_of node x)))
+   (->counted-reverse-iterator node (index-of node x)))
   )
 
 (defn ^CountedSequence new-map-entry-reverse-seq

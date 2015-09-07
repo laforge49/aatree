@@ -16,7 +16,6 @@
   (predecessor-t2 [this])
   (successor-t2 [this])
   (decrease-level [this])
-  (^int index-of [this x])
   (nth-t2 [this ^int i]))
 
 (defn empty-node? [x]
