@@ -12,12 +12,6 @@
 (defn empty-node? [n]
   (or (nil? n) (zero? (.-level n))))
 
-(defn first-t2 [this]
-  (cond
-    (empty-node? this) nil
-    (empty-node? (.-left this)) (.-t2 this)
-    :else (recur (.-left this))))
-
 (defn last-t2 [this]
   (cond
     (empty-node? this) nil
