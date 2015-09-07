@@ -20,9 +20,6 @@
   (new-node [this t2 level left right cnt]
     (->MapNode t2 level left right cnt (.-comparator this) (empty-node this)))
 
-  (predecessor-t2 [this]
-    (last-t2 (left-node this)))
-
   (successor-t2 [this]
     (first-t2 (right-node this)))
 
@@ -145,7 +142,7 @@
                   (< c 0)
                   (revise this [:left (del (left-node this) x)])
                   :else
-                  (let [p (.predecessor-t2 this)]
+                  (let [p (predecessor-t2 this)]
                     (revise this [:t2 p :left (del (left-node this) (.getKey p))])))
               t (.decrease-level t)
               t (skew t)

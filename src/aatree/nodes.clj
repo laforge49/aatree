@@ -6,7 +6,6 @@
 
 (defprotocol INode
   (new-node [this t2 ^int level left right ^int cnt])
-  (predecessor-t2 [this])
   (successor-t2 [this])
   (decrease-level [this])
   (nth-t2 [this ^int i]))
@@ -80,6 +79,9 @@
              :left (revise this [:right (.-left (.-right this))])])
     :else
     this))
+
+(defn predecessor-t2 [this]
+  (last-t2 (left-node this)))
 
 (deftype counted-iterator
   [node
