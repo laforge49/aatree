@@ -22,11 +22,6 @@
       (empty-node this)
       right))
 
-  (left-node [this]
-    (if (empty-node? (.-left this))
-      (empty-node this)
-      (.-left this)))
-
   (new-node [this t2 level left right cnt]
     (->MapNode t2 level left right cnt (.-comparator this) (empty-node this)))
 
@@ -34,12 +29,12 @@
     (let [m (apply array-map args)
           t-2 (get m :t2 t2)
           lev (get m :level level)
-          l (get m :left (.left-node this))
+          l (get m :left (left-node this))
           r (get m :right (.right-node this))
           c (+ 1 (.count l) (.count r))]
       (if (and (identical? t-2 t2)
                (= lev level)
-               (identical? l (.left-node this))
+               (identical? l (left-node this))
                (identical? r (.right-node this)))
         this
         (.new-node this t-2 lev l r c))))
@@ -71,13 +66,13 @@
       this))
 
   (predecessor-t2 [this]
-    (last-t2 (.left-node this)))
+    (last-t2 (left-node this)))
 
   (successor-t2 [this]
     (first-t2 (.right-node this)))
 
   (decrease-level [this]
-    (let [should-be (+ 1 (min (.-level (.left-node this))
+    (let [should-be (+ 1 (min (.-level (left-node this))
                               (.-level (.right-node this))))]
       (if (>= should-be level)
         this
@@ -90,7 +85,7 @@
   (nth-t2 [this i]
     (if (empty-node? this)
       (throw (IndexOutOfBoundsException.))
-      (let [l (.left_node this)
+      (let [l (left-node this)
             p (.-cnt l)]
         (cond
           (< i p)
@@ -118,12 +113,12 @@
     (let [c (cmpr this x)]
       (cond
         (< c 0)
-        (index-of (.left-node this) x)
+        (index-of (left-node this) x)
         (= c 0)
-        (.-cnt (.left-node this))
+        (.-cnt (left-node this))
         :else
         (+ 1
-           (.-cnt (.left-node this))
+           (.-cnt (left-node this))
            (index-of (.right-node this) x))))))
 
 (defn ^counted-iterator new-map-entry-iterator
@@ -162,7 +157,7 @@
           (let [c (cmpr this (.getKey t-2))]
             (.split (.skew (cond
                              (< c 0)
-                             (let [oldl (.left-node this)
+                             (let [oldl (left-node this)
                                    l (insert oldl t-2)]
                                (.revise this [:left l]))
                              (> c 0)
@@ -181,7 +176,7 @@
             (cond
               (zero? c) (.-t2 this)
               (> c 0) (get-t2 (.right-node this) x)
-              :else (get-t2 (.left-node this) x)))))
+              :else (get-t2 (left-node this) x)))))
 
 (defn del [this x]
   (if (empty-node? this)
@@ -193,10 +188,10 @@
                   (> c 0)
                   (.revise this [:right (del (.right-node this) x)])
                   (< c 0)
-                  (.revise this [:left (del (.left-node this) x)])
+                  (.revise this [:left (del (left-node this) x)])
                   :else
                   (let [p (.predecessor-t2 this)]
-                    (.revise this [:t2 p :left (del (.left-node this) (.getKey p))])))
+                    (.revise this [:t2 p :left (del (left-node this) (.getKey p))])))
               t (.decrease-level t)
               t (.skew t)
               t (.revise t [:right (.skew (.right-node t))])

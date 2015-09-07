@@ -6,7 +6,6 @@
 
 (defprotocol INode
   (right-node [this])
-  (left-node [this])
   (new-node [this t2 ^int level left right ^int cnt])
   (revise [this args])
   (skew [this])
@@ -32,9 +31,14 @@
     :else (recur (.-right this))))
 
 (defn empty-node [this]
-      (if (empty-node? this)
-        this
-        (.-nada this)))
+  (if (empty-node? this)
+    this
+    (.-nada this)))
+
+(defn left-node [this]
+  (if (empty-node? (.-left this))
+    (empty-node this)
+    (.-left this)))
 
 (deftype counted-iterator
   [node
