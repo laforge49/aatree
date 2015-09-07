@@ -101,30 +101,6 @@
   (successor-t2 [this]
     (first-t2 (.right-node this)))
 
-  (next-t2 [this x]
-    (if (empty-node? this)
-      nil
-      (let [c (.cmpr this x)]
-        (cond
-          (zero? c) (.successor-t2 this)
-          (> c 0) (.next-t2 (.right-node this) x)
-          :else (let [t-2 (.next-t2 (.left-node this) x)]
-                  (if (nil? t-2)
-                    t2
-                    t-2))))))
-
-  (prior-t2 [this x]
-    (if (empty-node? this)
-      nil
-      (let [c (.cmpr this x)]
-        (cond
-          (zero? c) (.predecessor-t2 this)
-          (< c 0) (.prior-t2 (.left-node this) x)
-          :else (let [t-2 (.prior-t2 (.right-node this) x)]
-                  (if (nil? t-2)
-                    t2
-                    t-2))))))
-
   (decrease-level [this]
     (let [should-be (+ 1 (min (.-level (.left-node this))
                               (.-level (.right-node this))))]

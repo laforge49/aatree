@@ -17,8 +17,6 @@
   (insert [this ^IMapEntry t-2])
   (^IMapEntry predecessor-t2 [this])
   (^IMapEntry successor-t2 [this])
-  (^IMapEntry next-t2 [this x])
-  (^IMapEntry prior-t2 [this x])
   (decrease-level [this])
   (^int index-of [this x])
   (^MapEntry nth-t2 [this ^int i]))
