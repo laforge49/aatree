@@ -5,7 +5,6 @@
 
 
 (defprotocol INode
-  (emty [this])
   (right-node [this])
   (left-node [this])
   (new-node [this t2 ^int level left right ^int cnt])
@@ -17,8 +16,8 @@
   (decrease-level [this])
   (nth-t2 [this ^int i]))
 
-(defn empty-node? [x]
-  (or (nil? x) (zero? (.-level x))))
+(defn empty-node? [n]
+  (or (nil? n) (zero? (.-level n))))
 
 (defn first-t2 [this]
   (cond
@@ -31,6 +30,11 @@
     (empty-node? this) nil
     (empty-node? (.-right this)) (.-t2 this)
     :else (recur (.-right this))))
+
+(defn empty-node [this]
+      (if (empty-node? this)
+        this
+        (.-nada this)))
 
 (deftype counted-iterator
   [node

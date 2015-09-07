@@ -95,7 +95,7 @@
     (new-map-entry-reverse-seq (.-node (.-state this)) key)))
 
 (defn -empty [this]
-  (new AAMap (.-meta (.-state this)) nil (.emty (.-node (.-state this)))))
+  (new AAMap (.-meta (.-state this)) nil (empty-node (.-node (.-state this)))))
 
 (defn -count [this]
   (.-cnt (.-node (.-state this))))

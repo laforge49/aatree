@@ -17,23 +17,18 @@
 
   INode
 
-  (emty [this]
-    (if (empty-node? this)
-      this
-      nada))
-
   (right-node [this]
     (if (empty-node? right)
-      (.emty this)
+      (empty-node this)
       right))
 
   (left-node [this]
     (if (empty-node? (.-left this))
-      (.emty this)
+      (empty-node this)
       (.-left this)))
 
   (new-node [this t2 level left right cnt]
-    (->MapNode t2 level left right cnt (.-comparator this) (.emty this)))
+    (->MapNode t2 level left right cnt (.-comparator this) (empty-node this)))
 
   (revise [this args]
     (let [m (apply array-map args)
