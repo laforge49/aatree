@@ -1,5 +1,5 @@
 (ns aatree.nodes
-(:import (clojure.lang Counted IMapEntry RT MapEntry Indexed)
+(:import (clojure.lang Counted RT Indexed)
          (java.util Iterator Comparator)
          (aatree CountedSequence)))
 
@@ -9,15 +9,15 @@
   (^int cmpr [this x])
   (right-node [this])
   (left-node [this])
-  (new-node [this ^IMapEntry t2 ^int level left right ^int cnt])
+  (new-node [this t2 ^int level left right ^int cnt])
   (revise [this args])
   (skew [this])
   (split [this])
-  (^IMapEntry predecessor-t2 [this])
-  (^IMapEntry successor-t2 [this])
+  (predecessor-t2 [this])
+  (successor-t2 [this])
   (decrease-level [this])
   (^int index-of [this x])
-  (^MapEntry nth-t2 [this ^int i]))
+  (nth-t2 [this ^int i]))
 
 (defn empty-node? [x]
   (or (nil? x) (zero? (.-level x))))
@@ -28,7 +28,7 @@
     (empty-node? (.-left this)) (.-t2 this)
     :else (recur (.-left this))))
 
-(defn ^IMapEntry last-t2 [this]
+(defn last-t2 [this]
   (cond
     (empty-node? this) nil
     (empty-node? (.-right this)) (.-t2 this)
