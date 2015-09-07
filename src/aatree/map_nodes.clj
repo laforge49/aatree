@@ -22,9 +22,6 @@
       this
       nada))
 
-  (cmpr [this x]
-    (.compare comparator x (.getKey t2)))
-
   (right-node [this]
     (if (empty-node? right)
       (.emty this)
@@ -117,10 +114,13 @@
 
 (defn value-of [^IMapEntry e] (.getValue e))
 
+(defn cmpr [this x]
+      (.compare (.-comparator this) x (.getKey (.-t2 this))))
+
 (defn index-of [this x]
   (if (empty-node? this)
     0
-    (let [c (.cmpr this x)]
+    (let [c (cmpr this x)]
       (cond
         (< c 0)
         (index-of (.left-node this) x)
@@ -164,7 +164,7 @@
 (defn insert [this t-2]
         (if (empty-node? this)
           (.new-node this t-2 1 nil nil 1)
-          (let [c (.cmpr this (.getKey t-2))]
+          (let [c (cmpr this (.getKey t-2))]
             (.split (.skew (cond
                              (< c 0)
                              (let [oldl (.left-node this)
@@ -182,7 +182,7 @@
 (defn get-t2 [this x]
         (if (empty-node? this)
           nil
-          (let [c (.cmpr this x)]
+          (let [c (cmpr this x)]
             (cond
               (zero? c) (.-t2 this)
               (> c 0) (get-t2 (.right-node this) x)
@@ -191,7 +191,7 @@
 (defn del [this x]
   (if (empty-node? this)
     this
-    (let [c (.cmpr this x)]
+    (let [c (cmpr this x)]
       (if (and (= c 0) (= 1 (.-level this)))
         (.right-node this)
         (let [t (cond

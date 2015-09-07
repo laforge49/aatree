@@ -6,7 +6,6 @@
 
 (defprotocol IMapNode
   (emty [this])
-  (^int cmpr [this x])
   (right-node [this])
   (left-node [this])
   (new-node [this t2 ^int level left right ^int cnt])
