@@ -54,7 +54,7 @@
 
 (defn -assoc [this key val]
   (let [n0 (.-node (.-state this))
-        n1 (.insert n0 (new MapEntry key val))]
+        n1 (insert n0 (new MapEntry key val))]
     (if (identical? n0 n1)
       this
       (new AAMap (.-meta (.-state this)) nil n1))))
@@ -63,7 +63,7 @@
   (let [n0 (.-node (.-state this))]
     (if (-containsKey this key)
       this
-      (new AAMap (.-meta (.-state this)) nil (.insert n0 (new MapEntry key val))))))
+      (new AAMap (.-meta (.-state this)) nil (insert n0 (new MapEntry key val))))))
 
 (defn -without [this key]
   (let [n0 (.-node (.-state this))

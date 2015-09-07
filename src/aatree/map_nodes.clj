@@ -79,22 +79,6 @@
       :else
       this))
 
-  (insert [this t-2]
-    (if (empty-node? this)
-      (.new-node this t-2 1 nil nil 1)
-      (let [c (.cmpr this (.getKey t-2))]
-        (.split (.skew (cond
-                         (< c 0)
-                         (let [oldl (.left-node this)
-                               l (.insert oldl t-2)]
-                           (.revise this [:left l]))
-                         (> c 0)
-                         (let [oldr (.right-node this)
-                               r (.insert oldr t-2)]
-                           (.revise this [:right r]))
-                         :else
-                         (.revise this [:t2 (new MapEntry (.getKey t2) (.getValue t-2))])))))))
-
   (predecessor-t2 [this]
     (last-t2 (.left-node this)))
 
@@ -177,6 +161,22 @@
 
 (defn ^CountedSequence new-map-value-reverse-seq [node]
   (CountedSequence/create (new-counted-reverse-iterator node) value-of))
+
+(defn insert [this t-2]
+        (if (empty-node? this)
+          (.new-node this t-2 1 nil nil 1)
+          (let [c (.cmpr this (.getKey t-2))]
+            (.split (.skew (cond
+                             (< c 0)
+                             (let [oldl (.left-node this)
+                                   l (insert oldl t-2)]
+                               (.revise this [:left l]))
+                             (> c 0)
+                             (let [oldr (.right-node this)
+                                   r (insert oldr t-2)]
+                               (.revise this [:right r]))
+                             :else
+                             (.revise this [:t2 (new MapEntry (.getKey (.-t2 this)) (.getValue t-2))])))))))
 
 (defn get-t2 [this x]
         (if (empty-node? this)

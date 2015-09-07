@@ -1,6 +1,5 @@
 (ns aatree.nodes
-(:import (clojure.lang IMapEntry)
-         (clojure.lang Counted IMapEntry RT MapEntry Indexed)
+(:import (clojure.lang Counted IMapEntry RT MapEntry Indexed)
          (java.util Iterator Comparator)
          (aatree CountedSequence)))
 
@@ -14,7 +13,6 @@
   (revise [this args])
   (skew [this])
   (split [this])
-  (insert [this ^IMapEntry t-2])
   (^IMapEntry predecessor-t2 [this])
   (^IMapEntry successor-t2 [this])
   (decrease-level [this])
