@@ -13,7 +13,7 @@
                    []
                    [clojure.lang.IPersistentMap java.util.Comparator]
                    []
-                   [clojure.lang.IPersistentMap java.lang.Object aatree.nodes.IMapNode]
+                   [clojure.lang.IPersistentMap java.lang.Object aatree.nodes.INode]
                    []}
     :init init
     :state state)

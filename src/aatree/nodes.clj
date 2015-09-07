@@ -4,7 +4,7 @@
          (aatree CountedSequence)))
 
 
-(defprotocol IMapNode
+(defprotocol INode
   (emty [this])
   (right-node [this])
   (left-node [this])

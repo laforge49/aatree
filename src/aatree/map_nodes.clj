@@ -15,7 +15,7 @@
       0
       cnt))
 
-  IMapNode
+  INode
 
   (emty [this]
     (if (empty-node? this)
