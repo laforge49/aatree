@@ -45,8 +45,7 @@
           l (get m :left (.left-node this))
           r (get m :right (.right-node this))
           c (+ 1 (.count l) (.count r))]
-      (if (and (= (.getKey t-2) (.getKey t2))
-               (identical? (.getValue t-2) (.getValue t2))
+      (if (and (identical? t-2 t2)
                (= lev level)
                (identical? l (.left-node this))
                (identical? r (.right-node this)))
@@ -176,7 +175,9 @@
                                    r (insert oldr t-2)]
                                (.revise this [:right r]))
                              :else
-                             (.revise this [:t2 (new MapEntry (.getKey (.-t2 this)) (.getValue t-2))])))))))
+                             (if (identical? (.getValue t-2)(.getValue (.t2 this)))
+                               this
+                               (.revise this [:t2 (new MapEntry (.getKey (.-t2 this)) (.getValue t-2))]))))))))
 
 (defn get-t2 [this x]
         (if (empty-node? this)
