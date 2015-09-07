@@ -20,9 +20,6 @@
   (new-node [this t2 level left right cnt]
     (->MapNode t2 level left right cnt (.-comparator this) (empty-node this)))
 
-  (successor-t2 [this]
-    (first-t2 (right-node this)))
-
   (decrease-level [this]
     (let [should-be (+ 1 (min (.-level (left-node this))
                               (.-level (right-node this))))]

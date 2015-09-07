@@ -6,7 +6,6 @@
 
 (defprotocol INode
   (new-node [this t2 ^int level left right ^int cnt])
-  (successor-t2 [this])
   (decrease-level [this])
   (nth-t2 [this ^int i]))
 
