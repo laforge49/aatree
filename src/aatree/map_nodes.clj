@@ -8,13 +8,6 @@
 
 (deftype MapNode [^IMapEntry t2 ^int level left right ^int cnt ^Comparator comparator nada]
 
-  Counted
-
-  (count [this]
-    (if (empty-node? this)
-      0
-      cnt))
-
   INode
 
   (new-node [this t2 level left right cnt]

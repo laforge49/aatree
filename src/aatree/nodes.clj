@@ -31,13 +31,18 @@
     (empty-node this)
     (.-right this)))
 
+(defn node-count [this]
+  (if (empty-node? this)
+    0
+    (.-cnt this)))
+
 (defn revise [this args]
   (let [m (apply array-map args)
         t-2 (get m :t2 (.-t2 this))
         lev (get m :level (.-level this))
         l (get m :left (left-node this))
         r (get m :right (right-node this))
-        c (+ 1 (.count l) (.count r))]
+        c (+ 1 (node-count l) (node-count r))]
     (if (and (identical? t-2 (.-t2 this))
              (= lev (.-level this))
              (identical? l (left-node this))
