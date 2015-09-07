@@ -125,15 +125,6 @@
                     t2
                     t-2))))))
 
-  (get-t2 [this x]
-    (if (empty-node? this)
-      nil
-      (let [c (.cmpr this x)]
-        (cond
-          (zero? c) t2
-          (> c 0) (.get-t2 (.right-node this) x)
-          :else (.get-t2 (.left-node this) x)))))
-
   (decrease-level [this]
     (let [should-be (+ 1 (min (.-level (.left-node this))
                               (.-level (.right-node this))))]
@@ -210,6 +201,15 @@
 
 (defn ^CountedSequence new-map-value-reverse-seq [node]
   (CountedSequence/create (new-counted-reverse-iterator node) value-of))
+
+(defn get-t2 [this x]
+        (if (empty-node? this)
+          nil
+          (let [c (.cmpr this x)]
+            (cond
+              (zero? c) (.-t2 this)
+              (> c 0) (get-t2 (.right-node this) x)
+              :else (get-t2 (.left-node this) x)))))
 
 (defn del [this x]
   (if (empty-node? this)

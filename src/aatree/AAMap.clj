@@ -39,7 +39,7 @@
 
 (defn -withMeta [this meta] (new AAMap meta nil (.-node (.-state this))))
 
-(defn -entryAt [this key] (.get-t2 (.-node (.-state this)) key))
+(defn -entryAt [this key] (get-t2 (.-node (.-state this)) key))
 
 (defn -containsKey [this key] (boolean (-entryAt this key)))
 
