@@ -5,7 +5,6 @@
 
 
 (defprotocol INode
-  (right-node [this])
   (new-node [this t2 ^int level left right ^int cnt])
   (revise [this args])
   (skew [this])
@@ -39,6 +38,11 @@
   (if (empty-node? (.-left this))
     (empty-node this)
     (.-left this)))
+
+(defn right-node [this]
+  (if (empty-node? (.-right this))
+    (empty-node this)
+    (.-right this)))
 
 (deftype counted-iterator
   [node
