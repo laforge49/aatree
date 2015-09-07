@@ -21,7 +21,6 @@
   (^IMapEntry prior-t2 [this x])
   (^IMapEntry get-t2 [this x])
   (decrease-level [this])
-  (delete [this x])
   (^int index-of [this x])
   (^MapEntry nth-t2 [this ^int i]))
 

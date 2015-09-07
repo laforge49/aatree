@@ -145,31 +145,6 @@
                    (.revise rn [:level should-be]))]
           (.revise this [:right rn :level should-be])))))
 
-  (delete [this x]
-    (if (empty-node? this)
-      this
-      (let [c (.cmpr this x)]
-        (if (and (= c 0) (= 1 level))
-          (.right-node this)
-          (let [t (cond
-                    (> c 0)
-                    (.revise this [:right (.delete (.right-node this) x)])
-                    (< c 0)
-                    (.revise this [:left (.delete (.left-node this) x)])
-                    :else
-                    (let [p (.predecessor-t2 this)]
-                      (.revise this [:t2 p :left (.delete (.left-node this) (.getKey p))])))
-                t (.decrease-level t)
-                t (.skew t)
-                t (.revise t [:right (.skew (.right-node t))])
-                r (.right-node t)
-                t (if (empty-node? r)
-                    t
-                    (.revise t [:right (.revise r [:right (.skew (.right-node r))])]))
-                t (.split t)
-                t (.revise t [:right (.split (.right-node t))])]
-            t)))))
-
   (index-of [this x]
     (if (empty-node? this)
       0
@@ -235,3 +210,28 @@
 
 (defn ^CountedSequence new-map-value-reverse-seq [node]
   (CountedSequence/create (new-counted-reverse-iterator node) value-of))
+
+(defn del [this x]
+  (if (empty-node? this)
+    this
+    (let [c (.cmpr this x)]
+      (if (and (= c 0) (= 1 (.-level this)))
+        (.right-node this)
+        (let [t (cond
+                  (> c 0)
+                  (.revise this [:right (del (.right-node this) x)])
+                  (< c 0)
+                  (.revise this [:left (del (.left-node this) x)])
+                  :else
+                  (let [p (.predecessor-t2 this)]
+                    (.revise this [:t2 p :left (del (.left-node this) (.getKey p))])))
+              t (.decrease-level t)
+              t (.skew t)
+              t (.revise t [:right (.skew (.right-node t))])
+              r (.right-node t)
+              t (if (empty-node? r)
+                  t
+                  (.revise t [:right (.revise r [:right (.skew (.right-node r))])]))
+              t (.split t)
+              t (.revise t [:right (.split (.right-node t))])]
+          t)))))

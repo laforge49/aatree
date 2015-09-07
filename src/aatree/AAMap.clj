@@ -67,7 +67,7 @@
 
 (defn -without [this key]
   (let [n0 (.-node (.-state this))
-        n1 (.delete n0 key)]
+        n1 (del n0 key)]
     (if (identical? n0 n1)
       this
       (new AAMap (.-meta (.-state this)) nil n1))))
