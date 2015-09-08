@@ -2,7 +2,8 @@
   (:require [aatree.nodes :refer :all])
   (:import (java.util Comparator)
            (clojure.lang RT IMapEntry Counted MapEntry)
-           (aatree nodes.counted-iterator nodes.counted-reverse-iterator CountedSequence)))
+           (aatree nodes.counted-iterator nodes.counted-reverse-iterator CountedSequence)
+           (aatree.nodes INode)))
 
 (declare ->MapNode)
 
@@ -10,7 +11,7 @@
 
   INode
 
-  (new-node [this t2 level left right cnt]
+  (newNode [this t2 level left right cnt]
     (->MapNode t2 level left right cnt comparator (empty-node this)))
   )
 
@@ -71,7 +72,7 @@
 
 (defn insert [^MapNode this t-2]
         (if (empty-node? this)
-          (.new-node this t-2 1 nil nil 1)
+          (.newNode this t-2 1 nil nil 1)
           (let [c (cmpr this (.getKey t-2))]
             (split (skew (cond
                              (< c 0)

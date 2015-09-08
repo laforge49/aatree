@@ -1,7 +1,8 @@
 (ns aatree.vector-nodes
   (:require [aatree.nodes :refer :all])
   (:import (clojure.lang RT Counted)
-           (aatree nodes.counted-iterator nodes.counted-reverse-iterator CountedSequence)))
+           (aatree nodes.counted-iterator nodes.counted-reverse-iterator CountedSequence)
+           (aatree.nodes INode)))
 
 (declare ->VectorNode)
 
@@ -9,7 +10,7 @@
 
   INode
 
-  (new-node [this t2 level left right cnt]
+  (newNode [this t2 level left right cnt]
     (->VectorNode t2 level left right cnt (empty-node this)))
   )
 
@@ -36,7 +37,7 @@
 
 (defn node-add [^VectorNode n v i]
   (if (empty-node? n)
-    (.new-node n v 1 nil nil 1)
+    (.newNode n v 1 nil nil 1)
     (let [l (left-node n)
           p (:cnt l)]
       (split

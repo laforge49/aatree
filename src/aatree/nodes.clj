@@ -4,8 +4,8 @@
            (aatree CountedSequence)))
 
 
-(defprotocol INode
-  (new-node [this t2 ^int level left right ^int cnt]))
+(definterface INode
+  (newNode [t2 ^int level left right ^int cnt]))
 
 (defn empty-node? [n]
   (or (nil? n) (zero? (:level n))))
@@ -36,7 +36,7 @@
     0
     (:cnt this)))
 
-(defn revise [this args]
+(defn revise [^INode this args]
   (let [m (apply array-map args)
         t-2 (get m :t2 (:t2 this))
         lev (get m :level (:level this))
@@ -48,7 +48,7 @@
              (identical? l (left-node this))
              (identical? r (right-node this)))
       this
-      (.new-node this t-2 lev l r c))))
+      (.newNode this t-2 lev l r c))))
 
 (defn skew
   [this]
@@ -181,7 +181,7 @@
 (defn snodev [this]
   (if (empty-node? this)
     ""
-    (str (snodev (:left this)) " <" (:t2 this) " " (.level this) "> " (snodev (:right this)))))
+    (str (snodev (:left this)) " <" (:t2 this) " " (:level this) "> " (snodev (:right this)))))
 
 (defn pnodev [this dsc]
   (println dsc (snodev this)))
