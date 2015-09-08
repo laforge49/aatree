@@ -103,6 +103,32 @@
         :else
         (:t2 this)))))
 
+(defn deln [this i]
+  (if (empty-node? this)
+    this
+    (let [l (left-node this)
+          p (:cnt l)]
+      (if (and (= i p) (= 1 (:level this)))
+        (right-node this)
+        (let [t (cond
+                  (> i p)
+                  (revise this [:right (deln (right-node this) (- i p 1))])
+                  (< i p)
+                  (revise this [:left (deln (left-node this) i)])
+                  :else
+                  (let [pre (predecessor-t2 this)]
+                    (revise this [:t2 pre :left (deln (left-node this) (- i 1))])))
+              t (decrease-level t)
+              t (skew t)
+              t (revise t [:right (skew (right-node t))])
+              r (right-node t)
+              t (if (empty-node? r)
+                  t
+                  (revise t [:right (revise r [:right (skew (right-node r))])]))
+              t (split t)
+              t (revise t [:right (split (right-node t))])]
+          t)))))
+
 (deftype counted-iterator
   [node
    ^{:volatile-mutable true int true} ndx
