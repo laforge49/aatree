@@ -1,7 +1,7 @@
 (ns aatree.nodes
-(:import (clojure.lang Counted RT Indexed)
-         (java.util Iterator Comparator)
-         (aatree CountedSequence)))
+  (:import (clojure.lang Counted RT Indexed)
+           (java.util Iterator Comparator)
+           (aatree CountedSequence)))
 
 
 (defprotocol INode
