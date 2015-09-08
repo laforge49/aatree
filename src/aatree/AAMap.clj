@@ -98,10 +98,10 @@
   (new AAMap (.-meta (.-state this)) nil (empty-node (.-node (.-state this)))))
 
 (defn -count [this]
-  (.-cnt (.-node (.-state this))))
+  (:cnt (.-node (.-state this))))
 
 (defn -comparator [this]
-  (.-comparator (.-node (.-state this))))
+  (:comparator (.-node (.-state this))))
 
 (defn -entryKey [this entry]
   (.getKey entry))
