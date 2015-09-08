@@ -33,3 +33,14 @@
 (defn ^CountedSequence new-vector-reverse-seq
   ([node i]
    (CountedSequence/create (new-vector-reverse-iterator node i) identity)))
+
+(defn node-add [^VectorNode n v i]
+  (if (empty-node? n)
+    (.new-node n v 1 nil nil 1)
+    (let [l (left-node n)
+          p (:cnt l)]
+      (split
+        (skew
+          (if (<= i p)
+            (revise n [:left (node-add l v i)])
+            (revise n [:right (node-add (right-node n) v (- i p 1))])))))))
