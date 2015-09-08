@@ -8,43 +8,43 @@
   (new-node [this t2 ^int level left right ^int cnt]))
 
 (defn empty-node? [n]
-  (or (nil? n) (zero? (.-level n))))
+  (or (nil? n) (zero? (:level n))))
 
 (defn last-t2 [this]
   (cond
     (empty-node? this) nil
-    (empty-node? (.-right this)) (.-t2 this)
-    :else (recur (.-right this))))
+    (empty-node? (:right this)) (:t2 this)
+    :else (recur (:right this))))
 
 (defn empty-node [this]
   (if (empty-node? this)
     this
-    (.-nada this)))
+    (:nada this)))
 
 (defn left-node [this]
-  (if (empty-node? (.-left this))
+  (if (empty-node? (:left this))
     (empty-node this)
-    (.-left this)))
+    (:left this)))
 
 (defn right-node [this]
-  (if (empty-node? (.-right this))
+  (if (empty-node? (:right this))
     (empty-node this)
-    (.-right this)))
+    (:right this)))
 
 (defn node-count [this]
   (if (empty-node? this)
     0
-    (.-cnt this)))
+    (:cnt this)))
 
 (defn revise [this args]
   (let [m (apply array-map args)
-        t-2 (get m :t2 (.-t2 this))
-        lev (get m :level (.-level this))
+        t-2 (get m :t2 (:t2 this))
+        lev (get m :level (:level this))
         l (get m :left (left-node this))
         r (get m :right (right-node this))
         c (+ 1 (node-count l) (node-count r))]
-    (if (and (identical? t-2 (.-t2 this))
-             (= lev (.-level this))
+    (if (and (identical? t-2 (:t2 this))
+             (= lev (:level this))
              (identical? l (left-node this))
              (identical? r (right-node this)))
       this
@@ -55,10 +55,10 @@
   (cond
     (empty-node? this)
     this
-    (empty-node? (.-left this))
+    (empty-node? (:left this))
     this
-    (= (.-level (.-left this)) (.-level this))
-    (let [l (.-left this)]
+    (= (:level (:left this)) (:level this))
+    (let [l (:left this)]
       (revise l [:right (revise this [:left (right-node l)])]))
     :else
     this))
@@ -67,12 +67,12 @@
   (cond
     (empty-node? this)
     this
-    (or (empty-node? (.-right this)) (empty-node? (.-right (.-right this))))
+    (or (empty-node? (:right this)) (empty-node? (:right (:right this))))
     this
-    (= (.-level this) (.-level (.-right (.-right this))))
-    (revise (.-right this)
-            [:level (+ 1 (.-level (.-right this)))
-             :left (revise this [:right (.-left (.-right this))])])
+    (= (:level this) (:level (:right (:right this))))
+    (revise (:right this)
+            [:level (+ 1 (:level (:right this)))
+             :left (revise this [:right (:left (:right this))])])
     :else
     this))
 
@@ -80,12 +80,12 @@
   (last-t2 (left-node this)))
 
 (defn decrease-level [this]
-  (let [should-be (+ 1 (min (.-level (left-node this))
-                            (.-level (right-node this))))]
-    (if (>= should-be (.-level this))
+  (let [should-be (+ 1 (min (:level (left-node this))
+                            (:level (right-node this))))]
+    (if (>= should-be (:level this))
       this
       (let [rn (right-node this)
-            rn (if (>= should-be (.-level (right-node this)))
+            rn (if (>= should-be (:level (right-node this)))
                  rn
                  (revise rn [:level should-be]))]
         (revise this [:right rn :level should-be])))))
@@ -94,14 +94,14 @@
   (if (empty-node? this)
     (throw (IndexOutOfBoundsException.))
     (let [l (left-node this)
-          p (.-cnt l)]
+          p (:cnt l)]
       (cond
         (< i p)
         (nth-t2 l i)
         (> i p)
         (nth-t2 (right-node this) (- i p 1))
         :else
-        (.-t2 this)))))
+        (:t2 this)))))
 
 (deftype counted-iterator
   [node
@@ -121,7 +121,7 @@
 
 (defn ^counted-iterator new-counted-iterator
   ([node]
-   (->counted-iterator node 0 (.-cnt node)))
+   (->counted-iterator node 0 (:cnt node)))
   )
 
 (defn ^CountedSequence new-counted-seq
@@ -145,7 +145,7 @@
 
 (defn ^counted-reverse-iterator new-counted-reverse-iterator
   ([node]
-   (->counted-reverse-iterator node (- (.-cnt node) 1)))
+   (->counted-reverse-iterator node (- (:cnt node) 1)))
   )
 
 (defn ^CountedSequence new-counted-reverse-seq
@@ -155,7 +155,7 @@
 (defn snodev [this]
   (if (empty-node? this)
     ""
-    (str (snodev (.-left this)) " <" (.-t2 this) " " (.level this) "> " (snodev (.-right this)))))
+    (str (snodev (:left this)) " <" (:t2 this) " " (.level this) "> " (snodev (:right this)))))
 
 (defn pnodev [this dsc]
   (println dsc (snodev this)))

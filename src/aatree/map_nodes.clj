@@ -11,7 +11,7 @@
   INode
 
   (new-node [this t2 level left right cnt]
-    (->MapNode t2 level left right cnt (.-comparator this) (empty-node this)))
+    (->MapNode t2 level left right cnt comparator (empty-node this)))
   )
 
 (defn create-empty-map-node
@@ -23,7 +23,7 @@
 (defn value-of [^IMapEntry e] (.getValue e))
 
 (defn cmpr [this x]
-      (.compare (.-comparator this) x (.getKey (.-t2 this))))
+      (.compare (:comparator this) x (.getKey (:t2 this))))
 
 (defn index-of [this x]
   (if (empty-node? this)
@@ -33,15 +33,15 @@
         (< c 0)
         (index-of (left-node this) x)
         (= c 0)
-        (.-cnt (left-node this))
+        (:cnt (left-node this))
         :else
         (+ 1
-           (.-cnt (left-node this))
+           (:cnt (left-node this))
            (index-of (right-node this) x))))))
 
 (defn ^counted-iterator new-map-entry-iterator
   ([node x]
-   (->counted-iterator node (index-of node x) (.-cnt node)))
+   (->counted-iterator node (index-of node x) (:cnt node)))
   )
 
 (defn ^CountedSequence new-map-entry-seq
@@ -83,16 +83,16 @@
                                    r (insert oldr t-2)]
                                (revise this [:right r]))
                              :else
-                             (if (identical? (.getValue t-2)(.getValue (.t2 this)))
+                             (if (identical? (.getValue t-2)(.getValue (:t2 this)))
                                this
-                               (revise this [:t2 (new MapEntry (.getKey (.-t2 this)) (.getValue t-2))]))))))))
+                               (revise this [:t2 (new MapEntry (.getKey (:t2 this)) (.getValue t-2))]))))))))
 
 (defn get-t2 [this x]
         (if (empty-node? this)
           nil
           (let [c (cmpr this x)]
             (cond
-              (zero? c) (.-t2 this)
+              (zero? c) (:t2 this)
               (> c 0) (get-t2 (right-node this) x)
               :else (get-t2 (left-node this) x)))))
 
@@ -100,7 +100,7 @@
   (if (empty-node? this)
     this
     (let [c (cmpr this x)]
-      (if (and (= c 0) (= 1 (.-level this)))
+      (if (and (= c 0) (= 1 (:level this)))
         (right-node this)
         (let [t (cond
                   (> c 0)
