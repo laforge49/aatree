@@ -3,6 +3,7 @@
            (java.util Iterator Comparator)
            (aatree CountedSequence)))
 
+(set! *warn-on-reflection* true)
 
 (definterface INode
   (newNode [t2 ^int level left right ^int cnt]))

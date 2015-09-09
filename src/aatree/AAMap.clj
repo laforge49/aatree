@@ -22,6 +22,7 @@
   (:import (aatree AAMap)
            (clojure.lang MapEntry)))
 
+(set! *warn-on-reflection* true)
 
 (defrecord map-state [node meta])
 

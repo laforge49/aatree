@@ -14,6 +14,8 @@
            (clojure.lang Counted)
            (aatree CountedSequence)))
 
+(set! *warn-on-reflection* true)
+
 (defn -create [^Iterator iter styp]
   (if (.hasNext iter)
     (new aatree.CountedSequence iter styp)

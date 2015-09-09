@@ -4,6 +4,8 @@
            (aatree nodes.counted-iterator nodes.counted-reverse-iterator CountedSequence)
            (aatree.nodes INode)))
 
+(set! *warn-on-reflection* true)
+
 (declare ->VectorNode)
 
 (defrecord VectorNode [t2 ^int level left right ^int cnt nada]

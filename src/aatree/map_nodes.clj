@@ -5,6 +5,8 @@
            (aatree nodes.counted-iterator nodes.counted-reverse-iterator CountedSequence)
            (aatree.nodes INode)))
 
+(set! *warn-on-reflection* true)
+
 (declare ->MapNode)
 
 (defrecord MapNode [^IMapEntry t2 ^int level left right ^int cnt ^Comparator comparator nada]
