@@ -19,12 +19,16 @@
   ([] (create-empty-map-node RT/DEFAULT_COMPARATOR))
   ([^Comparator comparator] (->MapNode nil 0 nil nil 0 comparator nil)))
 
+(defn ^MapEntry get-entry [this] (:t2 this))
+
+(defn ^Comparator get-comparator [this] (:comparator this))
+
 (defn key-of [^IMapEntry e] (.getKey e))
 
 (defn value-of [^IMapEntry e] (.getValue e))
 
 (defn cmpr [this x]
-      (.compare (:comparator this) x (.getKey (:t2 this))))
+      (.compare (get-comparator this) x (.getKey (get-entry this))))
 
 (defn index-of [this x]
   (if (empty-node? this)
@@ -70,7 +74,7 @@
 (defn ^CountedSequence new-map-value-reverse-seq [node]
   (CountedSequence/create (new-counted-reverse-iterator node) value-of))
 
-(defn insert [^MapNode this t-2]
+(defn insert [^MapNode this ^MapEntry t-2]
         (if (empty-node? this)
           (.newNode this t-2 1 nil nil 1)
           (let [c (cmpr this (.getKey t-2))]
@@ -84,9 +88,9 @@
                                    r (insert oldr t-2)]
                                (revise this [:right r]))
                              :else
-                             (if (identical? (.getValue t-2)(.getValue (:t2 this)))
+                             (if (identical? (.getValue t-2)(.getValue (get-entry this)))
                                this
-                               (revise this [:t2 (new MapEntry (.getKey (:t2 this)) (.getValue t-2))]))))))))
+                               (revise this [:t2 (new MapEntry (.getKey (get-entry this)) (.getValue t-2))]))))))))
 
 (defn get-t2 [this x]
         (if (empty-node? this)
@@ -109,7 +113,7 @@
                   (< c 0)
                   (revise this [:left (del (left-node this) x)])
                   :else
-                  (let [p (predecessor-t2 this)]
+                  (let [^MapEntry p (predecessor-t2 this)]
                     (revise this [:t2 p :left (del (left-node this) (.getKey p))])))
               t (decrease-level t)
               t (skew t)
