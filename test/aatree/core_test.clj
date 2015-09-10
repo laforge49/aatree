@@ -67,3 +67,13 @@
 (println (nth x123 1 nil))
 (println (nth x123 2 nil))
 (println (nth x123 3 nil))
+
+(println)
+(def y (create-vector))
+(println (count y))
+(def y1 (conj y 1001))
+(println (count y1))
+(def y12 (assoc y1 1 1002))
+(println (count y12))
+(def y012 (assoc y12 0 1000))
+(println (count y012))
