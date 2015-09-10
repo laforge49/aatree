@@ -78,6 +78,9 @@
 (def y012 (assoc y12 0 1000))
 (println (count y012))
 (println y012)
+(println (pop y012))
+(println (pop (pop y012)))
+(println (pop (pop (pop y012))))
 
 (deftest vec-tests
   (assert-vector-like 100 (create-aavector) gen-element))

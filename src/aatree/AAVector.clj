@@ -54,7 +54,7 @@
       (-cons this val)
       (and (>= i 0) (< i c))
       (let [n0 (:node (.-state this))
-            n1 (node-add (:node (.-state this)) val i)]
+            n1 (node-add n0 val i)]
         (new AAVector (:meta (.-state this)) n1))
       :else
       (throw (IndexOutOfBoundsException.)))))
@@ -68,3 +68,10 @@
 (defn -seq
   [^AAVector this]
    (new-counted-seq (:node (.-state this))))
+
+(defn -pop [^AAVector this]
+  (if (empty? this)
+    this
+    (let [n0 (:node (.-state this))
+          n1 (deln n0 (- (-count this) 1))]
+      (new AAVector (:meta (.-state this)) n1))))
