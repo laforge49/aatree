@@ -45,10 +45,7 @@
 (defn -cons [^AAVector this val]
   (let [n0 (:node (.-state this))
         n1 (node-add n0 val (-count this))]
-    (if (identical? n0 n1)
-      this
-      (new AAVector (:meta (.-state this)) n1))
-  ))
+    (new AAVector (:meta (.-state this)) n1)))
 
 (defn -assocN [^AAVector this i val]
   (let [c (-count this)]
@@ -58,10 +55,7 @@
       (and (>= i 0) (< i c))
       (let [n0 (:node (.-state this))
             n1 (node-add (:node (.-state this)) val i)]
-        (if (identical? n0 n1)
-          this
-          (new AAVector (:meta (.-state this)) n1))
-        )
+        (new AAVector (:meta (.-state this)) n1))
       :else
       (throw (IndexOutOfBoundsException.)))))
 

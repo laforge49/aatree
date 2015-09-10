@@ -6,5 +6,5 @@
   ([] (new AAMap))
   ([^Comparator comparator] (new AAMap comparator)))
 
-(defn create-vector []
+(defn create-aavector []
   (new AAVector))

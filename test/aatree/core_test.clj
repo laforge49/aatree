@@ -32,7 +32,7 @@
 (def gen-element
   (gen/tuple gen/int))
 
-(deftest tests
+(deftest map-tests
   (assert-map-like 100
     (create-aamap)
     gen-element gen-element
@@ -69,7 +69,7 @@
 (println (nth x123 3 nil))
 
 (println)
-(def y (create-vector))
+(def y (create-aavector))
 (println (count y))
 (def y1 (conj y 1001))
 (println (count y1))
@@ -78,3 +78,6 @@
 (def y012 (assoc y12 0 1000))
 (println (count y012))
 (println y012)
+
+(deftest vec-tests
+  (assert-vector-like 100 (create-aavector) gen-element))
