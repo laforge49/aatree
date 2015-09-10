@@ -77,3 +77,4 @@
 (println (count y12))
 (def y012 (assoc y12 0 1000))
 (println (count y012))
+(println y012)

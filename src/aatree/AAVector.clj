@@ -66,4 +66,11 @@
       (throw (IndexOutOfBoundsException.)))))
 
 (defn -empty [^AAVector this]
-  (new AAVector (:meta (.-state this)) nil (empty-node (:node (.-state this)))))
+  (new AAVector (:meta (.-state this)) (empty-node (:node (.-state this)))))
+
+(defn -iterator [^AAVector this]
+  (new-counted-iterator (:node (.-state this))))
+
+(defn -seq
+  [^AAVector this]
+   (new-counted-seq (:node (.-state this))))
