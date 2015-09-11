@@ -2,6 +2,8 @@
   (:import (aatree AAMap AAVector)
            (java.util Comparator)))
 
+(set! *warn-on-reflection* true)
+
 (defn create-aamap
   ([] (new AAMap))
   ([^Comparator comparator] (new AAMap comparator)))
