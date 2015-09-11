@@ -47,3 +47,22 @@
           (if (<= i p)
             (revise n [:left (node-add l v i)])
             (revise n [:right (node-add (right-node n) v (- i p 1))])))))))
+
+(defn node-set [^VectorNode n v i]
+  (if (empty-node? n)
+    (.newNode n v 1 nil nil 1)
+    (let [l (left-node n)
+          p (:cnt l)]
+      (split
+        (skew
+          (cond
+            (< i p)
+            (revise n [:left (node-set l v i)])
+            (> i p)
+            (revise n [:right (node-set (right-node n) v (- i p 1))])
+            :else
+            (revise n [:t2 v])))))))
+
+(defprotocol flex-vector
+  (dropn [this i])
+  (addn [this i v]))
