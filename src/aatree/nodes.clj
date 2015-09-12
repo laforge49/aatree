@@ -30,12 +30,12 @@
     this
     (.getNada this)))
 
-(defn left-node [^INode this]
+(defn ^INode left-node [^INode this]
   (if (empty-node? (.getLeft this))
     (empty-node this)
     (.getLeft this)))
 
-(defn right-node [^INode this]
+(defn ^INode right-node [^INode this]
   (if (empty-node? (.getRight this))
     (empty-node this)
     (.getRight this)))
@@ -66,7 +66,7 @@
     this
     (empty-node? (.getLeft this))
     this
-    (= (.getLevel (.getLeft this)) (.getLevel this))
+    (= (.getLevel (left-node this)) (.getLevel this))
     (let [l (.getLeft this)]
       (revise l [:right (revise this [:left (right-node l)])]))
     :else
@@ -76,12 +76,12 @@
   (cond
     (empty-node? this)
     this
-    (or (empty-node? (.getRight this)) (empty-node? (.getRight (.getRight this))))
+    (or (empty-node? (right-node this)) (empty-node? (right-node (right-node this))))
     this
-    (= (.getLevel this) (.getLevel (.getRight (.getRight this))))
-    (revise (.getRight this)
-            [:level (+ 1 (.getLevel (.getRight this)))
-             :left (revise this [:right (.getLeft (.getRight this))])])
+    (= (.getLevel this) (.getLevel (right-node (right-node this))))
+    (revise (right-node this)
+            [:level (+ 1 (.getLevel (right-node this)))
+             :left (revise this [:right (.getLeft (right-node this))])])
     :else
     this))
 
