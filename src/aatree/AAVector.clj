@@ -11,14 +11,21 @@
     :state state)
   (:require [aatree.nodes :refer :all])
   (:import (aatree AAVector)
-           (aatree.nodes INode)))
+           (aatree.nodes INode)
+           (clojure.lang IPersistentMap)))
 
 (set! *warn-on-reflection* true)
 
-(defrecord vector-state [node meta])
+(deftype vector-state [node meta])
 
-(defn- ^INode get-state-node [^AAVector this]
-  (:node (.-state this)))
+(defn ^vector-state get-state [^AAVector this]
+  (.-state this))
+
+(defn- ^INode get-state-node [this]
+  (.-node (get-state this)))
+
+(defn- ^IPersistentMap get-state-meta [this]
+  (.-meta (get-state this)))
 
 (defn -init
   ([node]
@@ -27,25 +34,25 @@
    [[] (->vector-state node meta)])
   )
 
-(defn -meta [^AAVector this] (:meta (.-state this)))
+(defn -meta [^AAVector this] (get-state-meta this))
 
-(defn -withMeta [^AAVector this meta] (new AAVector (:node (.-state this)) meta))
+(defn -withMeta [^AAVector this meta] (new AAVector (get-state-node this) meta))
 
 (defn -count [this]
   (.getCnt (get-state-node this)))
 
 (defn -nth
   ([^AAVector this i]
-   (nth-t2 (:node (.-state this)) i))
+   (nth-t2 (get-state-node this) i))
   ([this i notFound]
    (if (and (>= i 0) (< i (-count this)))
      (-nth this i)
      notFound)))
 
 (defn -cons [^AAVector this val]
-  (let [n0 (:node (.-state this))
+  (let [n0 (get-state-node this)
         n1 (vector-add n0 val (-count this))]
-    (new AAVector n1 (:meta (.-state this)))))
+    (new AAVector n1 (get-state-meta this))))
 
 (defn -addNode [^AAVector this i val]
   (let [c (-count this)]
@@ -53,9 +60,9 @@
       (= i c)
       (-cons this val)
       (and (>= i 0) (< i c))
-      (let [n0 (:node (.-state this))
+      (let [n0 (get-state-node this)
             n1 (vector-add n0 val i)]
-        (new AAVector n1 (:meta (.-state this))))
+        (new AAVector n1 (get-state-meta this)))
       :else
       (throw (IndexOutOfBoundsException.)))))
 
@@ -65,30 +72,30 @@
       (= i c)
       (-cons this val)
       (and (>= i 0) (< i c))
-      (let [n0 (:node (.-state this))
+      (let [n0 (get-state-node this)
             n1 (vector-set n0 val i)]
-        (new AAVector n1 (:meta (.-state this))))
+        (new AAVector n1 (get-state-meta this)))
       :else
       (throw (IndexOutOfBoundsException.)))))
 
 (defn -empty [^AAVector this]
-  (new AAVector (empty-node (:node (.-state this))) (:meta (.-state this))))
+  (new AAVector (empty-node (get-state-node this)) (get-state-meta this)))
 
 (defn -iterator [^AAVector this]
-  (new-counted-iterator (:node (.-state this))))
+  (new-counted-iterator (get-state-node this)))
 
 (defn -seq
   [^AAVector this]
-   (new-counted-seq (:node (.-state this))))
+   (new-counted-seq (get-state-node this)))
 
 (defn -pop [^AAVector this]
   (if (empty? this)
     this
-    (let [n0 (:node (.-state this))
+    (let [n0 (get-state-node this)
           n1 (deln n0 (- (-count this) 1))]
-      (new AAVector n1 (:meta (.-state this))))))
+      (new AAVector n1 (get-state-meta this)))))
 
 (defn -dropNode [^AAVector this i]
   (if (or (< i 0) (>= i (-count this)))
     this
-    (new AAVector (deln (:node (.-state this)) i) (:meta (.-state this)))))
+    (new AAVector (deln (get-state-node this) i) (get-state-meta this))))
