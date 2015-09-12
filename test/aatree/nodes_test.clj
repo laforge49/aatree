@@ -1,4 +1,4 @@
-(ns aatree.vector-nodes-test
+(ns aatree.nodes-test
   (:require [clojure.test :refer :all]
             [aatree.nodes :refer :all]))
 
