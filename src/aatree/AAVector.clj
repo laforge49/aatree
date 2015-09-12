@@ -3,11 +3,9 @@
     :main false
     :extends clojure.lang.APersistentVector
     :implements [clojure.lang.IObj aatree.nodes.flex_vector]
-    :constructors {[]
+    :constructors {[aatree.nodes.INode]
                    []
-                   [clojure.lang.IPersistentMap]
-                   []
-                   [clojure.lang.IPersistentMap aatree.nodes.INode]
+                   [aatree.nodes.INode clojure.lang.IPersistentMap]
                    []}
     :init init
     :state state)
@@ -19,16 +17,15 @@
 (defrecord vector-state [node meta])
 
 (defn -init
-  ([]
-   [[] (->vector-state (create-empty-node) nil)])
-  ([meta]
-   [[] (->vector-state (create-empty-node) meta)])
-  ([meta node]
-   [[] (->vector-state node meta)]))
+  ([node]
+   [[] (->vector-state node nil)])
+  ([node meta]
+   [[] (->vector-state node meta)])
+  )
 
 (defn -meta [^AAVector this] (:meta (.-state this)))
 
-(defn -withMeta [^AAVector this meta] (new AAVector meta (:node (.-state this))))
+(defn -withMeta [^AAVector this meta] (new AAVector (:node (.-state this)) meta))
 
 (defn -count [^AAVector this]
   (:cnt (:node (.-state this))))
@@ -44,7 +41,7 @@
 (defn -cons [^AAVector this val]
   (let [n0 (:node (.-state this))
         n1 (vector-add n0 val (-count this))]
-    (new AAVector (:meta (.-state this)) n1)))
+    (new AAVector n1 (:meta (.-state this)))))
 
 (defn -addNode [^AAVector this i val]
   (let [c (-count this)]
@@ -54,7 +51,7 @@
       (and (>= i 0) (< i c))
       (let [n0 (:node (.-state this))
             n1 (vector-add n0 val i)]
-        (new AAVector (:meta (.-state this)) n1))
+        (new AAVector n1 (:meta (.-state this))))
       :else
       (throw (IndexOutOfBoundsException.)))))
 
@@ -66,12 +63,12 @@
       (and (>= i 0) (< i c))
       (let [n0 (:node (.-state this))
             n1 (vector-set n0 val i)]
-        (new AAVector (:meta (.-state this)) n1))
+        (new AAVector n1 (:meta (.-state this))))
       :else
       (throw (IndexOutOfBoundsException.)))))
 
 (defn -empty [^AAVector this]
-  (new AAVector (:meta (.-state this)) (empty-node (:node (.-state this)))))
+  (new AAVector (empty-node (:node (.-state this))) (:meta (.-state this))))
 
 (defn -iterator [^AAVector this]
   (new-counted-iterator (:node (.-state this))))
@@ -85,9 +82,9 @@
     this
     (let [n0 (:node (.-state this))
           n1 (deln n0 (- (-count this) 1))]
-      (new AAVector (:meta (.-state this)) n1))))
+      (new AAVector n1 (:meta (.-state this))))))
 
 (defn -dropNode [^AAVector this i]
   (if (or (< i 0) (>= i (-count this)))
     this
-    (new AAVector (:meta (.-state this)) (deln (:node (.-state this)) i))))
+    (new AAVector (deln (:node (.-state this)) i) (:meta (.-state this)))))

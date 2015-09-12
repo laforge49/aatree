@@ -10,7 +10,7 @@
   ([^Comparator comparator] (create-empty-node) (new AAMap comparator)))
 
 (defn create-aavector []
-  (new AAVector))
+  (new AAVector (create-empty-node)))
 
 (defn addn [^AAVector vec ndx val]
   (.addNode vec ndx val))
