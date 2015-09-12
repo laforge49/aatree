@@ -6,7 +6,15 @@
 (set! *warn-on-reflection* true)
 
 (definterface INode
-  (newNode [t2 ^int level left right ^int cnt]))
+  ; t2 ^int level left right ^int cnt nada
+  (newNode [t2 ^int level left right ^int cnt])
+  (get_t2 [])
+  (get_level [])
+  (get_left [])
+  (get_right [])
+  (get_cnt [])
+  (get_nada [])
+  )
 
 (defn empty-node? [n]
   (or (nil? n) (zero? (:level n))))
@@ -328,6 +336,18 @@
 
   (newNode [this t2 level left right cnt]
     (->Node t2 level left right cnt (empty-node this)))
+
+  (get-t2 [this] t2)
+
+  (get-level [this] level)
+
+  (get-left [this] left)
+
+  (get-right [this] right)
+
+  (get-cnt [this] cnt)
+
+  (get-nada [this] nada)
   )
 
 (defn create-empty-node
