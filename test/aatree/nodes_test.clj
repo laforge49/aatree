@@ -34,7 +34,7 @@
 (pnodev (map-del (map-del m13 "1" RT/DEFAULT_COMPARATOR) "3" RT/DEFAULT_COMPARATOR) "m13 - -")
 (def m123 (map-insert m13 (new MapEntry "2" 1002) RT/DEFAULT_COMPARATOR))
 (pnodev m123 "m123")
-(pnodev (map-del m123 "1"RT/DEFAULT_COMPARATOR) "m123 - 1")
+(pnodev (map-del m123 "1" RT/DEFAULT_COMPARATOR) "m123 - 1")
 (pnodev (map-del m123 "2" RT/DEFAULT_COMPARATOR) "m123 - 2")
 (pnodev (map-del m123 "3" RT/DEFAULT_COMPARATOR) "m123 - 3")
 (pnodev (map-insert m123 (new MapEntry "1" 1001) RT/DEFAULT_COMPARATOR) "m123 + 1")
