@@ -16,7 +16,7 @@ clojure.lang.Sorted, clojure.lang.Counted and clojure.lang.Indexed.
 
 Use (aatree.core.create-aavector) to create a vector.
 Written entirely in Clojure, aavector extends clojure.lang.APersistentVector,
-clojure.lang.IObj and aatree.vector-nodes.flex-vector.
+clojure.lang.IObj and aatree.vector-nodes.FlexVector.
 
 Two new functions, addn and dropn, are provided for adding/dropping values
 at any location in aavector. These are reasonably fast, as aavector is

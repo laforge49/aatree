@@ -32,12 +32,6 @@
 (def gen-element
   (gen/tuple gen/int))
 
-(deftest map-tests
-  (assert-map-like 100
-    (create-aamap)
-    gen-element gen-element
-    {:base (sorted-map) :ordered? true}))
-
 (println)
 (def t1 (create-aamap))
 (def t2 (assoc t1 3 -3))
@@ -89,3 +83,18 @@
 
 (deftest vec-tests
   (assert-vector-like 100 (create-aavector) gen-element))
+
+(deftest lazy-vec-tests
+  (assert-vector-like 100 (create-lazy-aavector) gen-element))
+
+(deftest map-tests
+  (assert-map-like 100
+                   (create-aamap)
+                   gen-element gen-element
+                   {:base (sorted-map) :ordered? true}))
+
+(deftest lazy-map-tests
+  (assert-map-like 100
+                   (create-lazy-aamap)
+                   gen-element gen-element
+                   {:base (sorted-map) :ordered? true}))

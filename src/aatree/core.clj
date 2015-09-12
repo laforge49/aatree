@@ -1,6 +1,8 @@
 (ns aatree.core
   (:require [aatree.nodes :refer :all])
+  (:require [aatree.lazy-nodes :refer :all])
   (:import (aatree AAMap AAVector)
+           (aatree.nodes FlexVector)
            (java.util Comparator)))
 
 (set! *warn-on-reflection* true)
@@ -12,8 +14,15 @@
 (defn create-aavector []
   (new AAVector (create-empty-node)))
 
-(defn addn [^AAVector vec ndx val]
+(defn addn [^FlexVector vec ndx val]
   (.addNode vec ndx val))
 
-(defn dropn [aavector & args]
-  (reduce (fn [^AAVector v i] (.dropNode v i)) aavector args))
+(defn dropn [vec & args]
+  (reduce (fn [^FlexVector v i] (.dropNode v i)) vec args))
+
+(defn create-lazy-aamap
+  ([] (new AAMap (create-lazy-empty-node)))
+  ([^Comparator comparator] (create-lazy-empty-node) (new AAMap comparator)))
+
+(defn create-lazy-aavector []
+  (new AAVector (create-lazy-empty-node)))

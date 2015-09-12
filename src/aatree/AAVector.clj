@@ -2,7 +2,7 @@
   (:gen-class
     :main false
     :extends clojure.lang.APersistentVector
-    :implements [clojure.lang.IObj aatree.nodes.flex_vector]
+    :implements [clojure.lang.IObj aatree.nodes.FlexVector]
     :constructors {[aatree.nodes.INode]
                    []
                    [aatree.nodes.INode clojure.lang.IPersistentMap]

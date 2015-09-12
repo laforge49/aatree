@@ -361,6 +361,6 @@
 (defn pnodev [this dsc]
   (println dsc (snodev this)))
 
-(defprotocol flex-vector
-  (dropNode [this i])
-  (addNode [this i v]))
+(definterface FlexVector
+  (dropNode [i])
+  (addNode [i v]))
