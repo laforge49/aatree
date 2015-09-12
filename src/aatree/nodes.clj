@@ -8,8 +8,8 @@
 (definterface INode
   ; t2 ^int level left right ^int cnt nada
   (newNode [t2 ^int level left right ^int cnt])
-  (get_t2 [])
-  (get_level [])
+  (getT2 [])
+  (getLevel [])
   (get_left [])
   (get_right [])
   (get_cnt [])
@@ -17,70 +17,70 @@
   )
 
 (defn empty-node? [^INode n]
-  (or (nil? n) (zero? (.get-level n))))
+  (or (nil? n) (zero? (.getLevel n))))
 
-(defn last-t2 [this]
+(defn last-t2 [^INode this]
   (cond
     (empty-node? this) nil
-    (empty-node? (.get-right this)) (.get-t2 this)
+    (empty-node? (.get-right this)) (.getT2 this)
     :else (recur (.get-right this))))
 
-(defn empty-node [this]
+(defn empty-node [^INode this]
   (if (empty-node? this)
     this
     (.get-nada this)))
 
-(defn left-node [this]
+(defn left-node [^INode this]
   (if (empty-node? (.get-left this))
     (empty-node this)
     (.get-left this)))
 
-(defn right-node [this]
+(defn right-node [^INode this]
   (if (empty-node? (.get-right this))
     (empty-node this)
     (.get-right this)))
 
-(defn node-count [this]
+(defn node-count [^INode this]
   (if (empty-node? this)
     0
     (.get-cnt this)))
 
 (defn revise [^INode this args]
   (let [m (apply array-map args)
-        t-2 (get m :t2 (.get-t2 this))
-        lev (get m :level (.get-level this))
+        t-2 (get m :t2 (.getT2 this))
+        lev (get m :level (.getLevel this))
         l (get m :left (left-node this))
         r (get m :right (right-node this))
         c (+ 1 (node-count l) (node-count r))]
-    (if (and (identical? t-2 (.get-t2 this))
-             (= lev (.get-level this))
+    (if (and (identical? t-2 (.getT2 this))
+             (= lev (.getLevel this))
              (identical? l (left-node this))
              (identical? r (right-node this)))
       this
       (.newNode this t-2 lev l r c))))
 
 (defn skew
-  [this]
+  [^INode this]
   (cond
     (empty-node? this)
     this
     (empty-node? (.get-left this))
     this
-    (= (.get-level (.get-left this)) (.get-level this))
+    (= (.getLevel (.get-left this)) (.getLevel this))
     (let [l (.get-left this)]
       (revise l [:right (revise this [:left (right-node l)])]))
     :else
     this))
 
-(defn split [this]
+(defn split [^INode this]
   (cond
     (empty-node? this)
     this
     (or (empty-node? (.get-right this)) (empty-node? (.get-right (.get-right this))))
     this
-    (= (.get-level this) (.get-level (.get-right (.get-right this))))
+    (= (.getLevel this) (.getLevel (.get-right (.get-right this))))
     (revise (.get-right this)
-            [:level (+ 1 (.get-level (.get-right this)))
+            [:level (+ 1 (.getLevel (.get-right this)))
              :left (revise this [:right (.get-left (.get-right this))])])
     :else
     this))
@@ -88,18 +88,18 @@
 (defn predecessor-t2 [this]
   (last-t2 (left-node this)))
 
-(defn decrease-level [this]
-  (let [should-be (+ 1 (min (.get-level (left-node this))
-                            (.get-level (right-node this))))]
-    (if (>= should-be (.get-level this))
+(defn decrease-level [^INode this]
+  (let [should-be (+ 1 (min (.getLevel (left-node this))
+                            (.getLevel (right-node this))))]
+    (if (>= should-be (.getLevel this))
       this
       (let [rn (right-node this)
-            rn (if (>= should-be (.get-level (right-node this)))
+            rn (if (>= should-be (.getLevel (right-node this)))
                  rn
                  (revise rn [:level should-be]))]
         (revise this [:right rn :level should-be])))))
 
-(defn nth-t2 [this i]
+(defn nth-t2 [^INode this i]
   (if (empty-node? this)
     (throw (IndexOutOfBoundsException.))
     (let [l (left-node this)
@@ -110,14 +110,14 @@
         (> i p)
         (nth-t2 (right-node this) (- i p 1))
         :else
-        (.get-t2 this)))))
+        (.getT2 this)))))
 
-(defn deln [this i]
+(defn deln [^INode this i]
   (if (empty-node? this)
     this
     (let [l (left-node this)
           p (.get-cnt l)]
-      (if (and (= i p) (= 1 (.get-level this)))
+      (if (and (= i p) (= 1 (.getLevel this)))
         (right-node this)
         (let [t (cond
                   (> i p)
@@ -155,9 +155,9 @@
       (nth-t2 node i))))
 
 (defn ^counted-iterator new-counted-iterator
-  ([node]
+  ([^INode node]
    (->counted-iterator node 0 (.get-cnt node)))
-  ([node i]
+  ([^INode node i]
    (->counted-iterator node i (.get-cnt node)))
   )
 
@@ -184,7 +184,7 @@
       (nth-t2 node i))))
 
 (defn ^counted-reverse-iterator new-counted-reverse-iterator
-  ([node]
+  ([^INode node]
    (->counted-reverse-iterator node (- (.get-cnt node) 1)))
   ([node i]
    (->counted-reverse-iterator node i))
@@ -223,7 +223,7 @@
             :else
             (revise n [:t2 v])))))))
 
-(defn ^MapEntry get-entry [this] (.get-t2 this))
+(defn ^MapEntry get-entry [^INode this] (.getT2 this))
 
 (defn key-of [^IMapEntry e] (.getKey e))
 
@@ -247,7 +247,7 @@
            (map-index-of (right-node this) x comparator))))))
 
 (defn ^counted-iterator new-map-entry-iterator
-  ([node x comparator]
+  ([^INode node x comparator]
    (->counted-iterator node (map-index-of node x comparator) (.get-cnt node)))
   )
 
@@ -294,20 +294,20 @@
                        this
                        (revise this [:t2 (new MapEntry (.getKey (get-entry this)) (.getValue t-2))]))))))))
 
-(defn map-get-t2 [this x comparator]
+(defn map-get-t2 [^INode this x comparator]
   (if (empty-node? this)
     nil
     (let [c (map-cmpr this x comparator)]
       (cond
-        (zero? c) (.get-t2 this)
+        (zero? c) (.getT2 this)
         (> c 0) (map-get-t2 (right-node this) x comparator)
         :else (map-get-t2 (left-node this) x comparator)))))
 
-(defn map-del [this x comparator]
+(defn map-del [^INode this x comparator]
   (if (empty-node? this)
     this
     (let [c (map-cmpr this x comparator)]
-      (if (and (= c 0) (= 1 (.get-level this)))
+      (if (and (= c 0) (= 1 (.getLevel this)))
         (right-node this)
         (let [t (cond
                   (> c 0)
@@ -337,9 +337,9 @@
   (newNode [this t2 level left right cnt]
     (->Node t2 level left right cnt (empty-node this)))
 
-  (get-t2 [this] t2)
+  (getT2 [this] t2)
 
-  (get-level [this] level)
+  (getLevel [this] level)
 
   (get-left [this] left)
 
@@ -353,10 +353,10 @@
 (defn create-empty-node
   ([] (->Node nil 0 nil nil 0 nil)))
 
-(defn snodev [this]
+(defn snodev [^INode this]
   (if (empty-node? this)
     ""
-    (str (snodev (.get-left this)) " <" (.get-t2 this) " " (.get-level this) "> " (snodev (.get-right this)))))
+    (str (snodev (.get-left this)) " <" (.getT2 this) " " (.getLevel this) "> " (snodev (.get-right this)))))
 
 (defn pnodev [this dsc]
   (println dsc (snodev this)))
