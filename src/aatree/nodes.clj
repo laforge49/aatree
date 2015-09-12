@@ -10,10 +10,10 @@
   (newNode [t2 ^int level left right ^int cnt])
   (getT2 [])
   (getLevel [])
-  (get_left [])
-  (get_right [])
-  (get_cnt [])
-  (get_nada [])
+  (getLeft [])
+  (getRight [])
+  (getCnt [])
+  (getNada [])
   )
 
 (defn empty-node? [^INode n]
@@ -22,28 +22,28 @@
 (defn last-t2 [^INode this]
   (cond
     (empty-node? this) nil
-    (empty-node? (.get-right this)) (.getT2 this)
-    :else (recur (.get-right this))))
+    (empty-node? (.getRight this)) (.getT2 this)
+    :else (recur (.getRight this))))
 
 (defn empty-node [^INode this]
   (if (empty-node? this)
     this
-    (.get-nada this)))
+    (.getNada this)))
 
 (defn left-node [^INode this]
-  (if (empty-node? (.get-left this))
+  (if (empty-node? (.getLeft this))
     (empty-node this)
-    (.get-left this)))
+    (.getLeft this)))
 
 (defn right-node [^INode this]
-  (if (empty-node? (.get-right this))
+  (if (empty-node? (.getRight this))
     (empty-node this)
-    (.get-right this)))
+    (.getRight this)))
 
 (defn node-count [^INode this]
   (if (empty-node? this)
     0
-    (.get-cnt this)))
+    (.getCnt this)))
 
 (defn revise [^INode this args]
   (let [m (apply array-map args)
@@ -64,10 +64,10 @@
   (cond
     (empty-node? this)
     this
-    (empty-node? (.get-left this))
+    (empty-node? (.getLeft this))
     this
-    (= (.getLevel (.get-left this)) (.getLevel this))
-    (let [l (.get-left this)]
+    (= (.getLevel (.getLeft this)) (.getLevel this))
+    (let [l (.getLeft this)]
       (revise l [:right (revise this [:left (right-node l)])]))
     :else
     this))
@@ -76,12 +76,12 @@
   (cond
     (empty-node? this)
     this
-    (or (empty-node? (.get-right this)) (empty-node? (.get-right (.get-right this))))
+    (or (empty-node? (.getRight this)) (empty-node? (.getRight (.getRight this))))
     this
-    (= (.getLevel this) (.getLevel (.get-right (.get-right this))))
-    (revise (.get-right this)
-            [:level (+ 1 (.getLevel (.get-right this)))
-             :left (revise this [:right (.get-left (.get-right this))])])
+    (= (.getLevel this) (.getLevel (.getRight (.getRight this))))
+    (revise (.getRight this)
+            [:level (+ 1 (.getLevel (.getRight this)))
+             :left (revise this [:right (.getLeft (.getRight this))])])
     :else
     this))
 
@@ -103,7 +103,7 @@
   (if (empty-node? this)
     (throw (IndexOutOfBoundsException.))
     (let [l (left-node this)
-          p (.get-cnt l)]
+          p (.getCnt l)]
       (cond
         (< i p)
         (nth-t2 l i)
@@ -116,7 +116,7 @@
   (if (empty-node? this)
     this
     (let [l (left-node this)
-          p (.get-cnt l)]
+          p (.getCnt l)]
       (if (and (= i p) (= 1 (.getLevel this)))
         (right-node this)
         (let [t (cond
@@ -156,9 +156,9 @@
 
 (defn ^counted-iterator new-counted-iterator
   ([^INode node]
-   (->counted-iterator node 0 (.get-cnt node)))
+   (->counted-iterator node 0 (.getCnt node)))
   ([^INode node i]
-   (->counted-iterator node i (.get-cnt node)))
+   (->counted-iterator node i (.getCnt node)))
   )
 
 (defn ^CountedSequence new-counted-seq
@@ -185,7 +185,7 @@
 
 (defn ^counted-reverse-iterator new-counted-reverse-iterator
   ([^INode node]
-   (->counted-reverse-iterator node (- (.get-cnt node) 1)))
+   (->counted-reverse-iterator node (- (.getCnt node) 1)))
   ([node i]
    (->counted-reverse-iterator node i))
   )
@@ -201,7 +201,7 @@
   (if (empty-node? n)
     (.newNode n v 1 nil nil 1)
     (let [l (left-node n)
-          p (.get-cnt l)]
+          p (.getCnt l)]
       (split
         (skew
           (if (<= i p)
@@ -212,7 +212,7 @@
   (if (empty-node? n)
     (.newNode n v 1 nil nil 1)
     (let [l (left-node n)
-          p (.get-cnt l)]
+          p (.getCnt l)]
       (split
         (skew
           (cond
@@ -240,15 +240,15 @@
         (< c 0)
         (map-index-of (left-node this ) x comparator)
         (= c 0)
-        (.get-cnt (left-node this))
+        (.getCnt (left-node this))
         :else
         (+ 1
-           (.get-cnt (left-node this))
+           (.getCnt (left-node this))
            (map-index-of (right-node this) x comparator))))))
 
 (defn ^counted-iterator new-map-entry-iterator
   ([^INode node x comparator]
-   (->counted-iterator node (map-index-of node x comparator) (.get-cnt node)))
+   (->counted-iterator node (map-index-of node x comparator) (.getCnt node)))
   )
 
 (defn ^CountedSequence new-map-entry-seq
@@ -341,13 +341,13 @@
 
   (getLevel [this] level)
 
-  (get-left [this] left)
+  (getLeft [this] left)
 
-  (get-right [this] right)
+  (getRight [this] right)
 
-  (get-cnt [this] cnt)
+  (getCnt [this] cnt)
 
-  (get-nada [this] nada)
+  (getNada [this] nada)
   )
 
 (defn create-empty-node
@@ -356,7 +356,7 @@
 (defn snodev [^INode this]
   (if (empty-node? this)
     ""
-    (str (snodev (.get-left this)) " <" (.getT2 this) " " (.getLevel this) "> " (snodev (.get-right this)))))
+    (str (snodev (.getLeft this)) " <" (.getT2 this) " " (.getLevel this) "> " (snodev (.getRight this)))))
 
 (defn pnodev [this dsc]
   (println dsc (snodev this)))
