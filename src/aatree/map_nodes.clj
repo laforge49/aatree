@@ -73,7 +73,7 @@
 (defn ^CountedSequence new-map-value-reverse-seq [node]
   (CountedSequence/create (new-counted-reverse-iterator node) value-of))
 
-(defn insert [^MapNode this ^MapEntry t-2 comparator]
+(defn insert [^INode this ^MapEntry t-2 comparator]
         (if (empty-node? this)
           (.newNode this t-2 1 nil nil 1)
           (let [c (cmpr this (.getKey t-2) comparator)]

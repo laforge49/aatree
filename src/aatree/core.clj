@@ -14,5 +14,5 @@
 (defn addn [^AAVector aavector ndx val]
   (.addn aavector ndx val))
 
-(defn dropn [^AAVector aavector & args]
-  (reduce (fn [v i] (.dropn v i)) aavector args))
+(defn dropn [aavector & args]
+  (reduce (fn [^AAVector v i] (.dropn v i)) aavector args))
