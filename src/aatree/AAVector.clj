@@ -1,14 +1,14 @@
 (ns aatree.AAVector
   (:gen-class
-    :main false
-    :extends clojure.lang.APersistentVector
-    :implements [clojure.lang.IObj aatree.nodes.FlexVector]
-    :constructors {[aatree.nodes.INode]
-                   []
-                   [aatree.nodes.INode clojure.lang.IPersistentMap]
-                   []}
-    :init init
-    :state state)
+   :main false
+   :extends clojure.lang.APersistentVector
+   :implements [clojure.lang.IObj aatree.nodes.FlexVector]
+   :constructors {[aatree.nodes.INode]
+                  []
+                  [aatree.nodes.INode clojure.lang.IPersistentMap]
+                  []}
+   :init init
+   :state state)
   (:require [aatree.nodes :refer :all])
   (:import (aatree AAVector)
            (aatree.nodes INode)
@@ -31,8 +31,7 @@
   ([node]
    [[] (->vector-state node nil)])
   ([node meta]
-   [[] (->vector-state node meta)])
-  )
+   [[] (->vector-state node meta)]))
 
 (defn -meta [^AAVector this] (get-state-meta this))
 
@@ -86,7 +85,7 @@
 
 (defn -seq
   [^AAVector this]
-   (new-counted-seq (get-state-node this)))
+  (new-counted-seq (get-state-node this)))
 
 (defn -pop [^AAVector this]
   (if (empty? this)

@@ -13,8 +13,7 @@
   (getLeft [])
   (getRight [])
   (getCnt [])
-  (getNada [])
-  )
+  (getNada []))
 
 (defn empty-node? [^INode n]
   (or (nil? n) (zero? (.getLevel n))))
@@ -139,9 +138,9 @@
           t)))))
 
 (deftype counted-iterator
-  [node
-   ^{:volatile-mutable true int true} ndx
-   ^int cnt]
+         [node
+          ^{:volatile-mutable true int true} ndx
+          ^int cnt]
 
   Counted
   (count [this] (- cnt ndx))
@@ -158,19 +157,17 @@
   ([^INode node]
    (->counted-iterator node 0 (.getCnt node)))
   ([^INode node i]
-   (->counted-iterator node i (.getCnt node)))
-  )
+   (->counted-iterator node i (.getCnt node))))
 
 (defn ^CountedSequence new-counted-seq
   ([node]
    (CountedSequence/create (new-counted-iterator node) identity))
   ([node i]
-   (CountedSequence/create (new-counted-iterator node i) identity))
-  )
+   (CountedSequence/create (new-counted-iterator node i) identity)))
 
 (deftype counted-reverse-iterator
-  [node
-   ^{:volatile-mutable true int true} ndx]
+         [node
+          ^{:volatile-mutable true int true} ndx]
 
   Counted
   (count [this] (+ 1 ndx))
@@ -187,15 +184,13 @@
   ([^INode node]
    (->counted-reverse-iterator node (- (.getCnt node) 1)))
   ([node i]
-   (->counted-reverse-iterator node i))
-  )
+   (->counted-reverse-iterator node i)))
 
 (defn ^CountedSequence new-counted-reverse-seq
   ([node]
    (CountedSequence/create (new-counted-reverse-iterator node) identity))
   ([node i]
-   (CountedSequence/create (new-counted-reverse-iterator node i) identity))
-  )
+   (CountedSequence/create (new-counted-reverse-iterator node i) identity)))
 
 (defn vector-add [^INode n v i]
   (if (empty-node? n)
@@ -203,10 +198,10 @@
     (let [l (left-node n)
           p (.getCnt l)]
       (split
-        (skew
-          (if (<= i p)
-            (revise n [:left (vector-add l v i)])
-            (revise n [:right (vector-add (right-node n) v (- i p 1))])))))))
+       (skew
+        (if (<= i p)
+          (revise n [:left (vector-add l v i)])
+          (revise n [:right (vector-add (right-node n) v (- i p 1))])))))))
 
 (defn vector-set [^INode n v i]
   (if (empty-node? n)
@@ -214,14 +209,14 @@
     (let [l (left-node n)
           p (.getCnt l)]
       (split
-        (skew
-          (cond
-            (< i p)
-            (revise n [:left (vector-set l v i)])
-            (> i p)
-            (revise n [:right (vector-set (right-node n) v (- i p 1))])
-            :else
-            (revise n [:t2 v])))))))
+       (skew
+        (cond
+          (< i p)
+          (revise n [:left (vector-set l v i)])
+          (> i p)
+          (revise n [:right (vector-set (right-node n) v (- i p 1))])
+          :else
+          (revise n [:t2 v])))))))
 
 (defn ^MapEntry get-entry [^INode this] (.getT2 this))
 
@@ -238,7 +233,7 @@
     (let [c (map-cmpr this x comparator)]
       (cond
         (< c 0)
-        (map-index-of (left-node this ) x comparator)
+        (map-index-of (left-node this) x comparator)
         (= c 0)
         (.getCnt (left-node this))
         :else
@@ -248,8 +243,7 @@
 
 (defn ^counted-iterator new-map-entry-iterator
   ([^INode node x comparator]
-   (->counted-iterator node (map-index-of node x comparator) (.getCnt node)))
-  )
+   (->counted-iterator node (map-index-of node x comparator) (.getCnt node))))
 
 (defn ^CountedSequence new-map-entry-seq
   ([node x comparator]
@@ -263,8 +257,7 @@
 
 (defn ^counted-reverse-iterator new-map-entry-reverse-iterator
   ([node x comparator]
-   (->counted-reverse-iterator node (map-index-of node x comparator)))
-  )
+   (->counted-reverse-iterator node (map-index-of node x comparator))))
 
 (defn ^CountedSequence new-map-entry-reverse-seq
   ([node x comparator]
@@ -290,7 +283,7 @@
                            r (map-insert oldr t-2 comparator)]
                        (revise this [:right r]))
                      :else
-                     (if (identical? (.getValue t-2)(.getValue (get-entry this)))
+                     (if (identical? (.getValue t-2) (.getValue (get-entry this)))
                        this
                        (revise this [:t2 (new MapEntry (.getKey (get-entry this)) (.getValue t-2))]))))))))
 
@@ -347,8 +340,7 @@
 
   (getCnt [this] cnt)
 
-  (getNada [this] nada)
-  )
+  (getNada [this] nada))
 
 (defn create-empty-node
   ([] (->Node nil 0 nil nil 0 nil)))

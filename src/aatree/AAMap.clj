@@ -1,21 +1,20 @@
 (ns aatree.AAMap
   (:gen-class
-    :main false
-    :extends clojure.lang.APersistentMap
-    :implements [clojure.lang.IObj
-                 clojure.lang.Reversible
-                 clojure.lang.Sorted
-                 clojure.lang.Counted
-                 clojure.lang.Indexed]
-    :constructors {[aatree.nodes.INode]
-                   []
-                   [aatree.nodes.INode java.util.Comparator]
-                   []
-                   [aatree.nodes.INode clojure.lang.IPersistentMap java.util.Comparator]
-                   []
-                   }
-    :init init
-    :state state)
+   :main false
+   :extends clojure.lang.APersistentMap
+   :implements [clojure.lang.IObj
+                clojure.lang.Reversible
+                clojure.lang.Sorted
+                clojure.lang.Counted
+                clojure.lang.Indexed]
+   :constructors {[aatree.nodes.INode]
+                  []
+                  [aatree.nodes.INode java.util.Comparator]
+                  []
+                  [aatree.nodes.INode clojure.lang.IPersistentMap java.util.Comparator]
+                  []}
+   :init init
+   :state state)
   (:require [aatree.nodes :refer :all])
   (:import (aatree AAMap)
            (clojure.lang MapEntry RT IPersistentMap)
@@ -44,8 +43,7 @@
   ([node comp]
    [[] (->map-state node nil comp)])
   ([node meta comp]
-   [[] (->map-state node meta comp)])
-  )
+   [[] (->map-state node meta comp)]))
 
 (defn -meta [^AAMap this] (get-state-meta this))
 

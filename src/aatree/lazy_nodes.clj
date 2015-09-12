@@ -23,8 +23,7 @@
 
   (getCnt [this] cnt)
 
-  (getNada [this] nada)
-  )
+  (getNada [this] nada))
 
 (defn create-lazy-empty-node
   ([] (->LazyNode nil 0 nil nil 0 nil)))
