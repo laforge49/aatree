@@ -1,15 +1,15 @@
 (ns aatree.CountedSequence
   (:gen-class
-    :main false
-    :extends clojure.lang.ASeq
-    :implements [clojure.lang.Counted]
-    :constructors {[java.util.Iterator clojure.lang.IFn]
-                   []
-                   [clojure.lang.IPersistentMap clojure.lang.IFn Object]
-                   [clojure.lang.IPersistentMap]}
-    :init init
-    :state state
-    :methods [^:static [create [java.util.Iterator clojure.lang.IFn] Object]])
+   :main false
+   :extends clojure.lang.ASeq
+   :implements [clojure.lang.Counted]
+   :constructors {[java.util.Iterator clojure.lang.IFn]
+                  []
+                  [clojure.lang.IPersistentMap clojure.lang.IFn Object]
+                  [clojure.lang.IPersistentMap]}
+   :init init
+   :state state
+   :methods [^:static [create [java.util.Iterator clojure.lang.IFn] Object]])
   (:import (java.util Iterator)
            (clojure.lang Counted)
            (aatree CountedSequence)))
@@ -32,8 +32,7 @@
      (reset! (:rst s) s)
      [[] s]))
   ([meta t s]
-   [[meta] s])
-  )
+   [[meta] s]))
 
 (defn -withMeta [^CountedSequence this meta] (new aatree.CountedSequence meta nil (.-state this)))
 
@@ -54,4 +53,4 @@
 
 (defn -count [^CountedSequence this]
   (let [^Counted iter (:iter (.-state this))]
-      (.count iter)))
+    (.count iter)))
