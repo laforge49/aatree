@@ -17,8 +17,7 @@
                    []}
     :init init
     :state state)
-  (:require [aatree.nodes :refer :all]
-            [aatree.map-nodes :refer :all])
+  (:require [aatree.nodes :refer :all])
   (:import (aatree AAMap)
            (clojure.lang MapEntry RT)))
 
@@ -28,11 +27,11 @@
 
 (defn -init
   ([]
-   [[] (->map-state (create-empty-map-node) nil RT/DEFAULT_COMPARATOR)])
+   [[] (->map-state (create-empty-node) nil RT/DEFAULT_COMPARATOR)])
   ([comp]
-   [[] (->map-state (create-empty-map-node comp) nil comp)])
+   [[] (->map-state (create-empty-node) nil comp)])
   ([meta comp]
-   [[] (->map-state (create-empty-map-node comp) meta comp)])
+   [[] (->map-state (create-empty-node) meta comp)])
   ([meta comp node]
    [[] (->map-state node meta comp)]))
 
@@ -40,7 +39,7 @@
 
 (defn -withMeta [^AAMap this meta] (new AAMap meta (:comparator (.-state this)) (:node (.-state this))))
 
-(defn -entryAt [^AAMap this key] (get-t2 (:node (.-state this)) key (:comparator (.-state this))))
+(defn -entryAt [^AAMap this key] (map-get-t2 (:node (.-state this)) key (:comparator (.-state this))))
 
 (defn -containsKey [this key] (boolean (-entryAt this key)))
 
@@ -55,7 +54,7 @@
 
 (defn -assoc [^AAMap this key val]
   (let [n0 (:node (.-state this))
-        n1 (insert n0 (new MapEntry key val) (:comparator (.-state this)))]
+        n1 (map-insert n0 (new MapEntry key val) (:comparator (.-state this)))]
     (if (identical? n0 n1)
       this
       (new AAMap (:meta (.-state this)) (:comparator (.-state this)) n1))))
@@ -64,11 +63,11 @@
   (let [n0 (:node (.-state this))]
     (if (-containsKey this key)
       this
-      (new AAMap (:meta (.-state this)) (:comparator (.-state this)) (insert n0 (new MapEntry key val) (:comparator (.-state this)))))))
+      (new AAMap (:meta (.-state this)) (:comparator (.-state this)) (map-insert n0 (new MapEntry key val) (:comparator (.-state this)))))))
 
 (defn -without [^AAMap this key]
   (let [n0 (:node (.-state this))
-        n1 (del n0 key (:comparator (.-state this)))]
+        n1 (map-del n0 key (:comparator (.-state this)))]
     (if (identical? n0 n1)
       this
       (new AAMap (:meta (.-state this)) (:comparator (.-state this)) n1))))
