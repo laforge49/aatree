@@ -2,7 +2,7 @@
   (:gen-class
     :main false
     :extends clojure.lang.APersistentVector
-    :implements [clojure.lang.IObj aatree.vector_nodes.flex_vector]
+    :implements [clojure.lang.IObj aatree.nodes.flex_vector]
     :constructors {[]
                    []
                    [clojure.lang.IPersistentMap]
@@ -11,8 +11,7 @@
                    []}
     :init init
     :state state)
-  (:require [aatree.nodes :refer :all]
-            [aatree.vector-nodes :refer :all])
+  (:require [aatree.nodes :refer :all])
   (:import (aatree AAVector)))
 
 (set! *warn-on-reflection* true)
@@ -21,9 +20,9 @@
 
 (defn -init
   ([]
-   [[] (->vector-state (create-empty-vector-node) nil)])
+   [[] (->vector-state (create-empty-node) nil)])
   ([meta]
-   [[] (->vector-state (create-empty-vector-node) meta)])
+   [[] (->vector-state (create-empty-node) meta)])
   ([meta node]
    [[] (->vector-state node meta)]))
 
@@ -44,7 +43,7 @@
 
 (defn -cons [^AAVector this val]
   (let [n0 (:node (.-state this))
-        n1 (node-add n0 val (-count this))]
+        n1 (vector-add n0 val (-count this))]
     (new AAVector (:meta (.-state this)) n1)))
 
 (defn -addn [^AAVector this i val]
@@ -54,7 +53,7 @@
       (-cons this val)
       (and (>= i 0) (< i c))
       (let [n0 (:node (.-state this))
-            n1 (node-add n0 val i)]
+            n1 (vector-add n0 val i)]
         (new AAVector (:meta (.-state this)) n1))
       :else
       (throw (IndexOutOfBoundsException.)))))
@@ -66,7 +65,7 @@
       (-cons this val)
       (and (>= i 0) (< i c))
       (let [n0 (:node (.-state this))
-            n1 (node-set n0 val i)]
+            n1 (vector-set n0 val i)]
         (new AAVector (:meta (.-state this)) n1))
       :else
       (throw (IndexOutOfBoundsException.)))))

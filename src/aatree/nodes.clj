@@ -149,11 +149,16 @@
 (defn ^counted-iterator new-counted-iterator
   ([node]
    (->counted-iterator node 0 (:cnt node)))
+  ([node i]
+   (->counted-iterator node i (:cnt node)))
   )
 
 (defn ^CountedSequence new-counted-seq
   ([node]
-   (CountedSequence/create (new-counted-iterator node) identity)))
+   (CountedSequence/create (new-counted-iterator node) identity))
+  ([node i]
+   (CountedSequence/create (new-counted-iterator node i) identity))
+  )
 
 (deftype counted-reverse-iterator
   [node
@@ -173,11 +178,55 @@
 (defn ^counted-reverse-iterator new-counted-reverse-iterator
   ([node]
    (->counted-reverse-iterator node (- (:cnt node) 1)))
+  ([node i]
+   (->counted-reverse-iterator node i))
   )
 
 (defn ^CountedSequence new-counted-reverse-seq
   ([node]
-   (CountedSequence/create (new-counted-reverse-iterator node) identity)))
+   (CountedSequence/create (new-counted-reverse-iterator node) identity))
+  ([node i]
+   (CountedSequence/create (new-counted-reverse-iterator node i) identity))
+  )
+
+(defn vector-add [^INode n v i]
+  (if (empty-node? n)
+    (.newNode n v 1 nil nil 1)
+    (let [l (left-node n)
+          p (:cnt l)]
+      (split
+        (skew
+          (if (<= i p)
+            (revise n [:left (vector-add l v i)])
+            (revise n [:right (vector-add (right-node n) v (- i p 1))])))))))
+
+(defn vector-set [^INode n v i]
+  (if (empty-node? n)
+    (.newNode n v 1 nil nil 1)
+    (let [l (left-node n)
+          p (:cnt l)]
+      (split
+        (skew
+          (cond
+            (< i p)
+            (revise n [:left (vector-set l v i)])
+            (> i p)
+            (revise n [:right (vector-set (right-node n) v (- i p 1))])
+            :else
+            (revise n [:t2 v])))))))
+
+(declare ->Node)
+
+(defrecord Node [t2 ^int level left right ^int cnt nada]
+
+  INode
+
+  (newNode [this t2 level left right cnt]
+    (->Node t2 level left right cnt (empty-node this)))
+  )
+
+(defn create-empty-node
+  ([] (->Node nil 0 nil nil 0 nil)))
 
 (defn snodev [this]
   (if (empty-node? this)
@@ -186,3 +235,7 @@
 
 (defn pnodev [this dsc]
   (println dsc (snodev this)))
+
+(defprotocol flex-vector
+  (dropn [this i])
+  (addn [this i v]))
