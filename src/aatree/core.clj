@@ -9,7 +9,7 @@
 
 (defn create-aamap
   ([] (new AAMap (create-empty-node)))
-  ([^Comparator comparator] (create-empty-node) (new AAMap comparator)))
+  ([^Comparator comparator] (new AAMap (create-empty-node) comparator)))
 
 (defn create-aavector []
   (new AAVector (create-empty-node)))
@@ -22,7 +22,7 @@
 
 (defn create-lazy-aamap
   ([] (new AAMap (create-lazy-empty-node)))
-  ([^Comparator comparator] (create-lazy-empty-node) (new AAMap comparator)))
+  ([^Comparator comparator] (new AAMap (create-lazy-empty-node) comparator)))
 
 (defn create-lazy-aavector []
   (new AAVector (create-lazy-empty-node)))
