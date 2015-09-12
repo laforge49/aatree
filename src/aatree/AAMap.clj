@@ -18,11 +18,15 @@
     :state state)
   (:require [aatree.nodes :refer :all])
   (:import (aatree AAMap)
-           (clojure.lang MapEntry RT)))
+           (clojure.lang MapEntry RT)
+           (aatree.nodes INode)))
 
 (set! *warn-on-reflection* true)
 
 (defrecord map-state [node meta comparator])
+
+(defn- ^INode get-state-node [^AAMap this]
+  (:node (.-state this)))
 
 (defn -init
   ([node]
@@ -95,11 +99,8 @@
 (defn -empty [^AAMap this]
   (new AAMap (empty-node (:node (.-state this))) (:meta (.-state this)) (:comparator (.-state this))))
 
-(defn -count [^AAMap this]
-  (:cnt (:node (.-state this))))
-
-(defn -comparator [^AAMap this]
-  (:comparator (:node (.-state this))))
+(defn -count [this]
+  (.getCnt (get-state-node this)))
 
 (defn -entryKey [this ^MapEntry entry]
   (.getKey entry))

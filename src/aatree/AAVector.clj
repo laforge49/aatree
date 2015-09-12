@@ -10,11 +10,15 @@
     :init init
     :state state)
   (:require [aatree.nodes :refer :all])
-  (:import (aatree AAVector)))
+  (:import (aatree AAVector)
+           (aatree.nodes INode)))
 
 (set! *warn-on-reflection* true)
 
 (defrecord vector-state [node meta])
+
+(defn- ^INode get-state-node [^AAVector this]
+  (:node (.-state this)))
 
 (defn -init
   ([node]
@@ -27,8 +31,8 @@
 
 (defn -withMeta [^AAVector this meta] (new AAVector (:node (.-state this)) meta))
 
-(defn -count [^AAVector this]
-  (:cnt (:node (.-state this))))
+(defn -count [this]
+  (.getCnt (get-state-node this)))
 
 (defn -nth
   ([^AAVector this i]

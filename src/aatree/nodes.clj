@@ -330,7 +330,7 @@
 
 (declare ->Node)
 
-(defrecord Node [t2 ^int level left right ^int cnt nada]
+(deftype Node [t2 ^int level left right ^int cnt nada]
 
   INode
 
