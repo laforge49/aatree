@@ -37,7 +37,7 @@
   ([node i]
    (CountedSequence/create (new-vector-reverse-iterator node i) identity)))
 
-(defn node-add [^VectorNode n v i]
+(defn node-add [^INode n v i]
   (if (empty-node? n)
     (.newNode n v 1 nil nil 1)
     (let [l (left-node n)
@@ -48,7 +48,7 @@
             (revise n [:left (node-add l v i)])
             (revise n [:right (node-add (right-node n) v (- i p 1))])))))))
 
-(defn node-set [^VectorNode n v i]
+(defn node-set [^INode n v i]
   (if (empty-node? n)
     (.newNode n v 1 nil nil 1)
     (let [l (left-node n)
