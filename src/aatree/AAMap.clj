@@ -7,14 +7,13 @@
                  clojure.lang.Sorted
                  clojure.lang.Counted
                  clojure.lang.Indexed]
-    :constructors {[]
+    :constructors {[aatree.nodes.INode]
                    []
-                   [java.util.Comparator]
+                   [aatree.nodes.INode java.util.Comparator]
                    []
-                   [clojure.lang.IPersistentMap java.util.Comparator]
+                   [aatree.nodes.INode clojure.lang.IPersistentMap java.util.Comparator]
                    []
-                   [clojure.lang.IPersistentMap java.lang.Object aatree.nodes.INode]
-                   []}
+                   }
     :init init
     :state state)
   (:require [aatree.nodes :refer :all])
@@ -26,18 +25,17 @@
 (defrecord map-state [node meta comparator])
 
 (defn -init
-  ([]
-   [[] (->map-state (create-empty-node) nil RT/DEFAULT_COMPARATOR)])
-  ([comp]
-   [[] (->map-state (create-empty-node) nil comp)])
-  ([meta comp]
-   [[] (->map-state (create-empty-node) meta comp)])
-  ([meta comp node]
-   [[] (->map-state node meta comp)]))
+  ([node]
+   [[] (->map-state node nil RT/DEFAULT_COMPARATOR)])
+  ([node comp]
+   [[] (->map-state node nil comp)])
+  ([node meta comp]
+   [[] (->map-state node meta comp)])
+  )
 
 (defn -meta [^AAMap this] (:meta (.-state this)))
 
-(defn -withMeta [^AAMap this meta] (new AAMap meta (:comparator (.-state this)) (:node (.-state this))))
+(defn -withMeta [^AAMap this meta] (new AAMap (:node (.-state this)) meta (:comparator (.-state this))))
 
 (defn -entryAt [^AAMap this key] (map-get-t2 (:node (.-state this)) key (:comparator (.-state this))))
 
@@ -57,20 +55,20 @@
         n1 (map-insert n0 (new MapEntry key val) (:comparator (.-state this)))]
     (if (identical? n0 n1)
       this
-      (new AAMap (:meta (.-state this)) (:comparator (.-state this)) n1))))
+      (new AAMap n1 (:meta (.-state this)) (:comparator (.-state this))))))
 
 (defn -assocEx [^AAMap this key val]
   (let [n0 (:node (.-state this))]
     (if (-containsKey this key)
       this
-      (new AAMap (:meta (.-state this)) (:comparator (.-state this)) (map-insert n0 (new MapEntry key val) (:comparator (.-state this)))))))
+      (new AAMap (map-insert n0 (new MapEntry key val) (:comparator (.-state this))) (:meta (.-state this)) (:comparator (.-state this))))))
 
 (defn -without [^AAMap this key]
   (let [n0 (:node (.-state this))
         n1 (map-del n0 key (:comparator (.-state this)))]
     (if (identical? n0 n1)
       this
-      (new AAMap (:meta (.-state this)) (:comparator (.-state this)) n1))))
+      (new AAMap n1 (:meta (.-state this)) (:comparator (.-state this))))))
 
 (defn -rseq [^AAMap this]
   (new-counted-reverse-seq (:node (.-state this))))
@@ -95,7 +93,7 @@
     (new-map-entry-reverse-seq (:node (.-state this)) key (:comparator (.-state this)))))
 
 (defn -empty [^AAMap this]
-  (new AAMap (:meta (.-state this)) (:comparator (.-state this)) (empty-node (:node (.-state this)))))
+  (new AAMap (empty-node (:node (.-state this))) (:meta (.-state this)) (:comparator (.-state this))))
 
 (defn -count [^AAMap this]
   (:cnt (:node (.-state this))))

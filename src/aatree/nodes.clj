@@ -362,5 +362,5 @@
   (println dsc (snodev this)))
 
 (defprotocol flex-vector
-  (dropn [this i])
-  (addn [this i v]))
+  (dropNode [this i])
+  (addNode [this i v]))

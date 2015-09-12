@@ -46,7 +46,7 @@
         n1 (vector-add n0 val (-count this))]
     (new AAVector (:meta (.-state this)) n1)))
 
-(defn -addn [^AAVector this i val]
+(defn -addNode [^AAVector this i val]
   (let [c (-count this)]
     (cond
       (= i c)
@@ -87,7 +87,7 @@
           n1 (deln n0 (- (-count this) 1))]
       (new AAVector (:meta (.-state this)) n1))))
 
-(defn -dropn [^AAVector this i]
+(defn -dropNode [^AAVector this i]
   (if (or (< i 0) (>= i (-count this)))
     this
     (new AAVector (:meta (.-state this)) (deln (:node (.-state this)) i))))
