@@ -21,8 +21,8 @@
   (reduce (fn [^FlexVector v i] (.dropNode v i)) vec args))
 
 (defn create-lazy-aamap
-  ([] (new AAMap (create-lazy-empty-node)))
-  ([^Comparator comparator] (new AAMap (create-lazy-empty-node) comparator)))
+  ([] (new AAMap (create-lazy-empty-node nil)))
+  ([^Comparator comparator] (new AAMap (create-lazy-empty-node nil) comparator)))
 
 (defn create-lazy-aavector []
-  (new AAVector (create-lazy-empty-node)))
+  (new AAVector (create-lazy-empty-node nil)))
