@@ -4,7 +4,8 @@
 
 (set! *warn-on-reflection* true)
 
-(declare ->LazyNode)
+(declare ->LazyNode
+         ^INode get-data)
 
 (deftype LazyNode [^INode data]
 
@@ -14,17 +15,20 @@
     (let [d (->Node t2 level left right cnt (empty-node data))]
       (->LazyNode d)))
 
-  (getT2 [this] (.getT2 data))
+  (getT2 [this] (.getT2 (get-data this)))
 
-  (getLevel [this] (.getLevel data))
+  (getLevel [this] (.getLevel (get-data this)))
 
-  (getLeft [this] (.getLeft data))
+  (getLeft [this] (.getLeft (get-data this)))
 
-  (getRight [this] (.getRight data))
+  (getRight [this] (.getRight (get-data this)))
 
-  (getCnt [this] (.getCnt data))
+  (getCnt [this] (.getCnt (get-data this)))
 
-  (getNada [this] (.getNada data)))
+  (getNada [this] (.getNada (get-data this))))
+
+(defn- ^INode get-data [^LazyNode this]
+  (.-data this))
 
 (defn create-lazy-empty-node
   ([] (->LazyNode (create-empty-node))))
