@@ -23,7 +23,7 @@
 
 (defrecord seq-state [^Iterator iter styp val rst])
 
-(defn iter ^Iterator [seq-state] (:iter seq-state))
+(defn iter ^java.util.Iterator [seq-state] (:iter seq-state))
 
 (defn -init
   ([^Iterator iter styp]
