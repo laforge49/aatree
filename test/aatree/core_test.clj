@@ -81,6 +81,8 @@
 (println (dropn y012 1 1))
 (println (dropn y012 3))
 
+(println (conj (create-lazy-aavector) 0))
+
 (deftest vec-tests
   (assert-vector-like 100 (create-aavector) gen-element))
 
