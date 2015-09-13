@@ -6,7 +6,7 @@
 
 (declare ->LazyNode
          ^INode get-data
-         get-factory)
+         factory-by-type)
 
 (deftype LazyNode [data-atom buffer-atom factory-registry factory]
 
@@ -14,7 +14,7 @@
 
   (newNode [this t2 level left right cnt]
     (let [d (->Node t2 level left right cnt (empty-node (get-data this)))]
-      (->LazyNode d (atom nil) factory-registry (get-factory factory-registry t2))))
+      (->LazyNode d (atom nil) factory-registry (factory-by-type factory-registry (type t2)))))
 
   (getT2 [this] (.getT2 (get-data this)))
 
@@ -34,11 +34,19 @@
   (write [buffer])
   (read [buffer]))
 
-(defn- ^IFactory get-factory
-  ([^LazyNode lazy-node]
+(deftype factory-registry [by-id-atom by-type-atom])
+
+(defn- ^IFactory get-factory [^LazyNode lazy-node]
    (.-factory lazy-node))
-  ([factory-registry t2]
-   nil))
+
+(defn- ^IFactory factory-by-id [^factory-registry fregistry id]
+  nil)
+
+(defn- ^IFactory factory-by-type [^factory-registry fregistry typ]
+  nil)
+
+(defn register-factory [^factory-registry fregistry id typ]
+  nil)
 
 (defn- deserialize [^LazyNode this]
   (let [d (.asData (get-factory this) this)
