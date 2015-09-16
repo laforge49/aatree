@@ -7,7 +7,7 @@
          ^aatree.nodes.INode get-data
          factory-for-instance)
 
-(defrecord LazyNode [data-atom sval-atom buffer-atom factory-registry factory]
+(deftype LazyNode [data-atom sval-atom buffer-atom factory-registry factory]
 
   aatree.nodes.INode
 
@@ -29,7 +29,7 @@
 
 (definterface IFactory
   (qualified [t2])
-  (sval [^aatree.nodes.INode lazyNode])
+  (sval [^aatree.lazy_nodes.LazyNode lazyNode])
   (byteLength [lazyNode])
   (deserialize [lazyNode])
   (write [lazyNode buffer])
@@ -92,7 +92,7 @@
   (reify IFactory
     (qualified [this t2] this)
     (sval [this lazyNode]
-      (let [sval-atom (:sval-atom lazyNode)]
+      (let [sval-atom (.-sval-atom lazyNode)]
       (if (nil? @sval-atom)
         (compare-and-set! sval-atom nil (pr-str (.getT2 lazyNode))))
       @sval-atom))
