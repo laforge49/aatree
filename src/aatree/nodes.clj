@@ -1,5 +1,4 @@
 (ns aatree.nodes
-  (:require [aatree.CountedSequence :refer :all])
   (:import (clojure.lang Counted MapEntry IMapEntry)
            (java.util Iterator Comparator)
            (aatree CountedSequence)))
