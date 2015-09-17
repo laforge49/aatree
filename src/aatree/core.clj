@@ -7,12 +7,16 @@
 
 (set! *warn-on-reflection* true)
 
+(def aamap (new AAMap (create-empty-node)))
+
 (defn create-aamap
-  ([] (new AAMap (create-empty-node)))
+  ([] aamap)
   ([^Comparator comparator] (new AAMap (create-empty-node) comparator)))
 
+(def aavector (new AAVector (create-empty-node)))
+
 (defn create-aavector []
-  (new AAVector (create-empty-node)))
+  aavector)
 
 (defn addn [^FlexVector vec ndx val]
   (.addNode vec ndx val))
@@ -20,12 +24,16 @@
 (defn dropn [vec & args]
   (reduce (fn [^FlexVector v i] (.dropNode v i)) vec args))
 
+(def lazy-aamap (new AAMap lazy-node))
+
 (defn create-lazy-aamap
-  ([] (new AAMap (create-lazy-empty-node default-factory-registry)))
-  ([^Comparator comparator] (new AAMap (create-lazy-empty-node default-factory-registry) comparator))
+  ([] lazy-aamap)
+  ([^Comparator comparator] (new AAMap lazy-node comparator))
   ([^Comparator comparator fregistry] (new AAMap (create-lazy-empty-node fregistry) comparator)))
 
+(def lazy-aavector (new AAVector lazy-node))
+
 (defn create-lazy-aavector
-  ([] (new AAVector (create-lazy-empty-node default-factory-registry)))
+  ([] lazy-aavector)
   ([fregistry] (new AAVector (create-lazy-empty-node fregistry)))
   )

@@ -84,9 +84,6 @@
       (deserialize this)
       d)))
 
-(defn create-lazy-empty-node
-  ([factory-registry] (->LazyNode (atom (create-empty-node)) (atom nil) (atom nil) factory-registry nil)))
-
 (register-factory
   default-factory-registry
   (reify IFactory
@@ -102,3 +99,9 @@
     (read [this lazyNode buffer]))
   "e"
   nil)
+
+(def lazy-node (->LazyNode (atom (create-empty-node)) (atom nil) (atom nil) default-factory-registry nil))
+
+(defn create-lazy-empty-node
+  ([] lazy-node)
+  ([factory-registry] (->LazyNode (atom (create-empty-node)) (atom nil) (atom nil) factory-registry nil)))
