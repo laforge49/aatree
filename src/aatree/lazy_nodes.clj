@@ -103,5 +103,4 @@
 (def lazy-node (->LazyNode (atom (create-empty-node)) (atom nil) (atom nil) default-factory-registry nil))
 
 (defn create-lazy-empty-node
-  ([] lazy-node)
-  ([factory-registry] (->LazyNode (atom (create-empty-node)) (atom nil) (atom nil) factory-registry nil)))
+  [] lazy-node)

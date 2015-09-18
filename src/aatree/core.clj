@@ -50,7 +50,7 @@
   ([] lazy-aavector)
   ([resources]
    (if (:factory-registry resources)
-     (new AAVector (create-lazy-empty-node (:factory-registry resources)) resources)
+     (new AAVector lazy-node resources)
      (new AAVector
-          (create-lazy-empty-node default-factory-registry)
+          lazy-node
           (assoc resources :factory-registry default-factory-registry)))))
