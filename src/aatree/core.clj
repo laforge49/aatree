@@ -3,20 +3,25 @@
   (:require [aatree.lazy-nodes :refer :all])
   (:import (aatree AAMap AAVector)
            (aatree.nodes FlexVector)
-           (java.util Comparator)))
+           (java.util Comparator)
+           (clojure.lang RT)))
 
 (set! *warn-on-reflection* true)
 
-(def aamap (new AAMap (create-empty-node)))
+(def aamap (new AAMap (create-empty-node) {:comparator RT/DEFAULT_COMPARATOR}))
 
 (defn create-aamap
   ([] aamap)
-  ([^Comparator comparator] (new AAMap (create-empty-node) comparator)))
+  ([resources]
+   (if (:coparator resources)
+   (new AAMap (create-empty-node) resources)
+   (new AAMap (create-empty-node) (assoc resources :comparator RT/DEFAULT_COMPARATOR)))))
 
-(def aavector (new AAVector (create-empty-node)))
+(def aavector (new AAVector (create-empty-node) {}))
 
-(defn create-aavector []
-  aavector)
+(defn create-aavector
+  ([] aavector)
+  ([resources] (new AAVector (create-empty-node) resources)))
 
 (defn addn [^FlexVector vec ndx val]
   (.addNode vec ndx val))
@@ -24,16 +29,28 @@
 (defn dropn [vec & args]
   (reduce (fn [^FlexVector v i] (.dropNode v i)) vec args))
 
-(def lazy-aamap (new AAMap lazy-node))
+(def lazy-aamap (new AAMap lazy-node {:comparator RT/DEFAULT_COMPARATOR
+                                      :factory-registry default-factory-registry}))
 
 (defn create-lazy-aamap
   ([] lazy-aamap)
-  ([^Comparator comparator] (new AAMap lazy-node comparator))
-  ([^Comparator comparator fregistry] (new AAMap (create-lazy-empty-node fregistry) comparator)))
+  ([resources]
+   (let [r resources
+         r (if (:comparator r)
+             r
+             (assoc r :comparator RT/DEFAULT_COMPARATOR))
+         r (if (:factory-registry r)
+             r
+             (assoc r :factory-registry default-factory-registry))]
+     (new AAMap lazy-node r))))
 
-(def lazy-aavector (new AAVector lazy-node))
+(def lazy-aavector (new AAVector lazy-node {:factory-registry default-factory-registry}))
 
 (defn create-lazy-aavector
   ([] lazy-aavector)
-  ([fregistry] (new AAVector (create-lazy-empty-node fregistry)))
-  )
+  ([resources]
+   (if (:factory-registry resources)
+     (new AAVector (create-lazy-empty-node (:factory-registry resources)) resources)
+     (new AAVector
+          (create-lazy-empty-node default-factory-registry)
+          (assoc resources :factory-registry default-factory-registry)))))

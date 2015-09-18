@@ -138,9 +138,9 @@
           t)))))
 
 (deftype counted-iterator
-         [node
-          ^{:volatile-mutable true int true} ndx
-          ^int cnt]
+  [node
+   ^{:volatile-mutable true int true} ndx
+   ^int cnt]
 
   Counted
   (count [this] (- cnt ndx))
@@ -166,8 +166,8 @@
    (CountedSequence/create (new-counted-iterator node i) identity)))
 
 (deftype counted-reverse-iterator
-         [node
-          ^{:volatile-mutable true int true} ndx]
+  [node
+   ^{:volatile-mutable true int true} ndx]
 
   Counted
   (count [this] (+ 1 ndx))
@@ -198,10 +198,10 @@
     (let [l (left-node n)
           p (.getCnt l)]
       (split
-       (skew
-        (if (<= i p)
-          (revise n [:left (vector-add l v i)])
-          (revise n [:right (vector-add (right-node n) v (- i p 1))])))))))
+        (skew
+          (if (<= i p)
+            (revise n [:left (vector-add l v i)])
+            (revise n [:right (vector-add (right-node n) v (- i p 1))])))))))
 
 (defn vector-set [^INode n v i]
   (if (empty-node? n)
@@ -209,14 +209,14 @@
     (let [l (left-node n)
           p (.getCnt l)]
       (split
-       (skew
-        (cond
-          (< i p)
-          (revise n [:left (vector-set l v i)])
-          (> i p)
-          (revise n [:right (vector-set (right-node n) v (- i p 1))])
-          :else
-          (revise n [:t2 v])))))))
+        (skew
+          (cond
+            (< i p)
+            (revise n [:left (vector-set l v i)])
+            (> i p)
+            (revise n [:right (vector-set (right-node n) v (- i p 1))])
+            :else
+            (revise n [:t2 v])))))))
 
 (defn ^MapEntry get-entry [^INode this] (.getT2 this))
 
@@ -227,27 +227,29 @@
 (defn map-cmpr [this x ^Comparator comparator]
   (.compare comparator x (.getKey (get-entry this))))
 
-(defn map-index-of [this x comparator]
+(defn resource-cmpr [this x resources] (map-cmpr this x (:comparator resources)))
+
+(defn map-index-of [this x resources]
   (if (empty-node? this)
     0
-    (let [c (map-cmpr this x comparator)]
+    (let [c (resource-cmpr this x resources)]
       (cond
         (< c 0)
-        (map-index-of (left-node this) x comparator)
+        (map-index-of (left-node this) x resources)
         (= c 0)
         (.getCnt (left-node this))
         :else
         (+ 1
            (.getCnt (left-node this))
-           (map-index-of (right-node this) x comparator))))))
+           (map-index-of (right-node this) x resources))))))
 
 (defn ^counted-iterator new-map-entry-iterator
-  ([^INode node x comparator]
-   (->counted-iterator node (map-index-of node x comparator) (.getCnt node))))
+  ([^INode node x resources]
+   (->counted-iterator node (map-index-of node x resources) (.getCnt node))))
 
 (defn ^CountedSequence new-map-entry-seq
-  ([node x comparator]
-   (CountedSequence/create (new-map-entry-iterator node x comparator) identity)))
+  ([node x resources]
+   (CountedSequence/create (new-map-entry-iterator node x resources) identity)))
 
 (defn ^CountedSequence new-map-key-seq [node]
   (CountedSequence/create (new-counted-iterator node) key-of))
@@ -256,12 +258,12 @@
   (CountedSequence/create (new-counted-iterator node) value-of))
 
 (defn ^counted-reverse-iterator new-map-entry-reverse-iterator
-  ([node x comparator]
-   (->counted-reverse-iterator node (map-index-of node x comparator))))
+  ([node x resources]
+   (->counted-reverse-iterator node (map-index-of node x resources))))
 
 (defn ^CountedSequence new-map-entry-reverse-seq
-  ([node x comparator]
-   (CountedSequence/create (new-map-entry-reverse-iterator node x comparator) identity)))
+  ([node x resources]
+   (CountedSequence/create (new-map-entry-reverse-iterator node x resources) identity)))
 
 (defn ^CountedSequence new-map-key-reverse-seq [node]
   (CountedSequence/create (new-counted-reverse-iterator node) key-of))
@@ -269,47 +271,47 @@
 (defn ^CountedSequence new-map-value-reverse-seq [node]
   (CountedSequence/create (new-counted-reverse-iterator node) value-of))
 
-(defn map-insert [^INode this ^MapEntry t-2 comparator]
+(defn map-insert [^INode this ^MapEntry t-2 resources]
   (if (empty-node? this)
     (.newNode this t-2 1 nil nil 1)
-    (let [c (map-cmpr this (.getKey t-2) comparator)]
+    (let [c (resource-cmpr this (.getKey t-2) resources)]
       (split (skew (cond
                      (< c 0)
                      (let [oldl (left-node this)
-                           l (map-insert oldl t-2 comparator)]
+                           l (map-insert oldl t-2 resources)]
                        (revise this [:left l]))
                      (> c 0)
                      (let [oldr (right-node this)
-                           r (map-insert oldr t-2 comparator)]
+                           r (map-insert oldr t-2 resources)]
                        (revise this [:right r]))
                      :else
                      (if (identical? (.getValue t-2) (.getValue (get-entry this)))
                        this
                        (revise this [:t2 (new MapEntry (.getKey (get-entry this)) (.getValue t-2))]))))))))
 
-(defn map-get-t2 [^INode this x comparator]
+(defn map-get-t2 [^INode this x resources]
   (if (empty-node? this)
     nil
-    (let [c (map-cmpr this x comparator)]
+    (let [c (resource-cmpr this x resources)]
       (cond
         (zero? c) (.getT2 this)
-        (> c 0) (map-get-t2 (right-node this) x comparator)
-        :else (map-get-t2 (left-node this) x comparator)))))
+        (> c 0) (map-get-t2 (right-node this) x resources)
+        :else (map-get-t2 (left-node this) x resources)))))
 
-(defn map-del [^INode this x comparator]
+(defn map-del [^INode this x resources]
   (if (empty-node? this)
     this
-    (let [c (map-cmpr this x comparator)]
+    (let [c (resource-cmpr this x resources)]
       (if (and (= c 0) (= 1 (.getLevel this)))
         (right-node this)
         (let [t (cond
                   (> c 0)
-                  (revise this [:right (map-del (right-node this) x comparator)])
+                  (revise this [:right (map-del (right-node this) x resources)])
                   (< c 0)
-                  (revise this [:left (map-del (left-node this) x comparator)])
+                  (revise this [:left (map-del (left-node this) x resources)])
                   :else
                   (let [^MapEntry p (predecessor-t2 this)]
-                    (revise this [:t2 p :left (map-del (left-node this) (.getKey p) comparator)])))
+                    (revise this [:t2 p :left (map-del (left-node this) (.getKey p) resources)])))
               t (decrease-level t)
               t (skew t)
               t (revise t [:right (skew (right-node t))])
