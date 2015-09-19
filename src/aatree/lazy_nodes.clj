@@ -43,8 +43,13 @@
 
 (deftype factory-registry [by-id-atom by-type-atom])
 
-(defn ^factory-registry create-factory-registry []
-  (factory-registry. (atom {}) (atom {})))
+(defn ^factory-registry create-factory-registry
+  ([]
+   (factory-registry. (atom {})
+                      (atom {})))
+  ([^factory-registry fregistry]
+   (factory-registry. (atom @(.-by_id_atom fregistry))
+                      (atom @(.-by_type_atom fregistry)))))
 
 (def default-factory-registry (create-factory-registry))
 
@@ -53,6 +58,8 @@
   (if (nil? f)
     (factory-for-id fregistry (byte \e))
     f)))
+
+(defn read-lazy-node [buffer, resources])
 
 (defn className [^Class c] (.getName c))
 
@@ -98,9 +105,11 @@
         @sval-atom))
     (byteLength [this lazyNode resources]
       (+ 4 ;byte length
+         1 ;left node id
          (node-byte-length (left-node lazyNode resources) resources) ;left node
          4 ;sval length
          (* 2 (.sval this lazyNode resources)) ;sval
+         1 ;right node id
          (node-byte-length (left-node lazyNode resources) resources))) ;right node
     (deserialize [this lazyNode resources])
     (write [this lazyNode buffer resources])
