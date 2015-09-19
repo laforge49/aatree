@@ -81,21 +81,21 @@
       (new AAMap n1 (get-state-resources this) (get-state-meta this)))))
 
 (defn -rseq [^AAMap this]
-  (new-counted-reverse-seq (get-state-node this)))
+  (new-counted-reverse-seq (get-state-node this) (get-state-resources this)))
 
 (defn -seq
   ([^AAMap this]
-   (new-counted-seq (get-state-node this)))
+   (new-counted-seq (get-state-node this) (get-state-resources this)))
   ([this ascending]
    (if ascending
      (-seq this)
      (-rseq this))))
 
 (defn -keyIterator [^AAMap this]
-  (new-map-key-seq (get-state-node this)))
+  (new-map-key-seq (get-state-node this) (get-state-resources this)))
 
 (defn -valIterator [^AAMap this]
-  (new-map-value-seq (get-state-node this)))
+  (new-map-value-seq (get-state-node this) (get-state-resources this)))
 
 (defn -seqFrom [^AAMap this key ascending]
   (if ascending
@@ -103,22 +103,22 @@
     (new-map-entry-reverse-seq (get-state-node this) key (get-state-resources this))))
 
 (defn -empty [^AAMap this]
-  (new AAMap (empty-node (get-state-node this))
+  (new AAMap (empty-node (get-state-node this) (get-state-resources this))
        (get-state-resources this)
        (get-state-meta this)))
 
 (defn -count [this]
-  (.getCnt (get-state-node this)))
+  (.getCnt (get-state-node this) (get-state-resources this)))
 
 (defn -entryKey [this ^MapEntry entry]
   (.getKey entry))
 
 (defn -iterator [^AAMap this]
-  (new-counted-iterator (get-state-node this)))
+  (new-counted-iterator (get-state-node this) (get-state-resources this)))
 
 (defn -nth
   ([^AAMap this i]
-   (nth-t2 (get-state-node this) i))
+   (nth-t2 (get-state-node this) i (get-state-resources this)))
   ([this i notFound]
    (if (and (>= i 0) (< i (-count this)))
      (-nth this i)

@@ -41,11 +41,11 @@
 (defn -withMeta [^AAVector this meta] (new AAVector (get-state-node this) (get-state-resources this) meta))
 
 (defn -count [this]
-  (.getCnt (get-state-node this)))
+  (.getCnt (get-state-node this) (get-state-resources this)))
 
 (defn -nth
   ([^AAVector this i]
-   (nth-t2 (get-state-node this) i))
+   (nth-t2 (get-state-node this) i (get-state-resources this)))
   ([this i notFound]
    (if (and (>= i 0) (< i (-count this)))
      (-nth this i)
@@ -53,7 +53,7 @@
 
 (defn -cons [^AAVector this val]
   (let [n0 (get-state-node this)
-        n1 (vector-add n0 val (-count this))]
+        n1 (vector-add n0 val (-count this) (get-state-resources this))]
     (new AAVector n1 (get-state-resources this) (get-state-meta this))))
 
 (defn -addNode [^AAVector this i val]
@@ -63,7 +63,7 @@
       (-cons this val)
       (and (>= i 0) (< i c))
       (let [n0 (get-state-node this)
-            n1 (vector-add n0 val i)]
+            n1 (vector-add n0 val i (get-state-resources this))]
         (new AAVector n1 (get-state-resources this) (get-state-meta this)))
       :else
       (throw (IndexOutOfBoundsException.)))))
@@ -75,29 +75,35 @@
       (-cons this val)
       (and (>= i 0) (< i c))
       (let [n0 (get-state-node this)
-            n1 (vector-set n0 val i)]
+            n1 (vector-set n0 val i (get-state-resources this))]
         (new AAVector n1 (get-state-resources this) (get-state-meta this)))
       :else
       (throw (IndexOutOfBoundsException.)))))
 
 (defn -empty [^AAVector this]
-  (new AAVector (empty-node (get-state-node this)) (get-state-resources this) (get-state-meta this)))
+  (new AAVector
+       (empty-node (get-state-node this) (get-state-resources this))
+       (get-state-resources this)
+       (get-state-meta this)))
 
 (defn -iterator [^AAVector this]
-  (new-counted-iterator (get-state-node this)))
+  (new-counted-iterator (get-state-node this) (get-state-resources this)))
 
 (defn -seq
   [^AAVector this]
-  (new-counted-seq (get-state-node this)))
+  (new-counted-seq (get-state-node this) (get-state-resources this)))
 
 (defn -pop [^AAVector this]
   (if (empty? this)
     this
     (let [n0 (get-state-node this)
-          n1 (deln n0 (- (-count this) 1))]
+          n1 (deln n0 (- (-count this) 1) (get-state-resources this))]
       (new AAVector n1 (get-state-resources this) (get-state-meta this)))))
 
 (defn -dropNode [^AAVector this i]
   (if (or (< i 0) (>= i (-count this)))
     this
-    (new AAVector (deln (get-state-node this) i) (get-state-resources this) (get-state-meta this))))
+    (new AAVector
+         (deln (get-state-node this) i (get-state-resources this))
+         (get-state-resources this)
+         (get-state-meta this))))

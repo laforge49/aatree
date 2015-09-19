@@ -11,29 +11,29 @@
 
   aatree.nodes.INode
 
-  (newNode [this t2 level left right cnt]
-    (let [d (->Node t2 level left right cnt (empty-node this))]
+  (newNode [this t2 level left right cnt resources]
+    (let [d (->Node t2 level left right cnt (empty-node this resources))]
       (->LazyNode (atom d) (atom nil) (atom nil) factory-registry (factory-for-instance factory-registry t2))))
 
-  (getT2 [this] (.getT2 (get-data this)))
+  (getT2 [this resources] (.getT2 (get-data this resources) resources))
 
-  (getLevel [this] (.getLevel (get-data this)))
+  (getLevel [this resources] (.getLevel (get-data this resources) resources))
 
-  (getLeft [this] (.getLeft (get-data this)))
+  (getLeft [this resources] (.getLeft (get-data this resources) resources))
 
-  (getRight [this] (.getRight (get-data this)))
+  (getRight [this resources] (.getRight (get-data this resources) resources))
 
-  (getCnt [this] (.getCnt (get-data this)))
+  (getCnt [this resources] (.getCnt (get-data this resources) resources))
 
-  (getNada [this] (.getNada (get-data this))))
+  (getNada [this resources] (.getNada (get-data this resources) resources)))
 
 (definterface IFactory
   (qualified [t2])
-  (sval [^aatree.lazy_nodes.LazyNode lazyNode])
-  (byteLength [lazyNode])
-  (deserialize [lazyNode])
-  (write [lazyNode buffer])
-  (read [lazyNode buffer]))
+  (sval [^aatree.lazy_nodes.LazyNode lazyNode resources])
+  (byteLength [lazyNode resources])
+  (deserialize [lazyNode resources])
+  (write [lazyNode buffer resources])
+  (read [lazyNode buffer resources]))
 
 (defn- ^IFactory get-factory [^LazyNode lazy-node]
   (.-factory lazy-node))
@@ -72,31 +72,31 @@
   (if typ
     (swap! (.-by-type-atom fregistry) assoc typ factory)))
 
-(defn- deserialize [^LazyNode this]
-  (let [d (.deserialize (get-factory this) this)
+(defn- deserialize [^LazyNode this resources]
+  (let [d (.deserialize (get-factory this) this resources)
         a (.-data-atom this)]
     (compare-and-set! a nil d)
     @a))
 
-(defn- get-data [^LazyNode this]
+(defn- get-data [^LazyNode this resources]
   (let [d @(.-data-atom this)]
     (if (nil? d)
-      (deserialize this)
+      (deserialize this resources)
       d)))
 
 (register-factory
   default-factory-registry
   (reify IFactory
     (qualified [this t2] this)
-    (sval [this lazyNode]
+    (sval [this lazyNode resources]
       (let [sval-atom (.-sval-atom lazyNode)]
       (if (nil? @sval-atom)
-        (compare-and-set! sval-atom nil (pr-str (.getT2 lazyNode))))
+        (compare-and-set! sval-atom nil (pr-str (.getT2 lazyNode resources))))
       @sval-atom))
-    (byteLength [this lazyNode])
-    (deserialize [this lazyNode])
-    (write [this lazyNode buffer])
-    (read [this lazyNode buffer]))
+    (byteLength [this lazyNode resources])
+    (deserialize [this lazyNode resources])
+    (write [this lazyNode buffer resources])
+    (read [this lazyNode buffer resources]))
   "e"
   nil)
 
