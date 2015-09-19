@@ -39,6 +39,8 @@
 (defn- ^IFactory get-factory [^LazyNode lazy-node]
   (.-factory lazy-node))
 
+(defn node-byte-length [lazy-node resources] (.byteLength (get-factory lazy-node) lazy-node resources))
+
 (deftype factory-registry [by-id-atom by-type-atom])
 
 (defn ^factory-registry create-factory-registry []
@@ -94,7 +96,12 @@
         (if (nil? @sval-atom)
           (compare-and-set! sval-atom nil (pr-str (.getT2 lazyNode resources))))
         @sval-atom))
-    (byteLength [this lazyNode resources])
+    (byteLength [this lazyNode resources]
+      (+ 4 ;byte length
+         (node-byte-length (left-node lazyNode resources) resources) ;left node
+         4 ;sval length
+         (* 2 (.sval this lazyNode resources)) ;sval
+         (node-byte-length (left-node lazyNode resources) resources))) ;right node
     (deserialize [this lazyNode resources])
     (write [this lazyNode buffer resources])
     (read [this lazyNode buffer resources]))
@@ -111,7 +118,7 @@
       (sval [this lazyNode resources]
         "")
       (byteLength [this lazyNode resources]
-        1)
+        0)
       (deserialize [this lazyNode resources])
       (write [this lazyNode buffer resources])
       (read [this lazyNode buffer resources]))))

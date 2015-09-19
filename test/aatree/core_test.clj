@@ -81,6 +81,8 @@
 
 (println (conj lazy-aavector 0))
 
+(println "pr-str x123" (pr-str x123))
+
 (def gen-element
   (gen/tuple gen/int))
 
