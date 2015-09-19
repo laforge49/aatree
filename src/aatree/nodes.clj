@@ -12,34 +12,37 @@
   (getLeft [resources])
   (getRight [resources])
   (getCnt [resources])
-  (getNada [resources]))
+  (getNada []))
 
-(defn empty-node? [^INode n resources]
-  (or (nil? n) (zero? (.getLevel n resources))))
+(defn empty-node? [^INode n]
+  (or (nil? n) (identical? n (.getNada n))))
 
 (defn last-t2 [^INode this resources]
   (cond
-    (empty-node? this resources) nil
-    (empty-node? (.getRight this resources) resources) (.getT2 this resources)
-    :else (recur (.getRight this resources) resources)))
+    (empty-node? this)
+    nil
+    (empty-node? (.getRight this resources))
+    (.getT2 this resources)
+    :else
+    (recur (.getRight this resources) resources)))
 
 (defn empty-node [^INode this resources]
-  (if (empty-node? this resources)
+  (if (empty-node? this)
     this
-    (.getNada this resources)))
+    (.getNada this)))
 
 (defn ^INode left-node [^INode this resources]
-  (if (empty-node? (.getLeft this resources) resources)
+  (if (empty-node? (.getLeft this resources))
     (empty-node this resources)
     (.getLeft this resources)))
 
 (defn ^INode right-node [^INode this resources]
-  (if (empty-node? (.getRight this resources) resources)
+  (if (empty-node? (.getRight this resources))
     (empty-node this resources)
     (.getRight this resources)))
 
 (defn node-count [^INode this resources]
-  (if (empty-node? this resources)
+  (if (empty-node? this)
     0
     (.getCnt this resources)))
 
@@ -60,9 +63,9 @@
 (defn skew
   [^INode this resources]
   (cond
-    (empty-node? this resources)
+    (empty-node? this)
     this
-    (empty-node? (.getLeft this resources) resources)
+    (empty-node? (.getLeft this resources))
     this
     (= (.getLevel (left-node this resources) resources) (.getLevel this resources))
     (let [l (.getLeft this resources)]
@@ -72,10 +75,10 @@
 
 (defn split [^INode this resources]
   (cond
-    (empty-node? this resources)
+    (empty-node? this)
     this
-    (or (empty-node? (right-node this resources) resources)
-        (empty-node? (right-node (right-node this resources) resources) resources))
+    (or (empty-node? (right-node this resources))
+        (empty-node? (right-node (right-node this resources) resources)))
     this
     (= (.getLevel this resources) (.getLevel (right-node (right-node this resources) resources) resources))
     (revise (right-node this resources)
@@ -100,7 +103,7 @@
         (revise this [:right rn :level should-be] resources)))))
 
 (defn nth-t2 [^INode this i resources]
-  (if (empty-node? this resources)
+  (if (empty-node? this)
     (throw (IndexOutOfBoundsException.))
     (let [l (left-node this resources)
           p (.getCnt l resources)]
@@ -113,7 +116,7 @@
         (.getT2 this resources)))))
 
 (defn deln [^INode this i resources]
-  (if (empty-node? this resources)
+  (if (empty-node? this)
     this
     (let [l (left-node this resources)
           p (.getCnt l resources)]
@@ -131,7 +134,7 @@
               t (skew t resources)
               t (revise t [:right (skew (right-node t resources) resources)] resources)
               r (right-node t resources)
-              t (if (empty-node? r resources)
+              t (if (empty-node? r)
                   t
                   (revise t [:right (revise r [:right (skew (right-node r resources) resources)] resources)] resources))
               t (split t resources)
@@ -196,7 +199,7 @@
    (CountedSequence/create (new-counted-reverse-iterator node i resources) identity)))
 
 (defn vector-add [^INode n v i resources]
-  (if (empty-node? n resources)
+  (if (empty-node? n)
     (.newNode n v 1 nil nil 1 resources)
     (let [l (left-node n resources)
           p (.getCnt l resources)]
@@ -209,7 +212,7 @@
         resources))))
 
 (defn vector-set [^INode n v i resources]
-  (if (empty-node? n resources)
+  (if (empty-node? n)
     (.newNode n v 1 nil nil 1 resources)
     (let [l (left-node n resources)
           p (.getCnt l resources)]
@@ -237,7 +240,7 @@
 (defn resource-cmpr [this x resources] (map-cmpr this x (:comparator resources) resources))
 
 (defn map-index-of [this x resources]
-  (if (empty-node? this resources)
+  (if (empty-node? this)
     0
     (let [c (resource-cmpr this x resources)]
       (cond
@@ -279,7 +282,7 @@
   (CountedSequence/create (new-counted-reverse-iterator node resources) value-of))
 
 (defn map-insert [^INode this ^MapEntry t-2 resources]
-  (if (empty-node? this resources)
+  (if (empty-node? this)
     (.newNode this t-2 1 nil nil 1 resources)
     (let [c (resource-cmpr this (.getKey t-2) resources)]
       (split (skew (cond
@@ -299,7 +302,7 @@
                                resources))) resources) resources))))
 
 (defn map-get-t2 [^INode this x resources]
-  (if (empty-node? this resources)
+  (if (empty-node? this)
     nil
     (let [c (resource-cmpr this x resources)]
       (cond
@@ -308,7 +311,7 @@
         :else (map-get-t2 (left-node this resources) x resources)))))
 
 (defn map-del [^INode this x resources]
-  (if (empty-node? this resources)
+  (if (empty-node? this)
     this
     (let [c (resource-cmpr this x resources)]
       (if (and (= c 0) (= 1 (.getLevel this resources)))
@@ -325,7 +328,7 @@
               t (skew t resources)
               t (revise t [:right (skew (right-node t resources) resources)] resources)
               r (right-node t resources)
-              t (if (empty-node? r resources)
+              t (if (empty-node? r)
                   t
                   (revise t [:right (revise r [:right (skew (right-node r resources) resources)] resources)] resources))
               t (split t resources)
@@ -352,7 +355,7 @@
 
   (getCnt [this resources] cnt)
 
-  (getNada [this resources] (create-empty-node)))
+  (getNada [this] (create-empty-node)))
 
 (def emptyNode
   (->Node nil 0 nil nil 0))
@@ -361,7 +364,7 @@
   emptyNode)
 
 (defn snodev [^INode this resources]
-  (if (empty-node? this resources)
+  (if (empty-node? this)
     ""
     (str (snodev (.getLeft this resources) resources)
          " <"

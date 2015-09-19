@@ -26,7 +26,7 @@
 
   (getCnt [this resources] (.getCnt (get-data this resources) resources))
 
-  (getNada [this resources] (create-lazy-empty-node)))
+  (getNada [this] (create-lazy-empty-node)))
 
 (definterface IFactory
   (qualified [t2])
