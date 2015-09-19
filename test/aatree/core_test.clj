@@ -29,9 +29,6 @@
 (println (.seqFrom x123 2 true))
 (println (.seqFrom x123 2 false))
 
-(def gen-element
-  (gen/tuple gen/int))
-
 (println)
 (def t1 aamap)
 (def t2 (assoc t1 3 -3))
@@ -82,6 +79,9 @@
 (println (dropn y012 3))
 
 (println (conj lazy-aavector 0))
+
+(def gen-element
+  (gen/tuple gen/int))
 
 (deftest vec-tests
   (assert-vector-like 100 aavector gen-element))

@@ -3,25 +3,24 @@
   (:require [aatree.lazy-nodes :refer :all])
   (:import (aatree AAMap AAVector)
            (aatree.nodes FlexVector)
-           (java.util Comparator)
            (clojure.lang RT)))
 
 (set! *warn-on-reflection* true)
 
-(def aamap (new AAMap (create-empty-node) {:comparator RT/DEFAULT_COMPARATOR}))
-
 (defn create-aamap
-  ([] aamap)
+  ([] (new AAMap (create-empty-node) {:comparator RT/DEFAULT_COMPARATOR}))
   ([resources]
    (if (:coparator resources)
    (new AAMap (create-empty-node) resources)
    (new AAMap (create-empty-node) (assoc resources :comparator RT/DEFAULT_COMPARATOR)))))
 
-(def aavector (new AAVector (create-empty-node) {}))
+(def aamap (create-aamap))
 
 (defn create-aavector
-  ([] aavector)
+  ([] (new AAVector (create-empty-node) {}))
   ([resources] (new AAVector (create-empty-node) resources)))
+
+(def aavector (create-aavector))
 
 (defn addn [^FlexVector vec ndx val]
   (.addNode vec ndx val))
@@ -44,13 +43,13 @@
              (assoc r :factory-registry default-factory-registry))]
      (new AAMap lazy-node r))))
 
-(def lazy-aavector (new AAVector lazy-node {:factory-registry default-factory-registry}))
-
 (defn create-lazy-aavector
-  ([] lazy-aavector)
+  ([] (new AAVector lazy-node {:factory-registry default-factory-registry}))
   ([resources]
    (if (:factory-registry resources)
      (new AAVector lazy-node resources)
      (new AAVector
           lazy-node
           (assoc resources :factory-registry default-factory-registry)))))
+
+(def lazy-aavector (create-lazy-aavector))
