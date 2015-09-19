@@ -7,6 +7,7 @@
 (def x aamap)
 (println (.entryAt x 1))
 (println (.containsKey x 1))
+(println (type x))
 (def x1 (.assoc x 1 1000))
 (println (.entryAt x1 1))
 (println (.containsKey x1 1))

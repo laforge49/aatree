@@ -5,14 +5,15 @@
 
 (declare ->LazyNode
          ^aatree.nodes.INode get-data
-         factory-for-instance)
+         factory-for-instance
+         create-lazy-empty-node)
 
 (deftype LazyNode [data-atom sval-atom buffer-atom factory]
 
   aatree.nodes.INode
 
   (newNode [this t2 level left right cnt resources]
-    (let [d (->Node t2 level left right cnt (empty-node this resources))]
+    (let [d (->Node t2 level left right cnt)]
       (->LazyNode (atom d) (atom nil) (atom nil) (factory-for-instance (:factory-registry resources) t2))))
 
   (getT2 [this resources] (.getT2 (get-data this resources) resources))
@@ -25,7 +26,7 @@
 
   (getCnt [this resources] (.getCnt (get-data this resources) resources))
 
-  (getNada [this resources] (.getNada (get-data this resources) resources)))
+  (getNada [this resources] (create-lazy-empty-node)))
 
 (definterface IFactory
   (qualified [t2])

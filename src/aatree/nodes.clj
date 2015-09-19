@@ -332,14 +332,15 @@
               t (revise t [:right (split (right-node t resources) resources)] resources)]
           t)))))
 
-(declare ->Node)
+(declare ->Node
+         create-empty-node)
 
-(deftype Node [t2 ^int level left right ^int cnt nada]
+(deftype Node [t2 ^int level left right ^int cnt]
 
   INode
 
   (newNode [this t2 level left right cnt resources]
-    (->Node t2 level left right cnt (empty-node this resources)))
+    (->Node t2 level left right cnt))
 
   (getT2 [this resources] t2)
 
@@ -351,10 +352,13 @@
 
   (getCnt [this resources] cnt)
 
-  (getNada [this resources] nada))
+  (getNada [this resources] (create-empty-node)))
 
-(defn create-empty-node
-  ([] (->Node nil 0 nil nil 0 nil)))
+(def emptyNode
+  (->Node nil 0 nil nil 0))
+
+(defn create-empty-node []
+  emptyNode)
 
 (defn snodev [^INode this resources]
   (if (empty-node? this resources)
