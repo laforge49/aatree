@@ -7,13 +7,13 @@
          ^aatree.nodes.INode get-data
          factory-for-instance)
 
-(deftype LazyNode [data-atom sval-atom buffer-atom factory-registry factory]
+(deftype LazyNode [data-atom sval-atom buffer-atom factory]
 
   aatree.nodes.INode
 
   (newNode [this t2 level left right cnt resources]
     (let [d (->Node t2 level left right cnt (empty-node this resources))]
-      (->LazyNode (atom d) (atom nil) (atom nil) factory-registry (factory-for-instance factory-registry t2))))
+      (->LazyNode (atom d) (atom nil) (atom nil) (factory-for-instance (:factory-registry resources) t2))))
 
   (getT2 [this resources] (.getT2 (get-data this resources) resources))
 
@@ -100,7 +100,7 @@
   "e"
   nil)
 
-(def lazy-node (->LazyNode (atom (create-empty-node)) (atom nil) (atom nil) default-factory-registry nil))
+(def lazy-node (->LazyNode (atom (create-empty-node)) (atom nil) (atom nil) nil))
 
 (defn create-lazy-empty-node
   [] lazy-node)
