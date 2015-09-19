@@ -49,7 +49,7 @@
 (defn- ^IFactory factory-for-id [^factory-registry fregistry id]
   (let [f (@(.-by_id_atom fregistry) id)]
   (if (nil? f)
-    (factory-for-id fregistry "e")
+    (factory-for-id fregistry (byte \e))
     f)))
 
 (defn className [^Class c] (.getName c))
@@ -57,7 +57,7 @@
 (defn ^IFactory factory-for-type [^factory-registry fregistry typ]
   (let [f (@(.-by_type_atom fregistry) typ)]
     (if (nil? f)
-      (factory-for-id fregistry "e")
+      (factory-for-id fregistry (byte \e))
       f)))
 
 (defn- ^IFactory factory-for-instance [^factory-registry fregistry inst]
@@ -98,7 +98,7 @@
     (deserialize [this lazyNode resources])
     (write [this lazyNode buffer resources])
     (read [this lazyNode buffer resources]))
-  "e"
+  (byte \e)
   nil)
 
 (def ^LazyNode lazy-node
@@ -111,7 +111,7 @@
       (sval [this lazyNode resources]
         "")
       (byteLength [this lazyNode resources]
-        4)
+        1)
       (deserialize [this lazyNode resources])
       (write [this lazyNode buffer resources])
       (read [this lazyNode buffer resources]))))
@@ -119,7 +119,7 @@
 (register-factory
   default-factory-registry
   (.factory lazy-node)
-  "n"
+  (byte \n)
   nil)
 
 (defn create-lazy-empty-node
