@@ -91,9 +91,9 @@
     (qualified [this t2] this)
     (sval [this lazyNode resources]
       (let [sval-atom (.-sval-atom lazyNode)]
-      (if (nil? @sval-atom)
-        (compare-and-set! sval-atom nil (pr-str (.getT2 lazyNode resources))))
-      @sval-atom))
+        (if (nil? @sval-atom)
+          (compare-and-set! sval-atom nil (pr-str (.getT2 lazyNode resources))))
+        @sval-atom))
     (byteLength [this lazyNode resources])
     (deserialize [this lazyNode resources])
     (write [this lazyNode buffer resources])
@@ -101,7 +101,26 @@
   "e"
   nil)
 
-(def lazy-node (->LazyNode (atom (create-empty-node)) (atom nil) (atom nil) nil))
+(def ^LazyNode lazy-node
+  (->LazyNode
+    (atom (create-empty-node))
+    (atom "")
+    (atom nil)
+    (reify IFactory
+      (qualified [this t2] this)
+      (sval [this lazyNode resources]
+        "")
+      (byteLength [this lazyNode resources]
+        4)
+      (deserialize [this lazyNode resources])
+      (write [this lazyNode buffer resources])
+      (read [this lazyNode buffer resources]))))
+
+(register-factory
+  default-factory-registry
+  (.factory lazy-node)
+  "n"
+  nil)
 
 (defn create-lazy-empty-node
   [] lazy-node)
