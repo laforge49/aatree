@@ -45,6 +45,12 @@
 (defn- ^aatree.lazy_nodes.IFactory get-factory [^LazyNode lazy-node]
   (.-factory lazy-node))
 
+(defn- get-buffer-atom [^LazyNode lazy-node]
+  (.-buffer_atom lazy-node))
+
+(defn- ^java.nio.ByteBuffer get-buffer [^LazyNode lazy-node]
+  @(.-buffer-atom lazy-node))
+
 (defn node-byte-length [lazy-node resources] (.byteLength (get-factory lazy-node) lazy-node resources))
 
 (deftype factory-registry [by-id-atom by-type-atom])
@@ -140,7 +146,17 @@
         0)
       (deserialize [this lazyNode resources])
       (write [this lazyNode buffer resources]
-        (.put buffer (byte (.factoryId this))))
+        (let [old-bb (get-buffer lazyNode)]
+          (if old-bb
+            (let [new-bb (.duplicate old-bb)
+                  lim (.limit new-bb)
+                  ba (byte-array lim)]
+              (.get new-bb ba)
+              (.put buffer ba))
+            (let [new-bb (.slice buffer)]
+              (.put buffer (byte (.factoryId this)))
+              (.limit new-bb (.byteLength this lazy-node resources))
+              (compare-and-set! (get-buffer-atom lazyNode) nil new-bb)))))
       (read [this lazyNode buffer resources]))))
 
 (register-factory
