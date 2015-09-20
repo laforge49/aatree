@@ -28,7 +28,7 @@
 (defn dropn [vec & args]
   (reduce (fn [^FlexVector v i] (.dropNode v i)) vec args))
 
-(def lazy-aamap (new AAMap lazy-node {:comparator RT/DEFAULT_COMPARATOR
+(def lazy-aamap (new AAMap emptyLazyNode {:comparator RT/DEFAULT_COMPARATOR
                                       :factory-registry default-factory-registry}))
 
 (defn create-lazy-aamap
@@ -41,15 +41,15 @@
          r (if (:factory-registry r)
              r
              (assoc r :factory-registry default-factory-registry))]
-     (new AAMap lazy-node r))))
+     (new AAMap emptyLazyNode r))))
 
 (defn create-lazy-aavector
-  ([] (new AAVector lazy-node {:factory-registry default-factory-registry}))
+  ([] (new AAVector emptyLazyNode {:factory-registry default-factory-registry}))
   ([resources]
    (if (:factory-registry resources)
-     (new AAVector lazy-node resources)
+     (new AAVector emptyLazyNode resources)
      (new AAVector
-          lazy-node
+          emptyLazyNode
           (assoc resources :factory-registry default-factory-registry)))))
 
 (def lazy-aavector (create-lazy-aavector))

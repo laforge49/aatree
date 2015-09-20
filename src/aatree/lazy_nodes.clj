@@ -1,5 +1,6 @@
 (ns aatree.lazy-nodes
-  (:require [aatree.nodes :refer :all]))
+  (:require [aatree.nodes :refer :all])
+  (:import (java.nio ByteBuffer CharBuffer)))
 
 (set! *warn-on-reflection* true)
 
@@ -50,6 +51,20 @@
 
 (defn- ^java.nio.ByteBuffer get-buffer [^LazyNode lazy-node]
   @(.-buffer-atom lazy-node))
+
+(defn node-write [^LazyNode lazy-node ^ByteBuffer buffer resources]
+  (let [^IFactory f (.-factory lazy-node)
+        ^ByteBuffer old-bb (get-buffer lazy-node)]
+    (if old-bb
+      (let [new-bb (.duplicate old-bb)
+            lim (.limit new-bb)
+            ba (byte-array lim)]
+        (.get new-bb ba)
+        (.put buffer ba))
+      (let [new-bb (.slice buffer)]
+        (.write f lazy-node buffer resources)
+        (.limit new-bb (.byteLength f lazy-node resources))
+        (compare-and-set! (get-buffer-atom lazy-node) nil new-bb)))))
 
 (defn node-byte-length [lazy-node resources] (.byteLength (get-factory lazy-node) lazy-node resources))
 
@@ -119,19 +134,27 @@
           (compare-and-set! sval-atom nil (pr-str (.getT2 lazyNode resources))))
         @sval-atom))
     (byteLength [this lazyNode resources]
-      (+ 4 ;byte length less 4
-         1 ;left node id
+      (+ 1 ;node id
+         4 ;byte length - 5
          (node-byte-length (left-node lazyNode resources) resources) ;left node
          4 ;sval length
-         (* 2 (.sval this lazyNode resources)) ;sval
-         1 ;right node id
+         (* 2 (count (.sval this lazyNode resources))) ;sval
          (node-byte-length (left-node lazyNode resources) resources))) ;right node
     (deserialize [this lazyNode resources])
     (write [this lazyNode buffer resources]
-      (.put buffer (byte (.factoryId this))))
+      (.put buffer (byte (.factoryId this)))
+      (.putInt buffer (- (.byteLength this lazyNode resources) 5))
+      (node-write (left-node lazyNode resources) buffer resources)
+      (let [^String sv (.sval this lazyNode resources)
+            svl (count sv)
+            ^CharBuffer cb (.asCharBuffer buffer)]
+        (.putInt buffer svl)
+        (.put cb sv)
+        (.position buffer (+ (* 2 svl) (.position buffer))))
+      (node-write (right-node lazyNode resources) buffer resources))
     (read [this lazyNode buffer resources])))
 
-(def ^LazyNode lazy-node
+(def ^LazyNode emptyLazyNode
   (->LazyNode
     (atom (create-empty-node))
     (atom "")
@@ -143,25 +166,15 @@
       (sval [this lazyNode resources]
         "")
       (byteLength [this lazyNode resources]
-        0)
+        1)
       (deserialize [this lazyNode resources])
       (write [this lazyNode buffer resources]
-        (let [old-bb (get-buffer lazyNode)]
-          (if old-bb
-            (let [new-bb (.duplicate old-bb)
-                  lim (.limit new-bb)
-                  ba (byte-array lim)]
-              (.get new-bb ba)
-              (.put buffer ba))
-            (let [new-bb (.slice buffer)]
-              (.put buffer (byte (.factoryId this)))
-              (.limit new-bb (.byteLength this lazy-node resources))
-              (compare-and-set! (get-buffer-atom lazyNode) nil new-bb)))))
+        (.put buffer (byte (.factoryId this))))
       (read [this lazyNode buffer resources]))))
 
 (register-factory
   default-factory-registry
-  (.factory lazy-node))
+  (.factory emptyLazyNode))
 
 (defn create-lazy-empty-node
-  [] lazy-node)
+  [] emptyLazyNode)
