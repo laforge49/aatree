@@ -2,7 +2,9 @@
   (:gen-class
    :main false
    :extends clojure.lang.APersistentVector
-   :implements [clojure.lang.IObj aatree.nodes.FlexVector]
+   :implements [clojure.lang.IObj
+                aatree.nodes.FlexVector
+                aatree.nodes.INoded]
    :constructors {[aatree.nodes.INode clojure.lang.IPersistentMap]
                   []
                   [aatree.nodes.INode clojure.lang.IPersistentMap clojure.lang.IPersistentMap]
@@ -21,7 +23,7 @@
 (defn ^vector-state get-state [^AAVector this]
   (.-state this))
 
-(defn- ^INode get-state-node [this]
+(defn ^INode -getINode [this]
   (.-node (get-state this)))
 
 (defn- ^IPersistentMap get-state-resources [this]
@@ -38,21 +40,21 @@
 
 (defn -meta [^AAVector this] (get-state-meta this))
 
-(defn -withMeta [^AAVector this meta] (new AAVector (get-state-node this) (get-state-resources this) meta))
+(defn -withMeta [^AAVector this meta] (new AAVector (-getINode this) (get-state-resources this) meta))
 
 (defn -count [this]
-  (.getCnt (get-state-node this) (get-state-resources this)))
+  (.getCnt (-getINode this) (get-state-resources this)))
 
 (defn -nth
   ([^AAVector this i]
-   (nth-t2 (get-state-node this) i (get-state-resources this)))
+   (nth-t2 (-getINode this) i (get-state-resources this)))
   ([this i notFound]
    (if (and (>= i 0) (< i (-count this)))
      (-nth this i)
      notFound)))
 
 (defn -cons [^AAVector this val]
-  (let [n0 (get-state-node this)
+  (let [n0 (-getINode this)
         n1 (vector-add n0 val (-count this) (get-state-resources this))]
     (new AAVector n1 (get-state-resources this) (get-state-meta this))))
 
@@ -62,7 +64,7 @@
       (= i c)
       (-cons this val)
       (and (>= i 0) (< i c))
-      (let [n0 (get-state-node this)
+      (let [n0 (-getINode this)
             n1 (vector-add n0 val i (get-state-resources this))]
         (new AAVector n1 (get-state-resources this) (get-state-meta this)))
       :else
@@ -74,7 +76,7 @@
       (= i c)
       (-cons this val)
       (and (>= i 0) (< i c))
-      (let [n0 (get-state-node this)
+      (let [n0 (-getINode this)
             n1 (vector-set n0 val i (get-state-resources this))]
         (new AAVector n1 (get-state-resources this) (get-state-meta this)))
       :else
@@ -82,21 +84,21 @@
 
 (defn -empty [^AAVector this]
   (new AAVector
-       (empty-node (get-state-node this) (get-state-resources this))
+       (empty-node (-getINode this) (get-state-resources this))
        (get-state-resources this)
        (get-state-meta this)))
 
 (defn -iterator [^AAVector this]
-  (new-counted-iterator (get-state-node this) (get-state-resources this)))
+  (new-counted-iterator (-getINode this) (get-state-resources this)))
 
 (defn -seq
   [^AAVector this]
-  (new-counted-seq (get-state-node this) (get-state-resources this)))
+  (new-counted-seq (-getINode this) (get-state-resources this)))
 
 (defn -pop [^AAVector this]
   (if (empty? this)
     this
-    (let [n0 (get-state-node this)
+    (let [n0 (-getINode this)
           n1 (deln n0 (- (-count this) 1) (get-state-resources this))]
       (new AAVector n1 (get-state-resources this) (get-state-meta this)))))
 
@@ -104,6 +106,6 @@
   (if (or (< i 0) (>= i (-count this)))
     this
     (new AAVector
-         (deln (get-state-node this) i (get-state-resources this))
+         (deln (-getINode this) i (get-state-resources this))
          (get-state-resources this)
          (get-state-meta this))))
