@@ -35,8 +35,12 @@
   (sval [^aatree.lazy_nodes.LazyNode lazyNode resources])
   (byteLength [lazyNode resources])
   (deserialize [lazyNode resources])
-  (write [lazyNode buffer resources])
-  (read [lazyNode buffer resources]))
+  (write [lazyNode
+         ^java.nio.ByteBuffer buffer
+          resources])
+  (read [lazyNode
+         ^java.nio.ByteBuffer buffer
+         resources]))
 
 (defn- ^aatree.lazy_nodes.IFactory get-factory [^LazyNode lazy-node]
   (.-factory lazy-node))
@@ -117,7 +121,8 @@
          1 ;right node id
          (node-byte-length (left-node lazyNode resources) resources))) ;right node
     (deserialize [this lazyNode resources])
-    (write [this lazyNode buffer resources])
+    (write [this lazyNode buffer resources]
+      (.put buffer (byte (.factoryId this))))
     (read [this lazyNode buffer resources])))
 
 (def ^LazyNode lazy-node
@@ -134,7 +139,8 @@
       (byteLength [this lazyNode resources]
         0)
       (deserialize [this lazyNode resources])
-      (write [this lazyNode buffer resources])
+      (write [this lazyNode buffer resources]
+        (.put buffer (byte (.factoryId this))))
       (read [this lazyNode buffer resources]))))
 
 (register-factory
