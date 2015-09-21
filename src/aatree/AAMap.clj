@@ -6,7 +6,8 @@
                 clojure.lang.Reversible
                 clojure.lang.Sorted
                 clojure.lang.Counted
-                clojure.lang.Indexed]
+                clojure.lang.Indexed
+                aatree.nodes.INoded]
    :constructors {[aatree.nodes.INode clojure.lang.IPersistentMap]
                   []
                   [aatree.nodes.INode clojure.lang.IPersistentMap clojure.lang.IPersistentMap]
@@ -25,7 +26,7 @@
 (defn ^map-state get-state [^AAMap this]
   (.-state this))
 
-(defn- ^INode get-state-node [this]
+(defn- ^INode getINode [this]
   (.-node (get-state this)))
 
 (defn- ^IPersistentMap get-state-resources [this]
@@ -42,9 +43,9 @@
 
 (defn -meta [^AAMap this] (get-state-meta this))
 
-(defn -withMeta [^AAMap this meta] (new AAMap (get-state-node this) (get-state-resources this) meta))
+(defn -withMeta [^AAMap this meta] (new AAMap (getINode this) (get-state-resources this) meta))
 
-(defn -entryAt [^AAMap this key] (map-get-t2 (get-state-node this) key (get-state-resources this)))
+(defn -entryAt [^AAMap this key] (map-get-t2 (getINode this) key (get-state-resources this)))
 
 (defn -containsKey [this key] (boolean (-entryAt this key)))
 
@@ -58,14 +59,14 @@
    (-valAt this key nil)))
 
 (defn -assoc [^AAMap this key val]
-  (let [n0 (get-state-node this)
+  (let [n0 (getINode this)
         n1 (map-insert n0 (new MapEntry key val) (get-state-resources this))]
     (if (identical? n0 n1)
       this
       (new AAMap n1 (get-state-resources this) (get-state-meta this)))))
 
 (defn -assocEx [^AAMap this key val]
-  (let [n0 (get-state-node this)]
+  (let [n0 (getINode this)]
     (if (-containsKey this key)
       this
       (new AAMap
@@ -74,51 +75,51 @@
            (get-state-meta this)))))
 
 (defn -without [^AAMap this key]
-  (let [n0 (get-state-node this)
+  (let [n0 (getINode this)
         n1 (map-del n0 key (get-state-resources this))]
     (if (identical? n0 n1)
       this
       (new AAMap n1 (get-state-resources this) (get-state-meta this)))))
 
 (defn -rseq [^AAMap this]
-  (new-counted-reverse-seq (get-state-node this) (get-state-resources this)))
+  (new-counted-reverse-seq (getINode this) (get-state-resources this)))
 
 (defn -seq
   ([^AAMap this]
-   (new-counted-seq (get-state-node this) (get-state-resources this)))
+   (new-counted-seq (getINode this) (get-state-resources this)))
   ([this ascending]
    (if ascending
      (-seq this)
      (-rseq this))))
 
 (defn -keyIterator [^AAMap this]
-  (new-map-key-seq (get-state-node this) (get-state-resources this)))
+  (new-map-key-seq (getINode this) (get-state-resources this)))
 
 (defn -valIterator [^AAMap this]
-  (new-map-value-seq (get-state-node this) (get-state-resources this)))
+  (new-map-value-seq (getINode this) (get-state-resources this)))
 
 (defn -seqFrom [^AAMap this key ascending]
   (if ascending
-    (new-map-entry-seq (get-state-node this) key (get-state-resources this))
-    (new-map-entry-reverse-seq (get-state-node this) key (get-state-resources this))))
+    (new-map-entry-seq (getINode this) key (get-state-resources this))
+    (new-map-entry-reverse-seq (getINode this) key (get-state-resources this))))
 
 (defn -empty [^AAMap this]
-  (new AAMap (empty-node (get-state-node this) (get-state-resources this))
+  (new AAMap (empty-node (getINode this) (get-state-resources this))
        (get-state-resources this)
        (get-state-meta this)))
 
 (defn -count [this]
-  (.getCnt (get-state-node this) (get-state-resources this)))
+  (.getCnt (getINode this) (get-state-resources this)))
 
 (defn -entryKey [this ^MapEntry entry]
   (.getKey entry))
 
 (defn -iterator [^AAMap this]
-  (new-counted-iterator (get-state-node this) (get-state-resources this)))
+  (new-counted-iterator (getINode this) (get-state-resources this)))
 
 (defn -nth
   ([^AAMap this i]
-   (nth-t2 (get-state-node this) i (get-state-resources this)))
+   (nth-t2 (getINode this) i (get-state-resources this)))
   ([this i notFound]
    (if (and (>= i 0) (< i (-count this)))
      (-nth this i)
