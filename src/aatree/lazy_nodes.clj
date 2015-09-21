@@ -1,6 +1,7 @@
 (ns aatree.lazy-nodes
   (:require [aatree.nodes :refer :all])
-  (:import (java.nio ByteBuffer CharBuffer)))
+  (:import (java.nio ByteBuffer CharBuffer)
+           (aatree AAMap AAVector)))
 
 (set! *warn-on-reflection* true)
 
@@ -33,13 +34,13 @@
   (factoryId [])
   (instanceType [])
   (qualified [t2])
-  (sval [^aatree.lazy_nodes.LazyNode lazyNode resources])
-  (byteLength [lazyNode resources])
-  (deserialize [lazyNode resources])
-  (write [lazyNode
+  (sval [wrapper resources])
+  (byteLength [wrapper resources])
+  (deserialize [wrapper resources])
+  (write [wrapper
          ^java.nio.ByteBuffer buffer
           resources])
-  (read [lazyNode
+  (read [wrapper
          ^java.nio.ByteBuffer buffer
          resources]))
 
@@ -129,12 +130,13 @@
   default-factory-registry
   (reify aatree.lazy_nodes.IFactory
     (factoryId [this] (byte \e))
-    (instanceType [this] nil)
+    (instanceType [this] (type LazyNode))
     (qualified [this t2] this)
     (sval [this lazyNode resources]
-      (let [sval-atom (.-sval-atom lazyNode)]
+      (let [^aatree.lazy_nodes.LazyNode ln lazyNode
+            sval-atom (.-sval-atom ln)]
         (if (nil? @sval-atom)
-          (compare-and-set! sval-atom nil (pr-str (.getT2 lazyNode resources))))
+          (compare-and-set! sval-atom nil (pr-str (.getT2 ln resources))))
         @sval-atom))
     (byteLength [this lazyNode resources]
       (+ 1 ;node id
@@ -181,3 +183,22 @@
 
 (defn create-lazy-empty-node
   [] emptyLazyNode)
+
+(def aavector-factory
+  (reify aatree.lazy_nodes.IFactory
+    (factoryId [this] (byte \v))
+    (instanceType [this] nil)
+    (qualified [this t2] this)
+    (sval [this aavector resources]
+      "")
+    (byteLength [this aavector resources]
+      (let [^AAVector v aavector
+            lazy-node (.getINode v)]
+        (+ 1 (.byteLength (get-factory lazy-node) lazy-node resources))))
+    (deserialize [this aavector resources])
+    (write [this aavector buffer resources]
+      (let [^AAVector v aavector
+            lazy-node (.getINode v)]
+      (.put buffer (byte (.factoryId this)))
+      (node-write lazy-node buffer resources)))
+    (read [this aavector buffer resources])))
