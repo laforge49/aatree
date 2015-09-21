@@ -52,6 +52,8 @@
 (defn- ^java.nio.ByteBuffer get-buffer [^LazyNode lazy-node]
   @(.-buffer-atom lazy-node))
 
+(defn- get-data-atom [^LazyNode this] (.-data-atom this))
+
 (defn node-write [^LazyNode lazy-node ^ByteBuffer buffer resources]
   (let [^IFactory f (.-factory lazy-node)
         ^ByteBuffer old-bb (get-buffer lazy-node)]
@@ -64,7 +66,8 @@
       (let [new-bb (.slice buffer)]
         (.write f lazy-node buffer resources)
         (.limit new-bb (.byteLength f lazy-node resources))
-        (compare-and-set! (get-buffer-atom lazy-node) nil new-bb)))))
+        (compare-and-set! (get-buffer-atom lazy-node) nil new-bb)
+        (reset! (get-data-atom lazy-node) nil)))))
 
 (defn node-byte-length [lazy-node resources] (.byteLength (get-factory lazy-node) lazy-node resources))
 
@@ -112,12 +115,12 @@
 
 (defn- deserialize [^LazyNode this resources]
   (let [d (.deserialize (get-factory this) this resources)
-        a (.-data-atom this)]
+        a (get-data-atom this)]
     (compare-and-set! a nil d)
     @a))
 
 (defn- get-data [^LazyNode this resources]
-  (let [d @(.-data-atom this)]
+  (let [d @(get-data-atom this)]
     (if (nil? d)
       (deserialize this resources)
       d)))
@@ -147,8 +150,8 @@
       (node-write (left-node lazyNode resources) buffer resources)
       (let [^String sv (.sval this lazyNode resources)
             svl (count sv)
+            _ (.putInt buffer svl)
             ^CharBuffer cb (.asCharBuffer buffer)]
-        (.putInt buffer svl)
         (.put cb sv)
         (.position buffer (+ (* 2 svl) (.position buffer))))
       (node-write (right-node lazyNode resources) buffer resources))
