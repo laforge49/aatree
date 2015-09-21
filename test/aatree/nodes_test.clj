@@ -3,7 +3,7 @@
             [aatree.nodes :refer :all])
   (:import (clojure.lang MapEntry RT)))
 
-(def v0 (create-empty-node))
+(def v0 emptyNode)
 (pnodev v0 "v0" {})
 
 (def v1 (vector-add v0 1001 0 {}))
@@ -21,7 +21,7 @@
 
 (pnodev (deln v012 2 {}) "v012 - 2" {})
 
-(def m0 (create-empty-node))
+(def m0 emptyNode)
 
 (def m1 (map-insert m0 (new MapEntry "1" 1001) {:comparator RT/DEFAULT_COMPARATOR}))
 (pnodev m1 "m1" {})

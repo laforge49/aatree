@@ -4,7 +4,7 @@
             [collection-check :refer :all]
             [clojure.test.check.generators :as gen]))
 
-(def x aamap)
+(def x emptyAAMap)
 (println (.entryAt x 1))
 (println (.containsKey x 1))
 (println (type x))
@@ -31,7 +31,7 @@
 (println (.seqFrom x123 2 false))
 
 (println)
-(def t1 aamap)
+(def t1 emptyAAMap)
 (def t2 (assoc t1 3 -3))
 (println t2)
 (def t3 (assoc t2 3 2))
@@ -46,7 +46,7 @@
 (println (meta (first (seq (keys t8)))))
 (println (meta (first (seq (vals t8)))))
 
-(def t9 (-> aamap
+(def t9 (-> emptyAAMap
             (assoc (clojure.core/with-meta [0] {:foo 0}) (clojure.core/with-meta [0] {:foo 0}))
             (assoc (clojure.core/with-meta [0] {:foo 0}) (clojure.core/with-meta [0] {:foo nil}))))
 (println t9)
@@ -61,7 +61,7 @@
 (println (nth x123 3 nil))
 
 (println)
-(def y aavector)
+(def y emptyAAVector)
 (println (count y))
 (def y1 (conj y 1001))
 (println (count y1))
@@ -79,7 +79,7 @@
 (println (dropn y012 1 1))
 (println (dropn y012 3))
 
-(println (conj lazy-aavector 0))
+(println (conj emptyLazyAAVector 0))
 
 (println "pr-str x123" (pr-str x123))
 
@@ -87,19 +87,19 @@
   (gen/tuple gen/int))
 
 (deftest vec-tests
-  (assert-vector-like 100 aavector gen-element))
+  (assert-vector-like 100 emptyAAVector gen-element))
 
 (deftest lazy-vec-tests
-  (assert-vector-like 100 lazy-aavector gen-element))
+  (assert-vector-like 100 emptyLazyAAVector gen-element))
 
 (deftest map-tests
   (assert-map-like 100
-                   aamap
+                   emptyAAMap
                    gen-element gen-element
                    {:base (sorted-map) :ordered? true}))
 
 (deftest lazy-map-tests
   (assert-map-like 100
-                   lazy-aamap
+                   emptyLazyAAMap
                    gen-element gen-element
                    {:base (sorted-map) :ordered? true}))

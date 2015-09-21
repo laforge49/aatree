@@ -159,7 +159,7 @@
 
 (def ^LazyNode emptyLazyNode
   (->LazyNode
-    (atom (create-empty-node))
+    (atom emptyNode)
     (atom "")
     (atom nil)
     (reify aatree.lazy_nodes.IFactory

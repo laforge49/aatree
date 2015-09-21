@@ -7,20 +7,22 @@
 
 (set! *warn-on-reflection* true)
 
+(def emptyAAMap
+  (new AAMap emptyNode {:comparator RT/DEFAULT_COMPARATOR}))
+
 (defn create-aamap
-  ([] (new AAMap (create-empty-node) {:comparator RT/DEFAULT_COMPARATOR}))
+  ([] emptyAAMap)
   ([resources]
    (if (:coparator resources)
-   (new AAMap (create-empty-node) resources)
-   (new AAMap (create-empty-node) (assoc resources :comparator RT/DEFAULT_COMPARATOR)))))
+   (new AAMap emptyNode resources)
+   (new AAMap emptyNode (assoc resources :comparator RT/DEFAULT_COMPARATOR)))))
 
-(def aamap (create-aamap))
+(def emptyAAVector
+  (new AAVector emptyNode {}))
 
 (defn create-aavector
-  ([] (new AAVector (create-empty-node) {}))
-  ([resources] (new AAVector (create-empty-node) resources)))
-
-(def aavector (create-aavector))
+  ([] emptyAAVector)
+  ([resources] (new AAVector emptyNode resources)))
 
 (defn addn [^FlexVector vec ndx val]
   (.addNode vec ndx val))
@@ -28,11 +30,12 @@
 (defn dropn [vec & args]
   (reduce (fn [^FlexVector v i] (.dropNode v i)) vec args))
 
-(def lazy-aamap (new AAMap emptyLazyNode {:comparator RT/DEFAULT_COMPARATOR
-                                      :factory-registry default-factory-registry}))
+(def emptyLazyAAMap
+  (new AAMap emptyLazyNode {:comparator RT/DEFAULT_COMPARATOR
+                            :factory-registry default-factory-registry}))
 
 (defn create-lazy-aamap
-  ([] lazy-aamap)
+  ([] emptyLazyAAMap)
   ([resources]
    (let [r resources
          r (if (:comparator r)
@@ -43,13 +46,14 @@
              (assoc r :factory-registry default-factory-registry))]
      (new AAMap emptyLazyNode r))))
 
+(def emptyLazyAAVector
+  (new AAVector emptyLazyNode {:factory-registry default-factory-registry}))
+
 (defn create-lazy-aavector
-  ([] (new AAVector emptyLazyNode {:factory-registry default-factory-registry}))
+  ([] emptyLazyAAVector)
   ([resources]
    (if (:factory-registry resources)
      (new AAVector emptyLazyNode resources)
      (new AAVector
           emptyLazyNode
           (assoc resources :factory-registry default-factory-registry)))))
-
-(def lazy-aavector (create-lazy-aavector))
