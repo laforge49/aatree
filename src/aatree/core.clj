@@ -57,3 +57,6 @@
      (new AAVector
           emptyLazyNode
           (assoc resources :factory-registry default-factory-registry)))))
+
+(defn lazy-byte-length [noded]
+  (node-byte-length (get-inode noded) (get-resources noded)))

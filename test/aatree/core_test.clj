@@ -61,7 +61,7 @@
 (println (nth x123 3 nil))
 
 (println)
-(def y emptyAAVector)
+(def y emptyLazyAAVector)
 (println (count y))
 (def y1 (conj y 1001))
 (println (count y1))
@@ -81,7 +81,14 @@
 
 (println (conj emptyLazyAAVector 0))
 
-(println "pr-str x123" (pr-str x123))
+(println "pr-str y" (pr-str y))
+(println "y length" (lazy-byte-length y))
+(println "pr-str y1" (pr-str y1))
+(println "y1 length" (lazy-byte-length y1))
+(println "pr-str y12" (pr-str y12))
+(println "y12 length" (lazy-byte-length y12))
+(println "pr-str y012" (pr-str y012))
+(println "y012 length" (lazy-byte-length y012))
 
 (def gen-element
   (gen/tuple gen/int))

@@ -15,10 +15,14 @@
   (getNada []))
 
 (definterface INoded
-  (^aatree.nodes.INode getINode []))
+  (^aatree.nodes.INode getINode [])
+  (getResources []))
 
 (defn ^aatree.nodes.INode get-inode [^aatree.nodes.INoded noded]
   (.getINode noded))
+
+(defn get-resources [^aatree.nodes.INoded noded]
+  (.getResources noded))
 
 (defn empty-node? [^INode n]
   (or (nil? n) (identical? n (.getNada n))))

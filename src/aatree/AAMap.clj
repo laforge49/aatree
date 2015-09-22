@@ -26,10 +26,10 @@
 (defn ^map-state get-state [^AAMap this]
   (.-state this))
 
-(defn- ^INode getINode [this]
+(defn- ^INode -getINode [this]
   (.-node (get-state this)))
 
-(defn- ^IPersistentMap get-state-resources [this]
+(defn ^IPersistentMap -getResources [this]
   (.-resources (get-state this)))
 
 (defn- ^IPersistentMap get-state-meta [this]
@@ -43,9 +43,9 @@
 
 (defn -meta [^AAMap this] (get-state-meta this))
 
-(defn -withMeta [^AAMap this meta] (new AAMap (getINode this) (get-state-resources this) meta))
+(defn -withMeta [^AAMap this meta] (new AAMap (-getINode this) (-getResources this) meta))
 
-(defn -entryAt [^AAMap this key] (map-get-t2 (getINode this) key (get-state-resources this)))
+(defn -entryAt [^AAMap this key] (map-get-t2 (-getINode this) key (-getResources this)))
 
 (defn -containsKey [this key] (boolean (-entryAt this key)))
 
@@ -59,67 +59,67 @@
    (-valAt this key nil)))
 
 (defn -assoc [^AAMap this key val]
-  (let [n0 (getINode this)
-        n1 (map-insert n0 (new MapEntry key val) (get-state-resources this))]
+  (let [n0 (-getINode this)
+        n1 (map-insert n0 (new MapEntry key val) (-getResources this))]
     (if (identical? n0 n1)
       this
-      (new AAMap n1 (get-state-resources this) (get-state-meta this)))))
+      (new AAMap n1 (-getResources this) (get-state-meta this)))))
 
 (defn -assocEx [^AAMap this key val]
-  (let [n0 (getINode this)]
+  (let [n0 (-getINode this)]
     (if (-containsKey this key)
       this
       (new AAMap
-           (map-insert n0 (new MapEntry key val) (get-state-resources this))
-           (get-state-resources this)
+           (map-insert n0 (new MapEntry key val) (-getResources this))
+           (-getResources this)
            (get-state-meta this)))))
 
 (defn -without [^AAMap this key]
-  (let [n0 (getINode this)
-        n1 (map-del n0 key (get-state-resources this))]
+  (let [n0 (-getINode this)
+        n1 (map-del n0 key (-getResources this))]
     (if (identical? n0 n1)
       this
-      (new AAMap n1 (get-state-resources this) (get-state-meta this)))))
+      (new AAMap n1 (-getResources this) (get-state-meta this)))))
 
 (defn -rseq [^AAMap this]
-  (new-counted-reverse-seq (getINode this) (get-state-resources this)))
+  (new-counted-reverse-seq (-getINode this) (-getResources this)))
 
 (defn -seq
   ([^AAMap this]
-   (new-counted-seq (getINode this) (get-state-resources this)))
+   (new-counted-seq (-getINode this) (-getResources this)))
   ([this ascending]
    (if ascending
      (-seq this)
      (-rseq this))))
 
 (defn -keyIterator [^AAMap this]
-  (new-map-key-seq (getINode this) (get-state-resources this)))
+  (new-map-key-seq (-getINode this) (-getResources this)))
 
 (defn -valIterator [^AAMap this]
-  (new-map-value-seq (getINode this) (get-state-resources this)))
+  (new-map-value-seq (-getINode this) (-getResources this)))
 
 (defn -seqFrom [^AAMap this key ascending]
   (if ascending
-    (new-map-entry-seq (getINode this) key (get-state-resources this))
-    (new-map-entry-reverse-seq (getINode this) key (get-state-resources this))))
+    (new-map-entry-seq (-getINode this) key (-getResources this))
+    (new-map-entry-reverse-seq (-getINode this) key (-getResources this))))
 
 (defn -empty [^AAMap this]
-  (new AAMap (empty-node (getINode this) (get-state-resources this))
-       (get-state-resources this)
+  (new AAMap (empty-node (-getINode this) (-getResources this))
+       (-getResources this)
        (get-state-meta this)))
 
 (defn -count [this]
-  (.getCnt (getINode this) (get-state-resources this)))
+  (.getCnt (-getINode this) (-getResources this)))
 
 (defn -entryKey [this ^MapEntry entry]
   (.getKey entry))
 
 (defn -iterator [^AAMap this]
-  (new-counted-iterator (getINode this) (get-state-resources this)))
+  (new-counted-iterator (-getINode this) (-getResources this)))
 
 (defn -nth
   ([^AAMap this i]
-   (nth-t2 (getINode this) i (get-state-resources this)))
+   (nth-t2 (-getINode this) i (-getResources this)))
   ([this i notFound]
    (if (and (>= i 0) (< i (-count this)))
      (-nth this i)

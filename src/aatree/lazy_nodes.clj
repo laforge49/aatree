@@ -144,7 +144,7 @@
          (node-byte-length (left-node lazyNode resources) resources) ;left node
          4 ;sval length
          (* 2 (count (.sval this lazyNode resources))) ;sval
-         (node-byte-length (left-node lazyNode resources) resources))) ;right node
+         (node-byte-length (right-node lazyNode resources) resources))) ;right node
     (deserialize [this lazyNode resources])
     (write [this lazyNode buffer resources]
       (.put buffer (byte (.factoryId this)))
