@@ -35,7 +35,7 @@
   (instanceType [])
   (qualified [t2])
   (sval [lazyNode resources])
-  (byteLength [lazyNode resources])
+  (byteLength [^aatree.lazy_nodes.LazyNode lazyNode resources])
   (deserialize [lazyNode resources])
   (write [lazyNode
          ^java.nio.ByteBuffer buffer
@@ -115,6 +115,7 @@
     (swap! (.-by-type-atom fregistry) assoc typ factory))))
 
 (defn- deserialize [^LazyNode this resources]
+  (println "deserialize???")
   (let [d (.deserialize (get-factory this) this resources)
         a (get-data-atom this)]
     (compare-and-set! a nil d)
@@ -139,12 +140,15 @@
           (compare-and-set! sval-atom nil (pr-str (.getT2 ln resources))))
         @sval-atom))
     (byteLength [this lazyNode resources]
-      (+ 1 ;node id
-         4 ;byte length - 5
-         (node-byte-length (left-node lazyNode resources) resources) ;left node
-         4 ;sval length
-         (* 2 (count (.sval this lazyNode resources))) ;sval
-         (node-byte-length (right-node lazyNode resources) resources))) ;right node
+      (let [^ByteBuffer bb @(.-buffer-atom lazyNode)]
+        (if bb
+          (.limit bb)
+          (+ 1 ;node id
+             4 ;byte length - 5
+             (node-byte-length (left-node lazyNode resources) resources) ;left node
+             4 ;sval length
+             (* 2 (count (.sval this lazyNode resources))) ;sval
+             (node-byte-length (right-node lazyNode resources) resources))))) ;right node
     (deserialize [this lazyNode resources])
     (write [this lazyNode buffer resources]
       (.put buffer (byte (.factoryId this)))

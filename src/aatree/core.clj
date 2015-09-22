@@ -60,3 +60,6 @@
 
 (defn lazy-byte-length [noded]
   (node-byte-length (get-inode noded) (get-resources noded)))
+
+(defn lazy-write [noded buffer]
+  (node-write (get-inode noded) buffer (get-resources noded)))

@@ -2,7 +2,8 @@
   (:require [clojure.test :refer :all]
             [aatree.core :refer :all]
             [collection-check :refer :all]
-            [clojure.test.check.generators :as gen]))
+            [clojure.test.check.generators :as gen])
+  (:import (java.nio ByteBuffer)))
 
 (def x emptyAAMap)
 (println (.entryAt x 1))
@@ -88,6 +89,9 @@
 (println "pr-str y12" (pr-str y12))
 (println "y12 length" (lazy-byte-length y12))
 (println "pr-str y012" (pr-str y012))
+(println "y012 length" (lazy-byte-length y012))
+
+(lazy-write y012 (ByteBuffer/allocate (lazy-byte-length y012)))
 (println "y012 length" (lazy-byte-length y012))
 
 (def gen-element
