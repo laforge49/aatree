@@ -34,13 +34,13 @@
   (factoryId [])
   (instanceType [])
   (qualified [t2])
-  (sval [wrapper resources])
-  (byteLength [wrapper resources])
-  (deserialize [wrapper resources])
-  (write [wrapper
+  (sval [lazyNode resources])
+  (byteLength [lazyNode resources])
+  (deserialize [lazyNode resources])
+  (write [lazyNode
          ^java.nio.ByteBuffer buffer
           resources])
-  (read [wrapper
+  (read [lazyNode
          ^java.nio.ByteBuffer buffer
          resources]))
 
@@ -183,22 +183,3 @@
 
 (defn create-lazy-empty-node
   [] emptyLazyNode)
-
-(def aavector-factory
-  (reify aatree.lazy_nodes.IFactory
-    (factoryId [this] (byte \v))
-    (instanceType [this] nil)
-    (qualified [this t2] this)
-    (sval [this aavector resources]
-      "")
-    (byteLength [this aavector resources]
-      (let [^AAVector v aavector
-            lazy-node (.getINode v)]
-        (+ 1 (.byteLength (get-factory lazy-node) lazy-node resources))))
-    (deserialize [this aavector resources])
-    (write [this aavector buffer resources]
-      (let [^AAVector v aavector
-            lazy-node (.getINode v)]
-      (.put buffer (byte (.factoryId this)))
-      (node-write lazy-node buffer resources)))
-    (read [this aavector buffer resources])))
