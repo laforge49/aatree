@@ -94,7 +94,7 @@
         id (.get bb)
         r (:factory-registry resources)
         f (factory-for-id r id)]
-    ))
+    (.read f buffer resources)))
 
 (defn className [^Class c] (.getName c))
 
