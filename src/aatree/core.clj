@@ -58,6 +58,12 @@
           emptyLazyNode
           (assoc resources :factory-registry default-factory-registry)))))
 
+(defn load-aavector
+  ([buffer]
+   (load-aavector buffer {}))
+  ([buffer resources]
+   (create-lazy-aavector resources)))
+
 (defn lazy-byte-length [noded]
   (node-byte-length (get-inode noded) (get-resources noded)))
 

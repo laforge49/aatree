@@ -40,8 +40,7 @@
   (write [lazyNode
          ^java.nio.ByteBuffer buffer
           resources])
-  (read [lazyNode
-         ^java.nio.ByteBuffer buffer
+  (read [^java.nio.ByteBuffer buffer
          resources]))
 
 (defn- ^aatree.lazy_nodes.IFactory get-factory [^LazyNode lazy-node]
@@ -90,7 +89,12 @@
     (factory-for-id fregistry (byte \e))
     f)))
 
-(defn read-lazy-node [buffer, resources])
+(defn node-read [^ByteBuffer buffer resources]
+  (let [^ByteBuffer bb (.slice buffer)
+        id (.get bb)
+        r (:factory-registry resources)
+        f (factory-for-id r id)]
+    ))
 
 (defn className [^Class c] (.getName c))
 
@@ -115,7 +119,6 @@
     (swap! (.-by-type-atom fregistry) assoc typ factory))))
 
 (defn- deserialize [^LazyNode this resources]
-  (println "deserialize???")
   (let [d (.deserialize (get-factory this) this resources)
         a (get-data-atom this)]
     (compare-and-set! a nil d)
@@ -161,7 +164,7 @@
         (.put cb sv)
         (.position buffer (+ (* 2 svl) (.position buffer))))
       (node-write (right-node lazyNode resources) buffer resources))
-    (read [this lazyNode buffer resources])))
+    (read [this buffer resources])))
 
 (def ^LazyNode emptyLazyNode
   (->LazyNode
@@ -176,10 +179,13 @@
         "")
       (byteLength [this lazyNode resources]
         1)
-      (deserialize [this lazyNode resources])
+      (deserialize [this lazyNode resources]
+        emptyNode)
       (write [this lazyNode buffer resources]
         (.put buffer (byte (.factoryId this))))
-      (read [this lazyNode buffer resources]))))
+      (read [this buffer resources]
+        (.get buffer)
+        (create-lazy-empty-node)))))
 
 (register-factory
   default-factory-registry
