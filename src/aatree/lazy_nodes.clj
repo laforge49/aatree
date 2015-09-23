@@ -60,10 +60,10 @@
     (if old-bb
       (let [new-bb (.duplicate old-bb)
             lim (.limit new-bb)
-            ba (byte-array lim)]
-        (.get new-bb ba)
-        (.put buffer ba))
-      (let [new-bb (.slice buffer)]
+            ba (byte-array lim)
+            _ (.get new-bb ba)
+            _ (.put buffer ba)
+            new-bb (.slice buffer)]
         (.write f lazy-node buffer resources)
         (.limit new-bb (.byteLength f lazy-node resources))
         (compare-and-set! (get-buffer-atom lazy-node) nil new-bb)
@@ -164,7 +164,17 @@
         (.put cb sv)
         (.position buffer (+ (* 2 svl) (.position buffer))))
       (node-write (right-node lazyNode resources) buffer resources))
-    (read [this buffer resources])))
+    (read [this buffer resources]
+      (let [bb buffer
+            _ (.get buffer)
+            lm5 (.getInt buffer)
+            _ (.position buffer (+ lm5 (.position buffer)))
+            _ (.limit bb (+ 5 lm5))]
+        (->LazyNode
+          (atom nil)
+          (atom nil)
+          (atom bb)
+          this)))))
 
 (def ^LazyNode emptyLazyNode
   (->LazyNode
