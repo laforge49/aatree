@@ -1,7 +1,6 @@
 (ns aatree.lazy-nodes
   (:require [aatree.nodes :refer :all])
-  (:import (java.nio ByteBuffer CharBuffer)
-           (aatree AAMap AAVector)))
+  (:import (java.nio ByteBuffer CharBuffer)))
 
 (set! *warn-on-reflection* true)
 
@@ -37,7 +36,7 @@
   (sval [lazyNode resources])
   (byteLength [^aatree.lazy_nodes.LazyNode lazyNode resources])
   (deserialize [lazyNode resources])
-  (write [lazyNode
+  (write [^aatree.lazy_nodes.LazyNode lazyNode
          ^java.nio.ByteBuffer buffer
           resources])
   (read [^java.nio.ByteBuffer buffer
@@ -149,6 +148,8 @@
           (+ 1 ;node id
              4 ;byte length - 5
              (node-byte-length (left-node lazyNode resources) resources) ;left node
+             4 ;level
+             4 ;cnt
              4 ;sval length
              (* 2 (count (.sval this lazyNode resources))) ;sval
              (node-byte-length (right-node lazyNode resources) resources))))) ;right node
@@ -157,6 +158,8 @@
       (.put buffer (byte (.factoryId this)))
       (.putInt buffer (- (.byteLength this lazyNode resources) 5))
       (node-write (left-node lazyNode resources) buffer resources)
+      (.putInt buffer (.getLevel lazyNode resources))
+      (.putInt buffer (.getCnt lazyNode resources))
       (let [^String sv (.sval this lazyNode resources)
             svl (count sv)
             _ (.putInt buffer svl)
