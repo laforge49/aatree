@@ -64,9 +64,8 @@
   ([buffer resources]
    (if (:factory-registry resources)
      (new AAVector (node-read buffer resources) resources)
-     (new AAVector
-          (node-read buffer (assoc resources :factory-registry default-factory-registry))
-          resources))))
+     (let [r (assoc resources :factory-registry default-factory-registry)]
+       (new AAVector (node-read buffer r) r)))))
 
 (defn lazy-byte-length [noded]
   (node-byte-length (get-inode noded) (get-resources noded)))

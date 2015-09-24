@@ -98,7 +98,7 @@
 (.flip bb)
 (def Y (load-aavector bb))
 (println "loaded aavector" (lazy-byte-length Y))
-;(println Y)
+(println Y)
 
 (def gen-element
   (gen/tuple gen/int))

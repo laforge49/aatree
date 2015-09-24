@@ -184,7 +184,7 @@
         (.position buffer (+ (* 2 svl) (.position buffer))))
       (node-write (right-node lazyNode resources) buffer resources))
     (read [this buffer resources]
-      (let [bb buffer
+      (let [bb (.slice buffer)
             _ (.get buffer)
             lm5 (.getInt buffer)
             _ (.position buffer (+ lm5 (.position buffer)))
