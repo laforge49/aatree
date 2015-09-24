@@ -95,7 +95,10 @@
 (lazy-write y012 bb)
 (println "y012 length" (lazy-byte-length y012))
 (println "y" y)
-(println "load aavector" (load-aavector bb))
+(.flip bb)
+(def Y (load-aavector bb))
+(println "loaded aavector" (lazy-byte-length Y))
+;(println Y)
 
 (def gen-element
   (gen/tuple gen/int))

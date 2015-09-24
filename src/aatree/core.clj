@@ -62,7 +62,11 @@
   ([buffer]
    (load-aavector buffer {}))
   ([buffer resources]
-   (create-lazy-aavector resources)))
+   (if (:factory-registry resources)
+     (new AAVector (node-read buffer resources) resources)
+     (new AAVector
+          (node-read buffer (assoc resources :factory-registry default-factory-registry))
+          resources))))
 
 (defn lazy-byte-length [noded]
   (node-byte-length (get-inode noded) (get-resources noded)))

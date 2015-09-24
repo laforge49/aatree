@@ -60,10 +60,10 @@
     (if old-bb
       (let [new-bb (.duplicate old-bb)
             lim (.limit new-bb)
-            ba (byte-array lim)
-            _ (.get new-bb ba)
-            _ (.put buffer ba)
-            new-bb (.slice buffer)]
+            ba (byte-array lim)]
+        (.get new-bb ba)
+        (.put buffer ba))
+      (let [new-bb (.slice buffer)]
         (.write f lazy-node buffer resources)
         (.limit new-bb (.byteLength f lazy-node resources))
         (compare-and-set! (get-buffer-atom lazy-node) nil new-bb)
