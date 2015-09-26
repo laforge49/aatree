@@ -120,6 +120,16 @@
 (def ELM1 (load-aamap elm1b))
 (println "loaded lazy map" (lazy-byte-length ELM1))
 (println ELM1)
+(def elm12 (assoc elm1 1002 2))
+(println (type elm12))
+(println elm12)
+(println "map len" (lazy-byte-length elm12))
+(def elm12b (ByteBuffer/allocate (lazy-byte-length elm12)))
+(lazy-write elm12 elm12b)
+(.flip elm12b)
+(def ELM12 (load-aamap elm12b))
+(println "loaded lazy map" (lazy-byte-length ELM12))
+(println ELM12)
 
 (def gen-element
   (gen/tuple gen/int))
