@@ -55,6 +55,8 @@
 
 (defn- get-data-atom [^LazyNode this] (.-data-atom this))
 
+(defn node-byte-length [lazy-node resources] (.byteLength (get-factory lazy-node) lazy-node resources))
+
 (defn node-write [^LazyNode lazy-node ^ByteBuffer buffer resources]
   (let [^IFactory f (.-factory lazy-node)
         ^ByteBuffer old-bb (get-buffer lazy-node)]
@@ -66,11 +68,9 @@
         (.put buffer ba))
       (let [new-bb (.slice buffer)]
         (.write f lazy-node buffer resources)
-        (.limit new-bb (.byteLength f lazy-node resources))
+        (.limit new-bb (node-byte-length lazy-node resources))
         (compare-and-set! (get-buffer-atom lazy-node) nil new-bb)
         (reset! (get-data-atom lazy-node) nil)))))
-
-(defn node-byte-length [lazy-node resources] (.byteLength (get-factory lazy-node) lazy-node resources))
 
 (deftype factory-registry [by-id-atom by-type-atom])
 
@@ -178,7 +178,7 @@
             (Node. t2 level left right cnt)))
     (write [this lazyNode buffer resources]
       (.put buffer (byte (.factoryId this)))
-      (.putInt buffer (- (.byteLength this lazyNode resources) 5))
+      (.putInt buffer (- (node-byte-length lazyNode resources) 5))
       (node-write (left-node lazyNode resources) buffer resources)
       (.putInt buffer (.getLevel lazyNode resources))
       (.putInt buffer (.getCnt lazyNode resources))
