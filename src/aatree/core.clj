@@ -67,6 +67,15 @@
      (let [r (assoc resources :factory-registry default-factory-registry)]
        (new AAVector (node-read buffer r) r)))))
 
+(defn load-aamap
+  ([buffer]
+   (load-aamap buffer {}))
+  ([buffer resources]
+   (if (:factory-registry resources)
+     (new AAMap (node-read buffer resources) resources)
+     (let [r (assoc resources :factory-registry default-factory-registry)]
+       (new AAMap (node-read buffer r) r)))))
+
 (defn lazy-byte-length [noded]
   (node-byte-length (get-inode noded) (get-resources noded)))
 

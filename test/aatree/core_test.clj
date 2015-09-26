@@ -100,6 +100,27 @@
 (println "loaded aavector" (lazy-byte-length Y))
 (println Y)
 
+(println)
+(def elm emptyLazyAAMap)
+(println elm)
+(println "map len" (lazy-byte-length elm))
+(def elmb (ByteBuffer/allocate (lazy-byte-length elm)))
+(lazy-write elm elmb)
+(.flip elmb)
+(def ELM (load-aamap elmb))
+(println "loaded empty lazy map" (lazy-byte-length ELM))
+(println ELM)
+(def elm1 (assoc elm 1001 1))
+(println (type elm1))
+(println elm1)
+(println "map len" (lazy-byte-length elm1))
+(def elm1b (ByteBuffer/allocate (lazy-byte-length elm1)))
+(lazy-write elm1 elm1b)
+(.flip elm1b)
+(def ELM1 (load-aamap elm1b))
+(println "loaded empty lazy map" (lazy-byte-length ELM1))
+(println ELM1)
+
 (def gen-element
   (gen/tuple gen/int))
 
