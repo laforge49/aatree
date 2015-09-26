@@ -10,14 +10,14 @@
          factory-for-instance
          create-lazy-empty-node)
 
-(deftype LazyNode [data-atom sval-atom buffer-atom factory]
+(deftype LazyNode [data-atom sval-atom blen-atom buffer-atom factory]
 
   aatree.nodes.INode
 
   (newNode [this t2 level left right cnt resources]
     (let [d (->Node t2 level left right cnt)
           f (factory-for-instance (:factory-registry resources) t2)]
-      (->LazyNode (atom d) (atom nil) (atom nil) f)))
+      (->LazyNode (atom d) (atom nil) (atom nil) (atom nil) f)))
 
   (getT2 [this resources] (.getT2 (get-data this resources) resources))
 
@@ -55,7 +55,12 @@
 
 (defn- get-data-atom [^LazyNode this] (.-data-atom this))
 
-(defn node-byte-length [lazy-node resources] (.byteLength (get-factory lazy-node) lazy-node resources))
+(defn node-byte-length [^LazyNode lazy-node resources]
+  (let [a (.-blen-atom lazy-node)
+        blen @a]
+    (if (not blen)
+      (compare-and-set! a nil (.byteLength (get-factory lazy-node) lazy-node resources)))
+    @a))
 
 (defn node-write [^LazyNode lazy-node ^ByteBuffer buffer resources]
   (let [^IFactory f (.-factory lazy-node)
@@ -194,10 +199,12 @@
             _ (.get buffer)
             lm5 (.getInt buffer)
             _ (.position buffer (+ lm5 (.position buffer)))
-            _ (.limit bb (+ 5 lm5))]
+            blen (+ 5 lm5)
+            _ (.limit bb blen)]
         (->LazyNode
           (atom nil)
           (atom nil)
+          (atom blen)
           (atom bb)
           this)))))
 
@@ -205,6 +212,7 @@
   (->LazyNode
     (atom emptyNode)
     (atom "")
+    (atom 1)
     (atom nil)
     (reify aatree.lazy_nodes.IFactory
       (factoryId [this] (byte \n))
