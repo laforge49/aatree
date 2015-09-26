@@ -178,7 +178,7 @@
             _ (.get cb svc)
             sv (String. svc)
             _ (reset! (.-sval_atom lazyNode) sv)
-            t2 (read-string sv)
+            t2 (read-string resources sv)
             _ (.position bb (+ (.position bb) (* 2 svl)))
             right (node-read bb resources)]
             (Node. t2 level left right cnt)))
@@ -241,7 +241,7 @@
             _ (.get cb svc)
             sv (String. svc)
             _ (reset! (.-sval_atom lazyNode) sv)
-            ^PersistentVector v (read-string sv)
+            ^PersistentVector v (read-string resources sv)
             t2 (MapEntry. (.get v 0) (.get v 1))
             _ (.position bb (+ (.position bb) (* 2 svl)))
             right (node-read bb resources)]
