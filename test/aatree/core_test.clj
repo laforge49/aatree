@@ -118,7 +118,7 @@
 (lazy-write elm1 elm1b)
 (.flip elm1b)
 (def ELM1 (load-aamap elm1b))
-(println "loaded empty lazy map" (lazy-byte-length ELM1))
+(println "loaded lazy map" (lazy-byte-length ELM1))
 (println ELM1)
 
 (def gen-element

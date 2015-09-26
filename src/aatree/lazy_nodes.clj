@@ -1,7 +1,8 @@
 (ns aatree.lazy-nodes
   (:require [aatree.nodes :refer :all])
   (:import (java.nio ByteBuffer CharBuffer)
-           (aatree.nodes Node)))
+           (aatree.nodes Node)
+           (clojure.lang MapEntry PersistentVector)))
 
 (set! *warn-on-reflection* true)
 
@@ -181,6 +182,70 @@
             _ (.position bb (+ (.position bb) (* 2 svl)))
             right (node-read bb resources)]
             (Node. t2 level left right cnt)))
+    (write [this lazyNode buffer resources]
+      (.put buffer (byte (.factoryId this)))
+      (.putInt buffer (- (node-byte-length lazyNode resources) 5))
+      (node-write (left-node lazyNode resources) buffer resources)
+      (.putInt buffer (.getLevel lazyNode resources))
+      (.putInt buffer (.getCnt lazyNode resources))
+      (let [^String sv (str-val this lazyNode resources)
+            svl (count sv)
+            _ (.putInt buffer svl)
+            ^CharBuffer cb (.asCharBuffer buffer)]
+        (.put cb sv)
+        (.position buffer (+ (* 2 svl) (.position buffer))))
+      (node-write (right-node lazyNode resources) buffer resources))
+    (read [this buffer resources]
+      (let [bb (.slice buffer)
+            _ (.get buffer)
+            lm5 (.getInt buffer)
+            _ (.position buffer (+ lm5 (.position buffer)))
+            blen (+ 5 lm5)
+            _ (.limit bb blen)]
+        (->LazyNode
+          (atom nil)
+          (atom nil)
+          (atom blen)
+          (atom bb)
+          this)))))
+
+(register-factory
+  default-factory-registry
+  (reify aatree.lazy_nodes.IFactory
+    (factoryId [this] (byte \p))
+    (instanceType [this] clojure.lang.MapEntry)
+    (qualified [this t2] this)
+    (sval [this inode resources]
+      (pr-str (.getT2 inode resources)))
+    (byteLength [this lazyNode resources]
+      (let [^ByteBuffer bb @(.-buffer-atom lazyNode)]
+        (if bb
+          (.limit bb)
+          (+ 1 ;node id
+             4 ;byte length - 5
+             (node-byte-length (left-node lazyNode resources) resources) ;left node
+             4 ;level
+             4 ;cnt
+             4 ;sval length
+             (* 2 (count (str-val this lazyNode resources))) ;sval
+             (node-byte-length (right-node lazyNode resources) resources))))) ;right node
+    (deserialize [this lazyNode resources]
+      (let [bb (.slice (get-buffer lazyNode))
+            _ (.position bb 5)
+            left (node-read bb resources)
+            level (.getInt bb)
+            cnt (.getInt bb)
+            svl (.getInt bb)
+            ^CharBuffer cb (.asCharBuffer bb)
+            svc (char-array svl)
+            _ (.get cb svc)
+            sv (String. svc)
+            _ (reset! (.-sval_atom lazyNode) sv)
+            ^PersistentVector v (read-string sv)
+            t2 (MapEntry. (.get v 0) (.get v 1))
+            _ (.position bb (+ (.position bb) (* 2 svl)))
+            right (node-read bb resources)]
+        (Node. t2 level left right cnt)))
     (write [this lazyNode buffer resources]
       (.put buffer (byte (.factoryId this)))
       (.putInt buffer (- (node-byte-length lazyNode resources) 5))
