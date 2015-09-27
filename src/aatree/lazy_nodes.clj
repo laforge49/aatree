@@ -101,13 +101,10 @@
   (if typ
     (swap! (.-by-type-atom fregistry) assoc typ factory))))
 
-(defn- fstr [^IFactory factory inode resources]
-  (.sval factory inode resources))
-
 (defn- str-val [^IFactory factory ^aatree.lazy_nodes.LazyNode lazyNode resources]
   (let [sval-atom (.-sval-atom lazyNode)]
     (if (nil? @sval-atom)
-      (compare-and-set! sval-atom nil (fstr factory lazyNode resources)))
+      (compare-and-set! sval-atom nil (.sval factory lazyNode resources)))
       @sval-atom))
 
 (defn- default-sval [this ^aatree.nodes.INode inode resources]
