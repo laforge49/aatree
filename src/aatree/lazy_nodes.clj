@@ -9,7 +9,10 @@
 (declare ->LazyNode
          ^aatree.nodes.INode get-data
          factory-for-instance
-         create-lazy-empty-node)
+         create-lazy-empty-node
+         node-byte-length
+         node-write
+         node-read)
 
 (deftype LazyNode [data-atom sval-atom blen-atom buffer-atom factory]
 
@@ -56,28 +59,6 @@
 
 (defn- get-data-atom [^LazyNode this] (.-data-atom this))
 
-(defn node-byte-length [^LazyNode lazy-node resources]
-  (let [a (.-blen-atom lazy-node)
-        blen @a]
-    (if (not blen)
-      (compare-and-set! a nil (.byteLength (get-factory lazy-node) lazy-node resources)))
-    @a))
-
-(defn node-write [^LazyNode lazy-node ^ByteBuffer buffer resources]
-  (let [^IFactory f (.-factory lazy-node)
-        ^ByteBuffer old-bb (get-buffer lazy-node)]
-    (if old-bb
-      (let [new-bb (.duplicate old-bb)
-            lim (.limit new-bb)
-            ba (byte-array lim)]
-        (.get new-bb ba)
-        (.put buffer ba))
-      (let [new-bb (.slice buffer)]
-        (.write f lazy-node buffer resources)
-        (.limit new-bb (node-byte-length lazy-node resources))
-        (compare-and-set! (get-buffer-atom lazy-node) nil new-bb)
-        (reset! (get-data-atom lazy-node) nil)))))
-
 (deftype factory-registry [by-id-atom by-type-atom])
 
 (defn ^factory-registry create-factory-registry
@@ -95,13 +76,6 @@
   (if (nil? f)
     (factory-for-id fregistry (byte \e))
     f)))
-
-(defn node-read [^ByteBuffer buffer resources]
-  (let [^ByteBuffer bb (.slice buffer)
-        id (.get bb)
-        r (:factory-registry resources)
-        f (factory-for-id r id)]
-    (.read f buffer resources)))
 
 (defn className [^Class c] (.getName c))
 
@@ -149,6 +123,13 @@
 (defn- default-sval [this ^aatree.nodes.INode inode resources]
   (pr-str (.getT2 inode resources)))
 
+(defn node-byte-length [^LazyNode lazy-node resources]
+  (let [a (.-blen-atom lazy-node)
+        blen @a]
+    (if (not blen)
+      (compare-and-set! a nil (.byteLength (get-factory lazy-node) lazy-node resources)))
+    @a))
+
 (defn- default-byteLength [this ^aatree.lazy_nodes.LazyNode lazyNode resources]
   (let [^ByteBuffer bb @(.-buffer-atom lazyNode)]
     (if bb
@@ -161,6 +142,22 @@
          4 ;sval length
          (* 2 (count (str-val this lazyNode resources))) ;sval
          (node-byte-length (right-node lazyNode resources) resources))))) ;right node
+
+(defn node-write [^LazyNode lazy-node ^ByteBuffer buffer resources]
+  (let [^IFactory f (.-factory lazy-node)
+        ^ByteBuffer old-bb (get-buffer lazy-node)]
+    (if old-bb
+      (let [new-bb (.duplicate old-bb)
+            lim (.limit new-bb)
+            ba (byte-array lim)]
+        (.get new-bb ba)
+        (.put buffer ba))
+      (let [new-bb (.slice buffer)]
+        (.write f lazy-node buffer resources)
+        (.limit new-bb (node-byte-length lazy-node resources))
+        (compare-and-set! (get-buffer-atom lazy-node) nil new-bb)
+        (reset! (get-data-atom lazy-node) nil)))))
+
 (defn- default-write [^IFactory this
                       ^aatree.lazy_nodes.LazyNode lazyNode
                       ^java.nio.ByteBuffer buffer
@@ -177,6 +174,13 @@
     (.put cb sv)
     (.position buffer (+ (* 2 svl) (.position buffer))))
   (node-write (right-node lazyNode resources) buffer resources))
+
+(defn node-read [^ByteBuffer buffer resources]
+  (let [^ByteBuffer bb (.slice buffer)
+        id (.get bb)
+        r (:factory-registry resources)
+        f (factory-for-id r id)]
+    (.read f buffer resources)))
 
 (defn- default-read [this
                      ^java.nio.ByteBuffer buffer
