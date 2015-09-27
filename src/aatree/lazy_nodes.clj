@@ -126,14 +126,15 @@
 (defn node-byte-length [^LazyNode lazy-node resources]
   (let [a (.-blen-atom lazy-node)
         blen @a]
-    (if (not blen)
-      (compare-and-set! a nil (.byteLength (get-factory lazy-node) lazy-node resources)))
+    (if (nil? blen)
+      (let [^ByteBuffer bb @(.-buffer-atom lazy-node)
+            blen (if bb
+                   (.limit bb)
+                   (.byteLength (get-factory lazy-node) lazy-node resources))]
+        (compare-and-set! a nil blen)))
     @a))
 
 (defn- default-byteLength [this ^aatree.lazy_nodes.LazyNode lazyNode resources]
-  (let [^ByteBuffer bb @(.-buffer-atom lazyNode)]
-    (if bb
-      (.limit bb)
       (+ 1 ;node id
          4 ;byte length - 5
          (node-byte-length (left-node lazyNode resources) resources) ;left node
@@ -141,7 +142,7 @@
          4 ;cnt
          4 ;sval length
          (* 2 (count (str-val this lazyNode resources))) ;sval
-         (node-byte-length (right-node lazyNode resources) resources))))) ;right node
+         (node-byte-length (right-node lazyNode resources) resources))) ;right node
 
 (defn node-write [^LazyNode lazy-node ^ByteBuffer buffer resources]
   (let [^IFactory f (.-factory lazy-node)
