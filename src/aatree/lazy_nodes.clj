@@ -40,7 +40,7 @@
   (instanceType [])
   (qualified [t2])
   (sval [^aatree.nodes.INode inode resources])
-  (byteLength [^aatree.lazy_nodes.LazyNode lazyNode resources])
+  (valueLength [^aatree.lazy_nodes.LazyNode lazyNode resources])
   (deserialize [^aatree.lazy_nodes.LazyNode lazyNode
                 ^java.nio.ByteBuffer buffer
                 resources])
@@ -111,25 +111,27 @@
   (pr-str (.getT2 inode resources)))
 
 (defn node-byte-length [^LazyNode lazy-node resources]
-  (let [a (.-blen-atom lazy-node)
-        blen @a]
-    (if (nil? blen)
-      (let [^ByteBuffer bb @(.-buffer-atom lazy-node)
-            blen (if bb
-                   (.limit bb)
-                   (.byteLength (get-factory lazy-node) lazy-node resources))]
-        (compare-and-set! a nil blen)))
-    @a))
+  (if (empty-node? lazy-node)
+    1
+    (let [a (.-blen-atom lazy-node)
+          blen @a]
+      (if (nil? blen)
+        (let [^ByteBuffer bb @(.-buffer-atom lazy-node)
+              blen (if bb
+                     (.limit bb)
+                     (+ 1 ;node id
+                        4 ;byte length - 5
+                        (node-byte-length (left-node lazy-node resources) resources) ;left node
+                        4 ;level
+                        4 ;cnt
+                        (.valueLength (get-factory lazy-node) lazy-node resources) ;t2
+                        (node-byte-length (right-node lazy-node resources) resources)))] ;right node
+          (compare-and-set! a nil blen)))
+      @a)))
 
-(defn- default-byteLength [this ^aatree.lazy_nodes.LazyNode lazyNode resources]
-      (+ 1 ;node id
-         4 ;byte length - 5
-         (node-byte-length (left-node lazyNode resources) resources) ;left node
-         4 ;level
-         4 ;cnt
-         4 ;sval length
-         (* 2 (count (str-val this lazyNode resources))) ;sval
-         (node-byte-length (right-node lazyNode resources) resources))) ;right node
+(defn- default-valueLength [this ^LazyNode lazyNode resources]
+      (+ 4 ;sval length
+         (* 2 (count (str-val this lazyNode resources))))) ;sval
 
 (defn node-write [^LazyNode lazy-node ^ByteBuffer buffer resources]
   (let [^IFactory f (.-factory lazy-node)
@@ -209,8 +211,8 @@
     (qualified [this t2] this)
     (sval [this inode resources]
       (default-sval this inode resources))
-    (byteLength [this lazyNode resources]
-      (default-byteLength this lazyNode resources))
+    (valueLength [this lazyNode resources]
+      (default-valueLength this lazyNode resources))
     (deserialize [this lazyNode bb resources]
       (let [svl (.getInt bb)
             ^CharBuffer cb (.asCharBuffer bb)
@@ -234,8 +236,8 @@
     (qualified [this t2] this)
     (sval [this inode resources]
       (default-sval this inode resources))
-    (byteLength [this lazyNode resources]
-      (default-byteLength this lazyNode resources))
+    (valueLength [this lazyNode resources]
+      (default-valueLength this lazyNode resources))
     (deserialize [this lazyNode bb resources]
       (let [svl (.getInt bb)
             ^CharBuffer cb (.asCharBuffer bb)
