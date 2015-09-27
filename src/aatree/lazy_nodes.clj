@@ -193,8 +193,15 @@
   (if (empty-node? this)
     emptyNode
     (let [a (get-data-atom this)]
-      (if (nil? @a)
-        (compare-and-set! a nil (.deserialize (get-factory this) this nil resources)))
+      (when (nil? @a)
+        (let [bb (.slice (get-buffer this))
+              _ (.position bb 5)
+              left (node-read bb resources)
+              level (.getInt bb)
+              cnt (.getInt bb)
+              t2 (.deserialize (get-factory this) this bb resources)
+              right (node-read bb resources)]
+        (compare-and-set! a nil (Node. t2 level left right cnt))))
       @a)))
 
 (register-factory
@@ -207,24 +214,16 @@
       (default-sval this inode resources))
     (byteLength [this lazyNode resources]
       (default-byteLength this lazyNode resources))
-    (deserialize [this lazyNode buffer resources]
-      (let [bb (.slice (get-buffer lazyNode))
-            _ (.position bb 5)
-            left (node-read bb resources)
-            level (.getInt bb)
-            cnt (.getInt bb)
-
-            svl (.getInt bb)
+    (deserialize [this lazyNode bb resources]
+      (let [svl (.getInt bb)
             ^CharBuffer cb (.asCharBuffer bb)
             svc (char-array svl)
             _ (.get cb svc)
             sv (String. svc)
             _ (reset! (.-sval_atom lazyNode) sv)
             t2 (read-string resources sv)
-            _ (.position bb (+ (.position bb) (* 2 svl)))
-
-            right (node-read bb resources)]
-        (Node. t2 level left right cnt)))
+            _ (.position bb (+ (.position bb) (* 2 svl)))]
+        t2))
     (write [this lazyNode buffer resources]
       (default-write this lazyNode buffer resources))
     (read [this buffer resources]
@@ -240,14 +239,8 @@
       (default-sval this inode resources))
     (byteLength [this lazyNode resources]
       (default-byteLength this lazyNode resources))
-    (deserialize [this lazyNode buffer resources]
-      (let [bb (.slice (get-buffer lazyNode))
-            _ (.position bb 5)
-            left (node-read bb resources)
-            level (.getInt bb)
-            cnt (.getInt bb)
-
-            svl (.getInt bb)
+    (deserialize [this lazyNode bb resources]
+      (let [svl (.getInt bb)
             ^CharBuffer cb (.asCharBuffer bb)
             svc (char-array svl)
             _ (.get cb svc)
@@ -255,10 +248,8 @@
             _ (reset! (.-sval_atom lazyNode) sv)
             ^PersistentVector v (read-string resources sv)
             t2 (MapEntry. (.get v 0) (.get v 1))
-            _ (.position bb (+ (.position bb) (* 2 svl)))
-
-            right (node-read bb resources)]
-        (Node. t2 level left right cnt)))
+            _ (.position bb (+ (.position bb) (* 2 svl)))]
+        t2))
     (write [this lazyNode buffer resources]
       (default-write this lazyNode buffer resources))
     (read [this buffer resources]
@@ -267,17 +258,13 @@
 (def ^LazyNode emptyLazyNode
   (->LazyNode
     (atom emptyNode)
-    (atom "")
+    (atom nil)
     (atom 1)
     (atom nil)
     (reify aatree.lazy_nodes.IFactory
       (factoryId [this] (byte \n))
       (instanceType [this] nil)
       (qualified [this t2] this)
-      (sval [this inode resources]
-        "")
-      (byteLength [this lazyNode resources]
-        1)
       (write [this lazyNode buffer resources]
         (.put buffer (byte (.factoryId this))))
       (read [this buffer resources]
