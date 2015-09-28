@@ -14,8 +14,8 @@
   ([] emptyAAMap)
   ([resources]
    (if (:coparator resources)
-   (new AAMap emptyNode resources)
-   (new AAMap emptyNode (assoc resources :comparator RT/DEFAULT_COMPARATOR)))))
+     (new AAMap emptyNode resources)
+     (new AAMap emptyNode (assoc resources :comparator RT/DEFAULT_COMPARATOR)))))
 
 (def emptyAAVector
   (new AAVector emptyNode {}))

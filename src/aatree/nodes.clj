@@ -152,10 +152,10 @@
           t)))))
 
 (deftype counted-iterator
-  [node
-   ^{:volatile-mutable true int true} ndx
-   ^int cnt
-   resources]
+         [node
+          ^{:volatile-mutable true int true} ndx
+          ^int cnt
+          resources]
 
   Counted
   (count [this] (- cnt ndx))
@@ -181,9 +181,9 @@
    (CountedSequence/create (new-counted-iterator node i resources) identity)))
 
 (deftype counted-reverse-iterator
-  [node
-   ^{:volatile-mutable true int true} ndx
-   resources]
+         [node
+          ^{:volatile-mutable true int true} ndx
+          resources]
 
   Counted
   (count [this] (+ 1 ndx))
@@ -214,12 +214,12 @@
     (let [l (left-node n resources)
           p (.getCnt l resources)]
       (split
-        (skew
-          (if (<= i p)
-            (revise n [:left (vector-add l v i resources)] resources)
-            (revise n [:right (vector-add (right-node n resources) v (- i p 1) resources)] resources))
-          resources)
-        resources))))
+       (skew
+        (if (<= i p)
+          (revise n [:left (vector-add l v i resources)] resources)
+          (revise n [:right (vector-add (right-node n resources) v (- i p 1) resources)] resources))
+        resources)
+       resources))))
 
 (defn vector-set [^INode n v i resources]
   (if (empty-node? n)
@@ -227,16 +227,16 @@
     (let [l (left-node n resources)
           p (.getCnt l resources)]
       (split
-        (skew
-          (cond
-            (< i p)
-            (revise n [:left (vector-set l v i resources)] resources)
-            (> i p)
-            (revise n [:right (vector-set (right-node n resources) v (- i p 1) resources)] resources)
-            :else
-            (revise n [:t2 v] resources))
-          resources)
-        resources))))
+       (skew
+        (cond
+          (< i p)
+          (revise n [:left (vector-set l v i resources)] resources)
+          (> i p)
+          (revise n [:right (vector-set (right-node n resources) v (- i p 1) resources)] resources)
+          :else
+          (revise n [:t2 v] resources))
+        resources)
+       resources))))
 
 (defn ^MapEntry get-entry [^INode this resources] (.getT2 this resources))
 

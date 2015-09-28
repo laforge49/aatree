@@ -7,7 +7,7 @@
 (pnodev v0 "v0" {})
 
 (def v1 (vector-add v0 1001 0 {}))
-(pnodev v1 "v1"{})
+(pnodev v1 "v1" {})
 
 (def v01 (vector-add v1 1000 0 {}))
 (pnodev v01 "v01" {})
