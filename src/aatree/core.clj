@@ -71,10 +71,14 @@
   ([buffer]
    (load-aamap buffer {}))
   ([buffer resources]
-   (if (:factory-registry resources)
-     (new AAMap (node-read buffer resources) resources)
-     (let [r (assoc resources :factory-registry default-factory-registry)]
-       (new AAMap (node-read buffer r) r)))))
+   (let [r resources
+         r (if (:comparator r)
+             r
+             (assoc r :comparator RT/DEFAULT_COMPARATOR))
+         r (if (:factory-registry r)
+             r
+             (assoc r :factory-registry default-factory-registry))]
+     (new AAMap (node-read buffer r) r))))
 
 (defn lazy-byte-length [noded]
   (node-byte-length (get-inode noded) (get-resources noded)))
