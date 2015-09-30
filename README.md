@@ -44,5 +44,5 @@ Time per complete update: 17 milliseconds.
 
 (Times will vary depending on the host system used to run the benchmarks.)
 
-##[releases](https://github.com/laforge49/aatree/releases)
+##[Releases](https://github.com/laforge49/aatree/releases)
 
