@@ -22,11 +22,11 @@ use of warn-on-reflection.
 
 ## Lazy Map Benchmark
 
-Time to build a lazy map of size 1000000 = 24 seconds.
+Time to build a lazy map of size 1,000,000 = 24 seconds.
 
 Time per entry: 24 microseconds.
 
-Time to deserialize/update/reserialize  1000 times = 31 seconds.
+Time to deserialize/update/reserialize  1,000 times = 31 seconds.
 
 Time per complete update: 31 milliseconds.
 
@@ -34,11 +34,11 @@ Time per complete update: 31 milliseconds.
 
 ## Lazy Vector Benchmark
 
-Time to build a lazy vector of size 1000000 = 27 seconds.
+Time to build a lazy vector of size 1,000,000 = 27 seconds.
 
 Time per entry: 27 seconds.
 
-Time to deserialize/update/reserialize  1000 times = 17 seconds.
+Time to deserialize/update/reserialize  1,000 times = 17 seconds.
 
 Time per complete update: 17 milliseconds.
 
