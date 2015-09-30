@@ -22,24 +22,27 @@ use of warn-on-reflection.
 
 ## Lazy Map Benchmark
 
-Time to build a lazy map of size 1000000 = 2.4381E7 microseconds.
+Time to build a lazy map of size 1000000 = 24 seconds.
 
-Time per entry: 24.381 microseconds.
+Time per entry: 24 microseconds.
 
-Time to deserialize/update/reserialize  1000 times = 3.1047E7 microseconds.
+Time to deserialize/update/reserialize  1000 times = 31 seconds.
 
-Time per complete update: 31047.0 microseconds.
+Time per complete update: 31 milliseconds.
 
 (Times will vary depending on the host system used to run the benchmarks.)
 
 ## Lazy Vector Benchmark
 
-Time to build a lazy vector of size 1000000 = 2.6543E7 microseconds.
+Time to build a lazy vector of size 1000000 = 27 seconds.
 
-Time per entry: 26.543 microseconds.
+Time per entry: 27 seconds.
 
-Time to deserialize/update/reserialize  1000 times = 1.668E7 microseconds.
+Time to deserialize/update/reserialize  1000 times = 17 seconds.
 
-Time per complete update: 16680.0 microseconds.
+Time per complete update: 17 milliseconds.
 
 (Times will vary depending on the host system used to run the benchmarks.)
+
+##[releases](https://github.com/laforge49/aatree/releases)
+
