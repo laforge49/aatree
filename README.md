@@ -47,4 +47,7 @@ Time per complete update: 17 milliseconds.
 ##[Releases](https://github.com/laforge49/aatree/releases)
 
 ## Wiki
+
 [Towards Greater Code Reuse](https://github.com/laforge49/aatree/wiki/Towards-Greater-Code-Reuse)
+
+[Immutable Value, Mutable Form](https://github.com/laforge49/aatree/wiki/Immutable-Value,-Mutable-Form)
