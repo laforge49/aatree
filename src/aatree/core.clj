@@ -12,17 +12,17 @@
 
 (defn create-aamap
   ([] emptyAAMap)
-  ([resources]
-   (if (:coparator resources)
-     (new AAMap emptyNode resources)
-     (new AAMap emptyNode (assoc resources :comparator RT/DEFAULT_COMPARATOR)))))
+  ([opts]
+   (if (:coparator opts)
+     (new AAMap emptyNode opts)
+     (new AAMap emptyNode (assoc opts :comparator RT/DEFAULT_COMPARATOR)))))
 
 (def emptyAAVector
   (new AAVector emptyNode {}))
 
 (defn create-aavector
   ([] emptyAAVector)
-  ([resources] (new AAVector emptyNode resources)))
+  ([opts] (new AAVector emptyNode opts)))
 
 (defn addn [^FlexVector vec ndx val]
   (.addNode vec ndx val))
@@ -36,8 +36,8 @@
 
 (defn create-lazy-aamap
   ([] emptyLazyAAMap)
-  ([resources]
-   (let [r resources
+  ([opts]
+   (let [r opts
          r (if (:comparator r)
              r
              (assoc r :comparator RT/DEFAULT_COMPARATOR))
@@ -51,27 +51,27 @@
 
 (defn create-lazy-aavector
   ([] emptyLazyAAVector)
-  ([resources]
-   (if (:factory-registry resources)
-     (new AAVector emptyLazyNode resources)
+  ([opts]
+   (if (:factory-registry opts)
+     (new AAVector emptyLazyNode opts)
      (new AAVector
           emptyLazyNode
-          (assoc resources :factory-registry default-factory-registry)))))
+          (assoc opts :factory-registry default-factory-registry)))))
 
 (defn load-aavector
   ([buffer]
    (load-aavector buffer {}))
-  ([buffer resources]
-   (if (:factory-registry resources)
-     (new AAVector (node-read buffer resources) resources)
-     (let [r (assoc resources :factory-registry default-factory-registry)]
+  ([buffer opts]
+   (if (:factory-registry opts)
+     (new AAVector (node-read buffer opts) opts)
+     (let [r (assoc opts :factory-registry default-factory-registry)]
        (new AAVector (node-read buffer r) r)))))
 
 (defn load-aamap
   ([buffer]
    (load-aamap buffer {}))
-  ([buffer resources]
-   (let [r resources
+  ([buffer opts]
+   (let [r opts
          r (if (:comparator r)
              r
              (assoc r :comparator RT/DEFAULT_COMPARATOR))
@@ -81,7 +81,7 @@
      (new AAMap (node-read buffer r) r))))
 
 (defn lazy-byte-length [noded]
-  (node-byte-length (get-inode noded) (get-resources noded)))
+  (node-byte-length (get-inode noded) (get-opts noded)))
 
 (defn lazy-write [noded buffer]
-  (node-write (get-inode noded) buffer (get-resources noded)))
+  (node-write (get-inode noded) buffer (get-opts noded)))
