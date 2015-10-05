@@ -158,7 +158,8 @@
           opts]
 
   Counted
-  (count [this] (- cnt ndx))
+  (count [this]
+    (- cnt ndx))
 
   Iterator
   (hasNext [this]

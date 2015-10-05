@@ -21,17 +21,18 @@
     (new aatree.CountedSequence iter styp)
     nil))
 
-(defrecord seq-state [^Iterator iter styp val rst])
+(defrecord seq-state [^Iterator iter styp val rst cnt])
 
 (defn iter ^java.util.Iterator [seq-state] (:iter seq-state))
 
 (defn -init
   ([^Iterator iter styp]
-   (let [s (->seq-state iter styp (atom nil) (atom nil))]
+   (let [^Counted citer iter
+         s (->seq-state iter styp (atom nil) (atom nil) (.count citer))]
      (reset! (:val s) s)
      (reset! (:rst s) s)
      [[] s]))
-  ([meta t s]
+  ([meta _ s]
    [[meta] s]))
 
 (defn -withMeta [^CountedSequence this meta] (new aatree.CountedSequence meta nil (.-state this)))
@@ -52,5 +53,4 @@
     @(:rst s)))
 
 (defn -count [^CountedSequence this]
-  (let [^Counted iter (:iter (.-state this))]
-    (.count iter)))
+  (:cnt (.-state this)))
