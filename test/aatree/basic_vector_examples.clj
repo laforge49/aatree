@@ -16,3 +16,7 @@
 (def s1 (seq bv4))
 (println s1); -> (0 2 20 3)
 (println (count s1)); -> 4
+
+(def s2 (next s1))
+(println s2); -> (2 20 3)
+(println (count s2)); -> 3
