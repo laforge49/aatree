@@ -7,3 +7,5 @@
 (println bm1); -> {:cat Sammy, :dog Jack, :rabbit Henry}
 
 (println (nth bm1 1)); [:dog Jack]
+
+(println (rseq bm1)); -> ([:rabbit Henry] [:dog Jack] [:cat Sammy])

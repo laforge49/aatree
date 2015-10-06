@@ -22,3 +22,5 @@
 (def s2 (next s1))
 (println s2); -> (2 20 3)
 (println (count s2)); -> 3
+
+(println (rseq bv4)); -> (3 20 2 0)
