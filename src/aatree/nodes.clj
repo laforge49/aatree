@@ -1,7 +1,8 @@
 (ns aatree.nodes
   (:import (clojure.lang Counted MapEntry IMapEntry)
            (java.util Iterator Comparator)
-           (aatree CountedSequence)))
+           (aatree CountedSequence)
+           (aatree.CountedSequence XIterator)))
 
 (set! *warn-on-reflection* true)
 
@@ -157,17 +158,27 @@
           ^int cnt
           opts]
 
+  XIterator
+  (count [this index]
+    (- cnt index))
+  (index [this]
+    ndx)
+  (bumpIndex [this index]
+    (+ 1 index))
+  (fetch [this index]
+    (nth-t2 node index opts))
+
   Counted
   (count [this]
-    (- cnt ndx))
+    (.count this ndx))
 
   Iterator
   (hasNext [this]
     (< ndx cnt))
   (next [this]
     (let [i ndx]
-      (set! ndx (+ 1 i))
-      (nth-t2 node i opts))))
+      (set! ndx (.bumpIndex this i))
+      (.fetch this i))))
 
 (defn ^counted-iterator new-counted-iterator
   ([^INode node opts]
@@ -186,16 +197,27 @@
           ^{:volatile-mutable true int true} ndx
           opts]
 
+  XIterator
+  (count [this index]
+    (+ 1 index))
+  (index [this]
+    ndx)
+  (bumpIndex [this index]
+    (- index 1))
+  (fetch [this index]
+    (nth-t2 node index opts))
+
   Counted
-  (count [this] (+ 1 ndx))
+  (count [this]
+    (.count this ndx))
 
   Iterator
   (hasNext [this]
     (>= ndx 0))
   (next [this]
     (let [i ndx]
-      (set! ndx (- i 1))
-      (nth-t2 node i opts))))
+      (set! ndx (.bumpIndex this i))
+      (.fetch this i))))
 
 (defn ^counted-reverse-iterator new-counted-reverse-iterator
   ([^INode node opts]

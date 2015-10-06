@@ -14,6 +14,12 @@
            (clojure.lang Counted)
            (aatree CountedSequence)))
 
+(definterface XIterator
+  (index [])
+  (bumpIndex [index])
+  (count [index])
+  (fetch [index]))
+
 (set! *warn-on-reflection* true)
 
 (defn -create [^Iterator iter styp]
