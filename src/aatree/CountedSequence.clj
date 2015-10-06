@@ -3,60 +3,58 @@
    :main false
    :extends clojure.lang.ASeq
    :implements [clojure.lang.Counted]
-   :constructors {[java.util.Iterator clojure.lang.IFn]
+   :constructors {[java.util.Iterator Long clojure.lang.IFn]
                   []
-                  [clojure.lang.IPersistentMap clojure.lang.IFn Object]
+                  [clojure.lang.IPersistentMap Object]
                   [clojure.lang.IPersistentMap]}
    :init init
    :state state
-   :methods [^:static [create [java.util.Iterator clojure.lang.IFn] Object]])
+   :methods [^:static [create [java.util.Iterator Long clojure.lang.IFn] Object]])
   (:import (java.util Iterator)
            (clojure.lang Counted)
            (aatree CountedSequence)))
 
 (definterface XIterator
-  (index [])
+  (^Long index [])
   (bumpIndex [index])
   (count [index])
   (fetch [index]))
 
 (set! *warn-on-reflection* true)
 
-(defn -create [^Iterator iter styp]
-  (if (.hasNext iter)
-    (new aatree.CountedSequence iter styp)
+(defn -create [^XIterator iter initialIndex styp]
+  (if (< 0 (.count iter initialIndex))
+    (new aatree.CountedSequence iter initialIndex styp)
     nil))
 
-(defrecord seq-state [^Iterator iter styp val rst cnt])
+(defrecord seq-state [^XIterator iter ndx styp rst])
 
-(defn iter ^java.util.Iterator [seq-state] (:iter seq-state))
+(defn iter ^XIterator [seq-state] (:iter seq-state))
 
 (defn -init
-  ([^Iterator iter styp]
+  ([^Iterator iter initialIndex styp]
    (let [^Counted citer iter
-         s (->seq-state iter styp (atom nil) (atom nil) (.count citer))]
-     (reset! (:val s) s)
+         s (->seq-state iter initialIndex styp (atom nil))]
      (reset! (:rst s) s)
      [[] s]))
-  ([meta _ s]
+  ([meta s]
    [[meta] s]))
 
-(defn -withMeta [^CountedSequence this meta] (new aatree.CountedSequence meta nil (.-state this)))
+(defn -withMeta [^CountedSequence this meta] (new aatree.CountedSequence meta (.-state this)))
 
 (defn -first [^CountedSequence this]
-  (let [s (.-state this)
-        v (:val s)]
-    (if (= s @v)
-      (swap! v #(if (= s %) (.next (iter s)))))
-    (apply (:styp s) [@(:val s)])))
+  (let [s (.-state this)]
+    (.fetch (iter s) (:ndx s))))
 
 (defn -next [^CountedSequence this]
   (let [s (.-state this)
+        ^XIterator it (iter s)
         r (:rst s)]
     (when (= s @r)
       (-first this)
-      (swap! r #(if (= s %) (-create (:iter s) (:styp s)))))
+      (swap! r #(if (= s %) (-create it (.bumpIndex it (:ndx s)) (:styp s)))))
     @(:rst s)))
 
 (defn -count [^CountedSequence this]
-  (:cnt (.-state this)))
+  (let [s (.-state this)]
+  (.count (iter s) (:ndx s))))

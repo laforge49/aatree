@@ -7,12 +7,12 @@
 (set! *warn-on-reflection* true)
 
 (definterface INode
-  (newNode [t2 ^int level left right ^int cnt opts])
+  (newNode [t2 ^Long level left right ^Long cnt opts])
   (getT2 [opts])
-  (getLevel [opts])
+  (^Long getLevel [opts])
   (getLeft [opts])
   (getRight [opts])
-  (getCnt [opts])
+  (^Long getCnt [opts])
   (getNada []))
 
 (definterface INoded
@@ -52,7 +52,7 @@
     (empty-node this opts)
     (.getRight this opts)))
 
-(defn node-count [^INode this opts]
+(defn ^Long node-count [^INode this opts]
   (if (empty-node? this)
     0
     (.getCnt this opts)))
@@ -60,10 +60,10 @@
 (defn revise [^INode this args opts]
   (let [m (apply array-map args)
         t-2 (get m :t2 (.getT2 this opts))
-        lev (get m :level (.getLevel this opts))
+        ^Long lev (get m :level (.getLevel this opts))
         l (get m :left (left-node this opts))
         r (get m :right (right-node this opts))
-        c (+ 1 (node-count l opts) (node-count r opts))]
+        ^Long c (+ 1 (node-count l opts) (node-count r opts))]
     (if (and (identical? t-2 (.getT2 this opts))
              (= lev (.getLevel this opts))
              (identical? l (left-node this opts))
@@ -154,8 +154,8 @@
 
 (deftype counted-iterator
          [node
-          ^{:volatile-mutable true int true} ndx
-          ^int cnt
+          ^{:volatile-mutable true Long true} ndx
+          ^Long cnt
           opts]
 
   XIterator
@@ -188,13 +188,15 @@
 
 (defn ^CountedSequence new-counted-seq
   ([node opts]
-   (CountedSequence/create (new-counted-iterator node  opts) identity))
+   (let [it (new-counted-iterator node  opts)]
+     (CountedSequence/create it (.index it) identity)))
   ([node i opts]
-   (CountedSequence/create (new-counted-iterator node i opts) identity)))
+   (let [it (new-counted-iterator node i opts)]
+     (CountedSequence/create it (.index it) identity))))
 
 (deftype counted-reverse-iterator
          [node
-          ^{:volatile-mutable true int true} ndx
+          ^{:volatile-mutable true Long true} ndx
           opts]
 
   XIterator
@@ -227,9 +229,11 @@
 
 (defn ^CountedSequence new-counted-reverse-seq
   ([node opts]
-   (CountedSequence/create (new-counted-reverse-iterator node opts) identity))
+   (let [it (new-counted-reverse-iterator node opts)]
+     (CountedSequence/create it (.index it) identity)))
   ([node i opts]
-   (CountedSequence/create (new-counted-reverse-iterator node i opts) identity)))
+   (let [it (new-counted-reverse-iterator node i opts)]
+     (CountedSequence/create it (.index it) identity))))
 
 (defn vector-add [^INode n v i opts]
   (if (empty-node? n)
@@ -292,13 +296,16 @@
 
 (defn ^CountedSequence new-map-entry-seq
   ([node x opts]
-   (CountedSequence/create (new-map-entry-iterator node x opts) identity)))
+   (let [it (new-map-entry-iterator node x opts)]
+     (CountedSequence/create it (.index it) identity))))
 
 (defn ^CountedSequence new-map-key-seq [node opts]
-  (CountedSequence/create (new-counted-iterator node opts) key-of))
+  (let [it (new-counted-iterator node opts)]
+    (CountedSequence/create it (.index it) key-of)))
 
 (defn ^CountedSequence new-map-value-seq [node opts]
-  (CountedSequence/create (new-counted-iterator node opts) value-of))
+  (let [it (new-counted-iterator node opts)]
+    (CountedSequence/create it (.index it) value-of)))
 
 (defn ^counted-reverse-iterator new-map-entry-reverse-iterator
   ([node x opts]
@@ -306,13 +313,16 @@
 
 (defn ^CountedSequence new-map-entry-reverse-seq
   ([node x opts]
-   (CountedSequence/create (new-map-entry-reverse-iterator node x opts) identity)))
+   (let [it (new-map-entry-reverse-iterator node x opts)]
+     (CountedSequence/create it (.index it) identity))))
 
 (defn ^CountedSequence new-map-key-reverse-seq [node opts]
-  (CountedSequence/create (new-counted-reverse-iterator node opts) key-of))
+  (let [it (new-counted-reverse-iterator node opts)]
+    (CountedSequence/create it (.index it) key-of)))
 
 (defn ^CountedSequence new-map-value-reverse-seq [node opts]
-  (CountedSequence/create (new-counted-reverse-iterator node opts) value-of))
+  (let [it (new-counted-reverse-iterator node opts)]
+    (CountedSequence/create it (.index it) value-of)))
 
 (defn map-insert [^INode this ^MapEntry t-2 opts]
   (if (empty-node? this)
@@ -371,7 +381,7 @@
 (declare ->Node
          create-empty-node)
 
-(deftype Node [t2 ^int level left right ^int cnt]
+(deftype Node [t2 ^Long level left right ^Long cnt]
 
   INode
 

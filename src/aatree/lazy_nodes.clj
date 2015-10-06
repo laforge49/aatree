@@ -25,13 +25,13 @@
 
   (getT2 [this opts] (.getT2 (get-data this opts) opts))
 
-  (getLevel [this opts] (.getLevel (get-data this opts) opts))
+  (^Long getLevel [this opts] (.getLevel (get-data this opts) opts))
 
   (getLeft [this opts] (.getLeft (get-data this opts) opts))
 
   (getRight [this opts] (.getRight (get-data this opts) opts))
 
-  (getCnt [this opts] (.getCnt (get-data this opts) opts))
+  (^Long getCnt [this opts] (.getCnt (get-data this opts) opts))
 
   (getNada [this] (create-lazy-empty-node)))
 
@@ -196,8 +196,8 @@
         (let [bb (.slice (get-buffer this))
               _ (.position bb 5)
               left (node-read bb opts)
-              level (.getInt bb)
-              cnt (.getInt bb)
+              level (long (.getInt bb))
+              cnt (long (.getInt bb))
               t2 (.deserialize (get-factory this) this bb opts)
               right (node-read bb opts)]
           (compare-and-set! a nil (Node. t2 level left right cnt))))
