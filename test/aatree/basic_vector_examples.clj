@@ -1,6 +1,8 @@
 (ns aatree.basic-vector-examples
   (:require [aatree.core :refer :all]))
 
+(set! *warn-on-reflection* true)
+
 (def bv1 (conj emptyAAVector 1 2 3))
 (println bv1); -> [1 2 3]
 

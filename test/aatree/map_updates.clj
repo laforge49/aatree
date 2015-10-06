@@ -2,6 +2,8 @@
   (:require [aatree.core :refer :all])
   (:import (java.nio ByteBuffer)))
 
+(set! *warn-on-reflection* true)
+
 (def map-size 1000000)
 (def updates 1000)
 
