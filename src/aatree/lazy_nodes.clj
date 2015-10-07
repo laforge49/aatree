@@ -45,7 +45,7 @@
   (deserialize [^aatree.lazy_nodes.LazyNode lazyNode
                 ^java.nio.ByteBuffer buffer
                 opts])
-  (write [^aatree.lazy_nodes.LazyNode lazyNode
+  (writeValue [^aatree.lazy_nodes.LazyNode lazyNode
           ^java.nio.ByteBuffer buffer
           opts]))
 
@@ -146,27 +146,28 @@
       (let [new-bb (.slice buffer)]
         (if (= (byte \n) (.factoryId f))
           (.put buffer (byte (.factoryId f)))
-          (.write f lazy-node buffer opts))
+          (do
+            (.put buffer (byte (.factoryId f)))
+            (.putInt buffer (- (node-byte-length lazy-node opts) 5))
+            (node-write (left-node lazy-node opts) buffer opts)
+            (.putInt buffer (.getLevel lazy-node opts))
+            (.putInt buffer (.getCnt lazy-node opts))
+            (.writeValue f lazy-node buffer opts)
+            (node-write (right-node lazy-node opts) buffer opts)))
         (.limit new-bb (node-byte-length lazy-node opts))
         (compare-and-set! (get-buffer-atom lazy-node) nil new-bb)
         (reset! (get-data-atom lazy-node) nil)))))
 
 (defn- default-write [^IFactory f
-                      ^aatree.lazy_nodes.LazyNode lazy-node
-                      ^java.nio.ByteBuffer buffer
+                      ^LazyNode lazy-node
+                      ^ByteBuffer buffer
                       opts]
-  (.put buffer (byte (.factoryId f)))
-  (.putInt buffer (- (node-byte-length lazy-node opts) 5))
-  (node-write (left-node lazy-node opts) buffer opts)
-  (.putInt buffer (.getLevel lazy-node opts))
-  (.putInt buffer (.getCnt lazy-node opts))
   (let [^String sv (str-val f lazy-node opts)
         svl (count sv)
         _ (.putInt buffer svl)
         ^CharBuffer cb (.asCharBuffer buffer)]
     (.put cb sv)
-    (.position buffer (+ (* 2 svl) (.position buffer))))
-  (node-write (right-node lazy-node opts) buffer opts))
+    (.position buffer (+ (* 2 svl) (.position buffer)))))
 
 (defn node-read [^ByteBuffer buffer opts]
   (let [^ByteBuffer bb (.slice buffer)
@@ -223,10 +224,10 @@
            t2 (read-string opts sv)
            _ (.position bb (+ (.position bb) (* 2 svl)))]
        t2))
-   (write [this lazyNode buffer opts]
+   (writeValue [this lazyNode buffer opts]
      (default-write this lazyNode buffer opts))))
 
-(comment (register-factory
+(register-factory
   default-factory-registry
   (reify aatree.lazy_nodes.IFactory
     (factoryId [this] (byte \v));;;;;;;;;;;;;;;;;;;;;;;;;;; v aavector content
@@ -235,9 +236,11 @@
     (valueLength [this lazyNode opts]
       (let [^aatree.AAVector v (.getT2 lazyNode opts)]
         (node-byte-length (get-inode v) (get-opts v))))
-    (write [this lazyNode buffer opts]
+    (deserialize [this lazyNode bb opts]
+      (new AAVector (node-read bb opts) opts))
+    (writeValue [this lazyNode buffer opts]
       (let [^aatree.AAVector v (.getT2 lazyNode opts)]
-        (node-write (get-inode v) buffer (get-opts v)))))))
+        (node-write (get-inode v) buffer (get-opts v))))))
 
 (register-factory
   default-factory-registry
@@ -260,7 +263,7 @@
             t2 (MapEntry. (.get v 0) (.get v 1))
             _ (.position bb (+ (.position bb) (* 2 svl)))]
         t2))
-    (write [this lazyNode buffer opts]
+    (writeValue [this lazyNode buffer opts]
       (default-write this lazyNode buffer opts))))
 
 (def ^LazyNode emptyLazyNode
