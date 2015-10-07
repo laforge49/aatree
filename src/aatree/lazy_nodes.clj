@@ -158,7 +158,7 @@
         (compare-and-set! (get-buffer-atom lazy-node) nil new-bb)
         (reset! (get-data-atom lazy-node) nil)))))
 
-(defn- default-write [^IFactory f
+(defn- default-write-value [^IFactory f
                       ^LazyNode lazy-node
                       ^ByteBuffer buffer
                       opts]
@@ -225,28 +225,13 @@
            _ (.position bb (+ (.position bb) (* 2 svl)))]
        t2))
    (writeValue [this lazyNode buffer opts]
-     (default-write this lazyNode buffer opts))))
-
-(register-factory
-  default-factory-registry
-  (reify aatree.lazy_nodes.IFactory
-    (factoryId [this] (byte \v));;;;;;;;;;;;;;;;;;;;;;;;;;; v aavector content
-    (instanceClass [this] aatree.AAVector)
-    (qualified [this t2 opts] this)
-    (valueLength [this lazyNode opts]
-      (let [^aatree.AAVector v (.getT2 lazyNode opts)]
-        (node-byte-length (get-inode v) (get-opts v))))
-    (deserialize [this lazyNode bb opts]
-      (new AAVector (node-read bb opts) opts))
-    (writeValue [this lazyNode buffer opts]
-      (let [^aatree.AAVector v (.getT2 lazyNode opts)]
-        (node-write (get-inode v) buffer (get-opts v))))))
+     (default-write-value this lazyNode buffer opts))))
 
 (register-factory
   default-factory-registry
   (reify aatree.lazy_nodes.IFactory
     (factoryId [this] (byte \p));;;;;;;;;;;;;;;;;;;;;;;;;;; p MapEntry content
-    (instanceClass [this] clojure.lang.MapEntry)
+    (instanceClass [this] MapEntry)
     (qualified [this t2 opts] this)
     (sval [this inode opts]
       (default-sval this inode opts))
@@ -264,7 +249,22 @@
             _ (.position bb (+ (.position bb) (* 2 svl)))]
         t2))
     (writeValue [this lazyNode buffer opts]
-      (default-write this lazyNode buffer opts))))
+      (default-write-value this lazyNode buffer opts))))
+
+(register-factory
+  default-factory-registry
+  (reify aatree.lazy_nodes.IFactory
+    (factoryId [this] (byte \v));;;;;;;;;;;;;;;;;;;;;;;;;;; v aavector content
+    (instanceClass [this] aatree.AAVector)
+    (qualified [this t2 opts] this)
+    (valueLength [this lazyNode opts]
+      (let [^aatree.AAVector v (.getT2 lazyNode opts)]
+        (node-byte-length (get-inode v) (get-opts v))))
+    (deserialize [this lazyNode bb opts]
+      (new AAVector (node-read bb opts) opts))
+    (writeValue [this lazyNode buffer opts]
+      (let [^aatree.AAVector v (.getT2 lazyNode opts)]
+        (node-write (get-inode v) buffer (get-opts v))))))
 
 (def ^LazyNode emptyLazyNode
   (->LazyNode
