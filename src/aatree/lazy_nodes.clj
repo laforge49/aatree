@@ -20,7 +20,7 @@
 
   (newNode [this t2 level left right cnt opts]
     (let [d (->Node t2 level left right cnt)
-          f (factory-for-instance (:factory-registry opts) t2)]
+          f (factory-for-instance t2 opts)]
       (->LazyNode (atom d) (atom nil) (atom nil) (atom nil) f)))
 
   (getT2 [this opts] (.getT2 (get-data this opts) opts))
@@ -73,33 +73,34 @@
 
 (def default-factory-registry (create-factory-registry))
 
-(defn- ^aatree.lazy_nodes.IFactory factory-for-id [^factory-registry fregistry id]
-  (let [f (@(.-by_id_atom fregistry) id)]
+(defn- ^aatree.lazy_nodes.IFactory factory-for-id [id opts]
+  (let [r (:factory-registry opts)
+        f (@(.-by_id_atom r) id)]
     (if (nil? f)
-      (factory-for-id fregistry (byte \e))
+      (factory-for-id (byte \e) opts)
       f)))
 
 (defn className [^Class c] (.getName c))
 
-(defn ^aatree.lazy_nodes.IFactory factory-for-class [^factory-registry fregistry typ]
-  (let [f (@(.by_class_atom fregistry) typ)]
+(defn ^aatree.lazy_nodes.IFactory factory-for-class [clss opts]
+  (let [f (@(.by_class_atom (:factory-registry opts)) clss)]
     (if (nil? f)
-      (factory-for-id fregistry (byte \e))
+      (factory-for-id (byte \e) opts)
       f)))
 
-(defn- ^aatree.lazy_nodes.IFactory factory-for-instance [^factory-registry fregistry inst]
-  (let [typ (class inst)
-        f (factory-for-class fregistry typ)
+(defn- ^aatree.lazy_nodes.IFactory factory-for-instance [inst opts]
+  (let [clss (class inst)
+        f (factory-for-class clss opts)
         q (.qualified f inst)]
     (if (nil? q)
-      (throw (UnsupportedOperationException. (str "Unknown qualified durable class: " (className typ))))
+      (throw (UnsupportedOperationException. (str "Unknown qualified durable class: " (className clss))))
       q)))
 
 (defn register-factory [^factory-registry fregistry ^aatree.lazy_nodes.IFactory factory]
   (swap! (.-by-id-atom fregistry) assoc (.factoryId factory) factory)
-  (let [typ (.instanceClass factory)]
-    (if typ
-      (swap! (.-by-class-atom fregistry) assoc typ factory))))
+  (let [clss (.instanceClass factory)]
+    (if clss
+      (swap! (.-by-class-atom fregistry) assoc clss factory))))
 
 (defn- str-val [^IFactory factory ^aatree.lazy_nodes.LazyNode lazyNode opts]
   (let [sval-atom (.-sval-atom lazyNode)]
@@ -168,8 +169,7 @@
 (defn node-read [^ByteBuffer buffer opts]
   (let [^ByteBuffer bb (.slice buffer)
         id (.get bb)
-        r (:factory-registry opts)
-        f (factory-for-id r id)]
+        f (factory-for-id id opts)]
     (.read f buffer opts)))
 
 (defn- default-read [this
