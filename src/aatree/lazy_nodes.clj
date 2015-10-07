@@ -38,7 +38,7 @@
 (definterface IFactory
   (factoryId [])
   (instanceClass [])
-  (qualified [t2])
+  (qualified [t2 opts])
   (sval [^aatree.nodes.INode inode opts])
   (valueLength [^aatree.lazy_nodes.LazyNode lazyNode opts])
   (deserialize [^aatree.lazy_nodes.LazyNode lazyNode
@@ -74,7 +74,7 @@
 (def default-factory-registry (create-factory-registry))
 
 (defn- ^aatree.lazy_nodes.IFactory factory-for-id [id opts]
-  (let [r (:factory-registry opts)
+  (let [^factory-registry r (:factory-registry opts)
         f (@(.-by_id_atom r) id)]
     (if (nil? f)
       (factory-for-id (byte \e) opts)
@@ -83,7 +83,8 @@
 (defn className [^Class c] (.getName c))
 
 (defn ^aatree.lazy_nodes.IFactory factory-for-class [clss opts]
-  (let [f (@(.by_class_atom (:factory-registry opts)) clss)]
+  (let [^factory-registry r (:factory-registry opts)
+        f (@(.by_class_atom r) clss)]
     (if (nil? f)
       (factory-for-id (byte \e) opts)
       f)))
@@ -91,7 +92,7 @@
 (defn- ^aatree.lazy_nodes.IFactory factory-for-instance [inst opts]
   (let [clss (class inst)
         f (factory-for-class clss opts)
-        q (.qualified f inst)]
+        q (.qualified f inst opts)]
     (if (nil? q)
       (throw (UnsupportedOperationException. (str "Unknown qualified durable class: " (className clss))))
       q)))
@@ -208,7 +209,7 @@
  (reify aatree.lazy_nodes.IFactory
    (factoryId [this] (byte \e));;;;;;;;;;;;;;;;;;;;;; e - default
    (instanceClass [this] nil)
-   (qualified [this t2] this)
+   (qualified [this t2 opts] this)
    (sval [this inode opts]
      (default-sval this inode opts))
    (valueLength [this lazyNode opts]
@@ -233,7 +234,7 @@
  (reify aatree.lazy_nodes.IFactory
    (factoryId [this] (byte \p));;;;;;;;;;;;;;;;;;;;;;;;;;; p MapEntry content
    (instanceClass [this] clojure.lang.MapEntry)
-   (qualified [this t2] this)
+   (qualified [this t2 opts] this)
    (sval [this inode opts]
      (default-sval this inode opts))
    (valueLength [this lazyNode opts]
@@ -263,7 +264,7 @@
    (reify aatree.lazy_nodes.IFactory
      (factoryId [this] (byte \n));;;;;;;;;;;;;;;;;;;;;;;; n - nil content
      (instanceClass [this] nil)
-     (qualified [this t2] this)
+     (qualified [this t2 opts] this)
      (write [this lazyNode buffer opts]
        (.put buffer (byte (.factoryId this))))
      (read [this buffer opts]
