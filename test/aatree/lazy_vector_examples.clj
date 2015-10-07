@@ -17,3 +17,19 @@
 (.flip bb)
 (def lv2 (load-aavector bb))
 (println lv2); -> [1 2 3]
+
+(def lv3 (conj emptyLazyAAVector lv1))
+(println lv3); -> [[1 2 3]]
+
+(def lv3-len (lazy-byte-length lv3))
+(println lv3-len); -> 76
+
+(def ^ByteBuffer bb (ByteBuffer/allocate lv3-len))
+(lazy-write lv3 bb)
+(.flip bb)
+(def lv4 (load-aavector bb))
+(println lv4); -> [[1 2 3]]
+
+(def lv5 (lv4 0))
+(println lv5); -> [1 2 3]
+(println (class lv5)); -> aatree.AAVector
