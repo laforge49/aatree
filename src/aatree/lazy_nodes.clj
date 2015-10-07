@@ -47,9 +47,7 @@
                 opts])
   (write [^aatree.lazy_nodes.LazyNode lazyNode
           ^java.nio.ByteBuffer buffer
-          opts])
-  (read [^java.nio.ByteBuffer buffer
-         opts]))
+          opts]))
 
 (defn- ^aatree.lazy_nodes.IFactory get-factory [^LazyNode lazy-node]
   (.-factory lazy-node))
@@ -176,23 +174,19 @@
     (if (= id (byte \n))
       (do (.get buffer)
           (create-lazy-empty-node))
-      (.read (factory-for-id id opts) buffer opts))))
-
-(defn- default-read [f
-                     ^java.nio.ByteBuffer buffer
-                     opts]
-  (let [bb (.slice buffer)
-        _ (.get buffer)
-        lm5 (.getInt buffer)
-        _ (.position buffer (+ lm5 (.position buffer)))
-        blen (+ 5 lm5)
-        _ (.limit bb blen)]
-    (->LazyNode
-     (atom nil)
-     (atom nil)
-     (atom blen)
-     (atom bb)
-     f)))
+      (let [f (factory-for-id id opts)
+            bb (.slice buffer)
+            _ (.get buffer)
+            lm5 (.getInt buffer)
+            _ (.position buffer (+ lm5 (.position buffer)))
+            blen (+ 5 lm5)
+            _ (.limit bb blen)]
+        (->LazyNode
+          (atom nil)
+          (atom nil)
+          (atom blen)
+          (atom bb)
+          f)))))
 
 (defn- get-data [^LazyNode this opts]
   (if (empty-node? this)
@@ -230,9 +224,7 @@
            _ (.position bb (+ (.position bb) (* 2 svl)))]
        t2))
    (write [this lazyNode buffer opts]
-     (default-write this lazyNode buffer opts))
-   (read [this buffer opts]
-     (default-read this buffer opts))))
+     (default-write this lazyNode buffer opts))))
 
 (comment (register-factory
   default-factory-registry
@@ -245,10 +237,7 @@
         (node-byte-length (get-inode v) (get-opts v))))
     (write [this lazyNode buffer opts]
       (let [^aatree.AAVector v (.getT2 lazyNode opts)]
-        (node-write (get-inode v) buffer (get-opts v))))
-    (read [this buffer opts]
-      (let [a (get-data-atom this)]
-        (reset! a (new aatree.AAVector (node-read buffer opts) opts)))))))
+        (node-write (get-inode v) buffer (get-opts v)))))))
 
 (register-factory
   default-factory-registry
@@ -272,9 +261,7 @@
             _ (.position bb (+ (.position bb) (* 2 svl)))]
         t2))
     (write [this lazyNode buffer opts]
-      (default-write this lazyNode buffer opts))
-    (read [this buffer opts]
-      (default-read this buffer opts))))
+      (default-write this lazyNode buffer opts))))
 
 (def ^LazyNode emptyLazyNode
   (->LazyNode
