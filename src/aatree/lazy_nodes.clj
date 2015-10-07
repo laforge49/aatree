@@ -2,7 +2,8 @@
   (:require [aatree.nodes :refer :all])
   (:import (java.nio ByteBuffer CharBuffer)
            (aatree.nodes Node)
-           (clojure.lang MapEntry PersistentVector)))
+           (clojure.lang MapEntry PersistentVector)
+           (aatree AAVector)))
 
 (set! *warn-on-reflection* true)
 
@@ -145,35 +146,39 @@
         (.get new-bb ba)
         (.put buffer ba))
       (let [new-bb (.slice buffer)]
-        (.write f lazy-node buffer opts)
+        (if (= (byte \n) (.factoryId f))
+          (.put buffer (byte (.factoryId f)))
+          (.write f lazy-node buffer opts))
         (.limit new-bb (node-byte-length lazy-node opts))
         (compare-and-set! (get-buffer-atom lazy-node) nil new-bb)
         (reset! (get-data-atom lazy-node) nil)))))
 
-(defn- default-write [^IFactory this
-                      ^aatree.lazy_nodes.LazyNode lazyNode
+(defn- default-write [^IFactory f
+                      ^aatree.lazy_nodes.LazyNode lazy-node
                       ^java.nio.ByteBuffer buffer
                       opts]
-  (.put buffer (byte (.factoryId this)))
-  (.putInt buffer (- (node-byte-length lazyNode opts) 5))
-  (node-write (left-node lazyNode opts) buffer opts)
-  (.putInt buffer (.getLevel lazyNode opts))
-  (.putInt buffer (.getCnt lazyNode opts))
-  (let [^String sv (str-val this lazyNode opts)
+  (.put buffer (byte (.factoryId f)))
+  (.putInt buffer (- (node-byte-length lazy-node opts) 5))
+  (node-write (left-node lazy-node opts) buffer opts)
+  (.putInt buffer (.getLevel lazy-node opts))
+  (.putInt buffer (.getCnt lazy-node opts))
+  (let [^String sv (str-val f lazy-node opts)
         svl (count sv)
         _ (.putInt buffer svl)
         ^CharBuffer cb (.asCharBuffer buffer)]
     (.put cb sv)
     (.position buffer (+ (* 2 svl) (.position buffer))))
-  (node-write (right-node lazyNode opts) buffer opts))
+  (node-write (right-node lazy-node opts) buffer opts))
 
 (defn node-read [^ByteBuffer buffer opts]
   (let [^ByteBuffer bb (.slice buffer)
-        id (.get bb)
-        f (factory-for-id id opts)]
-    (.read f buffer opts)))
+        id (.get bb)]
+    (if (= id (byte \n))
+      (do (.get buffer)
+          (create-lazy-empty-node))
+      (.read (factory-for-id id opts) buffer opts))))
 
-(defn- default-read [this
+(defn- default-read [f
                      ^java.nio.ByteBuffer buffer
                      opts]
   (let [bb (.slice buffer)
@@ -187,7 +192,7 @@
      (atom nil)
      (atom blen)
      (atom bb)
-     this)))
+     f)))
 
 (defn- get-data [^LazyNode this opts]
   (if (empty-node? this)
@@ -229,31 +234,47 @@
    (read [this buffer opts]
      (default-read this buffer opts))))
 
+(comment (register-factory
+  default-factory-registry
+  (reify aatree.lazy_nodes.IFactory
+    (factoryId [this] (byte \v));;;;;;;;;;;;;;;;;;;;;;;;;;; v aavector content
+    (instanceClass [this] aatree.AAVector)
+    (qualified [this t2 opts] this)
+    (valueLength [this lazyNode opts]
+      (let [^aatree.AAVector v (.getT2 lazyNode opts)]
+        (node-byte-length (get-inode v) (get-opts v))))
+    (write [this lazyNode buffer opts]
+      (let [^aatree.AAVector v (.getT2 lazyNode opts)]
+        (node-write (get-inode v) buffer (get-opts v))))
+    (read [this buffer opts]
+      (let [a (get-data-atom this)]
+        (reset! a (new aatree.AAVector (node-read buffer opts) opts)))))))
+
 (register-factory
- default-factory-registry
- (reify aatree.lazy_nodes.IFactory
-   (factoryId [this] (byte \p));;;;;;;;;;;;;;;;;;;;;;;;;;; p MapEntry content
-   (instanceClass [this] clojure.lang.MapEntry)
-   (qualified [this t2 opts] this)
-   (sval [this inode opts]
-     (default-sval this inode opts))
-   (valueLength [this lazyNode opts]
-     (default-valueLength this lazyNode opts))
-   (deserialize [this lazyNode bb opts]
-     (let [svl (.getInt bb)
-           ^CharBuffer cb (.asCharBuffer bb)
-           svc (char-array svl)
-           _ (.get cb svc)
-           sv (String. svc)
-           _ (reset! (.-sval_atom lazyNode) sv)
-           ^PersistentVector v (read-string opts sv)
-           t2 (MapEntry. (.get v 0) (.get v 1))
-           _ (.position bb (+ (.position bb) (* 2 svl)))]
-       t2))
-   (write [this lazyNode buffer opts]
-     (default-write this lazyNode buffer opts))
-   (read [this buffer opts]
-     (default-read this buffer opts))))
+  default-factory-registry
+  (reify aatree.lazy_nodes.IFactory
+    (factoryId [this] (byte \p));;;;;;;;;;;;;;;;;;;;;;;;;;; p MapEntry content
+    (instanceClass [this] clojure.lang.MapEntry)
+    (qualified [this t2 opts] this)
+    (sval [this inode opts]
+      (default-sval this inode opts))
+    (valueLength [this lazyNode opts]
+      (default-valueLength this lazyNode opts))
+    (deserialize [this lazyNode bb opts]
+      (let [svl (.getInt bb)
+            ^CharBuffer cb (.asCharBuffer bb)
+            svc (char-array svl)
+            _ (.get cb svc)
+            sv (String. svc)
+            _ (reset! (.-sval_atom lazyNode) sv)
+            ^PersistentVector v (read-string opts sv)
+            t2 (MapEntry. (.get v 0) (.get v 1))
+            _ (.position bb (+ (.position bb) (* 2 svl)))]
+        t2))
+    (write [this lazyNode buffer opts]
+      (default-write this lazyNode buffer opts))
+    (read [this buffer opts]
+      (default-read this buffer opts))))
 
 (def ^LazyNode emptyLazyNode
   (->LazyNode
@@ -264,12 +285,7 @@
    (reify aatree.lazy_nodes.IFactory
      (factoryId [this] (byte \n));;;;;;;;;;;;;;;;;;;;;;;; n - nil content
      (instanceClass [this] nil)
-     (qualified [this t2 opts] this)
-     (write [this lazyNode buffer opts]
-       (.put buffer (byte (.factoryId this))))
-     (read [this buffer opts]
-       (.get buffer)
-       (create-lazy-empty-node)))))
+     (qualified [this t2 opts] this))))
 
 (register-factory
  default-factory-registry
