@@ -18,6 +18,8 @@
 (def lv2 (load-aavector bb))
 (println lv2); -> [1 2 3]
 
+;new in 0.3.2
+
 (def lv3 (conj emptyLazyAAVector lv1))
 (println lv3); -> [[1 2 3]]
 
