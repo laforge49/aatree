@@ -64,8 +64,10 @@
    (load-aavector buffer {}))
   ([buffer opts]
    (if (:factory-registry opts)
-     (new AAVector (node-read buffer opts) opts)
-     (let [r (assoc opts :factory-registry default-factory-registry)]
+     (let [r (vector-opts opts)]
+       (new AAVector (node-read buffer r) r))
+     (let [r (assoc opts :factory-registry default-factory-registry)
+           r (vector-opts r)]
        (new AAVector (node-read buffer r) r)))))
 
 (defn load-aamap
@@ -78,7 +80,8 @@
              (assoc r :comparator RT/DEFAULT_COMPARATOR))
          r (if (:factory-registry r)
              r
-             (assoc r :factory-registry default-factory-registry))]
+             (assoc r :factory-registry default-factory-registry))
+         r (map-opts r)]
      (new AAMap (node-read buffer r) r))))
 
 (defn lazy-byte-length [noded]
