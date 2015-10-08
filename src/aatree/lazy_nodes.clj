@@ -1,7 +1,7 @@
 (ns aatree.lazy-nodes
   (:require [aatree.nodes :refer :all])
   (:import (java.nio ByteBuffer CharBuffer)
-           (aatree.nodes Node)
+           (aatree.nodes Node INode)
            (clojure.lang MapEntry PersistentVector)
            (aatree AAVector)))
 
@@ -88,18 +88,18 @@
     (if clss
       (swap! (.classAtom aacontext) assoc clss factory))))
 
-(defn ^aatree.lazy_nodes.IFactory factory-for-class [clss opts]
-  (let [^AAContext aacontext (:aacontext opts)
-        f (@(.classAtom aacontext) clss)]
+(defn ^IFactory factory-for-class [^AAContext aacontext clss opts]
+  (let [f (@(.classAtom aacontext) clss)]
     (if (nil? f)
       (factory-for-id (byte \e) opts)
       f)))
 
 (defn className [^Class c] (.getName c))
 
-(defn- ^aatree.lazy_nodes.IFactory factory-for-instance [inst opts]
-  (let [clss (class inst)
-        f (factory-for-class clss opts)
+(defn- ^IFactory factory-for-instance [inst opts]
+  (let [^AAContext aacontext (:aacontext opts)
+        clss (class inst)
+        f (factory-for-class aacontext clss opts)
         q (.qualified f inst opts)]
     (if (nil? q)
       (throw (UnsupportedOperationException. (str "Unknown qualified durable class: " (className clss))))
@@ -107,17 +107,17 @@
 
 (defn register-factory [^factory-registry fregistry
                         ^AAContext aacontext
-                        ^aatree.lazy_nodes.IFactory factory]
+                        ^IFactory factory]
   (swap! (.-by-id-atom fregistry) assoc (.factoryId factory) factory)
   (register-class aacontext factory))
 
-(defn- str-val [^IFactory factory ^aatree.lazy_nodes.LazyNode lazyNode opts]
+(defn- str-val [^IFactory factory ^LazyNode lazyNode opts]
   (let [sval-atom (.-sval-atom lazyNode)]
     (if (nil? @sval-atom)
       (compare-and-set! sval-atom nil (.sval factory lazyNode opts)))
     @sval-atom))
 
-(defn- default-sval [this ^aatree.nodes.INode inode opts]
+(defn- default-sval [this ^INode inode opts]
   (pr-str (.getT2 inode opts)))
 
 (defn node-byte-length [^LazyNode lazy-node opts]
