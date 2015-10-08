@@ -39,3 +39,16 @@
 (def lm1 (conj emptyLazyAAMap {:dog "Jack" :cat "Sammy" :rabbit "Henry"}))
 (def lv6 (conj lv4 lm1))
 (println lv6); -> [[1 2 3] {:cat Sammy, :dog Jack, :rabbit Henry}]
+
+(def lv6-len (lazy-byte-length lv6))
+(println lv6-len); -> 233
+
+(def ^ByteBuffer bb (ByteBuffer/allocate lv6-len))
+(lazy-write lv6 bb)
+(.flip bb)
+(def lv7 (load-aavector bb))
+(println lv7); -> [[1 2 3] {:cat Sammy, :dog Jack, :rabbit Henry}]
+
+(def lv8 (lv7 1))
+(println lv8); -> {:cat Sammy, :dog Jack, :rabbit Henry}
+(println (class lv8)); -> aatree.AAMap
