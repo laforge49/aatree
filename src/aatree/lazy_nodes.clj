@@ -75,7 +75,8 @@
 (definterface AAContext
   (classAtom [])
   (getDefaultFactory [])
-  (setDefaultFactory [factory]))
+  (setDefaultFactory [factory])
+  (refineInstance [inst]))
 
 (defn- ^IFactory factory-for-id [id opts]
   (let [^factory-registry r (:factory-registry opts)
@@ -101,6 +102,7 @@
 
 (defn- ^IFactory factory-for-instance [inst opts]
   (let [^AAContext aacontext (:aacontext opts)
+        inst (.refineInstance aacontext inst)
         clss (class inst)
         f (factory-for-class aacontext clss opts)
         q (.qualified f inst opts)]
@@ -224,7 +226,8 @@
       (getDefaultFactory [this] @factory-atom)
       (setDefaultFactory
         [this f]
-        (compare-and-set! factory-atom nil f)))))
+        (compare-and-set! factory-atom nil f))
+      (refineInstance [this inst] inst))))
 
 (def ^AAContext map-context
   (let [class-atom (atom {})
@@ -234,7 +237,10 @@
       (getDefaultFactory [this] @factory-atom)
       (setDefaultFactory
         [this f]
-        (compare-and-set! factory-atom nil f)))))
+        (compare-and-set! factory-atom nil f))
+      (refineInstance [this inst]
+        (let [^MapEntry map-entry inst]
+          (.getValue map-entry))))))
 
 (defn vector-opts [opts]
   (assoc opts :aacontext vector-context))
