@@ -276,7 +276,7 @@
   default-factory-registry
   map-context
   (reify aatree.lazy_nodes.IFactory
-    (factoryId [this] (byte \p));;;;;;;;;;;;;;;;;;;;;;;;;;; p MapEntry content
+    (factoryId [this] (byte \p));;;;;;;;;;;;;;;;;;;;;;;;;;; p - map default factory
     (instanceClass [this] nil)
     (qualified [this t2 opts] this)
     (sval [this inode opts]
@@ -307,7 +307,7 @@
   default-factory-registry
   vector-context
   (reify aatree.lazy_nodes.IFactory
-    (factoryId [this] (byte \v));;;;;;;;;;;;;;;;;;;;;;;;;;; v aavector content
+    (factoryId [this] (byte \v));;;;;;;;;;;;;;;;;;;;;;;;;;; v aavector in vector
     (instanceClass [this] aatree.AAVector)
     (qualified [this t2 opts] this)
     (valueLength [this lazyNode opts]
