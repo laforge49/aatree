@@ -93,7 +93,8 @@
 (defn ^IFactory factory-for-class [^AAContext aacontext clss opts]
   (let [f (@(.classAtom aacontext) clss)]
     (if (nil? f)
-      (factory-for-id (byte \e) opts)
+      (let [^AAContext context (:aacontext opts)]
+        (.getDefaultFactory context))
       f)))
 
 (defn className [^Class c] (.getName c))
@@ -245,7 +246,7 @@
  default-factory-registry
  vector-context
  (reify aatree.lazy_nodes.IFactory
-   (factoryId [this] (byte \e));;;;;;;;;;;;;;;;;;;;;; e - default
+   (factoryId [this] (byte \e));;;;;;;;;;;;;;;;;;;;;; e - vector default factory
    (instanceClass [this] nil)
    (qualified [this t2 opts] this)
    (sval [this inode opts]
@@ -276,7 +277,7 @@
   map-context
   (reify aatree.lazy_nodes.IFactory
     (factoryId [this] (byte \p));;;;;;;;;;;;;;;;;;;;;;;;;;; p MapEntry content
-    (instanceClass [this] MapEntry)
+    (instanceClass [this] nil)
     (qualified [this t2 opts] this)
     (sval [this inode opts]
       (default-sval this inode opts))
