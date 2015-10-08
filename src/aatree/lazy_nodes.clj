@@ -96,7 +96,11 @@
       (throw (UnsupportedOperationException. (str "Unknown qualified durable class: " (className clss))))
       q)))
 
-(defn register-factory [^factory-registry fregistry ^aatree.lazy_nodes.IFactory factory]
+(definterface AAContext)
+
+(defn register-factory [^factory-registry fregistry
+                        ^AAContext aacontext
+                        ^aatree.lazy_nodes.IFactory factory]
   (swap! (.-by-id-atom fregistry) assoc (.factoryId factory) factory)
   (let [clss (.instanceClass factory)]
     (if clss
@@ -204,20 +208,23 @@
           (compare-and-set! a nil (Node. t2 level left right cnt))))
       @a)))
 
-(definterface AAContext)
+(def vector-context
+  (reify AAContext
+    ))
+
+(def map-context
+  (reify AAContext
+    ))
 
 (defn vector-opts [opts]
-  (assoc opts :aacontext
-              (reify AAContext
-                )))
+  (assoc opts :aacontext vector-context))
 
 (defn map-opts [opts]
-  (assoc opts :aacontext
-              (reify AAContext
-                )))
+  (assoc opts :aacontext map-context))
 
 (register-factory
  default-factory-registry
+ vector-context
  (reify aatree.lazy_nodes.IFactory
    (factoryId [this] (byte \e));;;;;;;;;;;;;;;;;;;;;; e - default
    (instanceClass [this] nil)
@@ -241,6 +248,7 @@
 
 (register-factory
   default-factory-registry
+  map-context
   (reify aatree.lazy_nodes.IFactory
     (factoryId [this] (byte \p));;;;;;;;;;;;;;;;;;;;;;;;;;; p MapEntry content
     (instanceClass [this] MapEntry)
@@ -265,6 +273,7 @@
 
 (register-factory
   default-factory-registry
+  vector-context
   (reify aatree.lazy_nodes.IFactory
     (factoryId [this] (byte \v));;;;;;;;;;;;;;;;;;;;;;;;;;; v aavector content
     (instanceClass [this] aatree.AAVector)
@@ -290,9 +299,7 @@
      (instanceClass [this] nil)
      (qualified [this t2 opts] this))))
 
-(register-factory
- default-factory-registry
- (.factory emptyLazyNode))
+(register-factory default-factory-registry nil (.factory emptyLazyNode))
 
 (defn create-lazy-empty-node
   [] emptyLazyNode)
