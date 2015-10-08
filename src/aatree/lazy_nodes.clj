@@ -3,7 +3,7 @@
   (:import (java.nio ByteBuffer CharBuffer)
            (aatree.nodes Node INode)
            (clojure.lang MapEntry PersistentVector)
-           (aatree AAVector)))
+           (aatree AAVector AAMap)))
 
 (set! *warn-on-reflection* true)
 
@@ -313,17 +313,34 @@
   default-factory-registry
   vector-context
   (reify aatree.lazy_nodes.IFactory
-    (factoryId [this] (byte \v));;;;;;;;;;;;;;;;;;;;;;;;;;; v aavector in vector
+    (factoryId [this] (byte \v));;;;;;;;;;;;;;;;;;;;;;;;;;; v aavector in aavector
     (instanceClass [this] aatree.AAVector)
     (qualified [this t2 opts] this)
     (valueLength [this lazyNode opts]
-      (let [^aatree.AAVector v (.getT2 lazyNode opts)]
+      (let [^AAVector v (.getT2 lazyNode opts)]
         (node-byte-length (get-inode v) (get-opts v))))
     (deserialize [this lazyNode bb opts]
       (let [opts (vector-opts opts)]
         (new AAVector (node-read bb opts) opts)))
     (writeValue [this lazyNode buffer opts]
-      (let [^aatree.AAVector v (.getT2 lazyNode opts)]
+      (let [^AAVector v (.getT2 lazyNode opts)]
+        (node-write (get-inode v) buffer (get-opts v))))))
+
+(register-factory
+  default-factory-registry
+  vector-context
+  (reify aatree.lazy_nodes.IFactory
+    (factoryId [this] (byte \m));;;;;;;;;;;;;;;;;;;;;;;;;;; m aamap in aavector
+    (instanceClass [this] aatree.AAMap)
+    (qualified [this t2 opts] this)
+    (valueLength [this lazyNode opts]
+      (let [^AAMap m (.getT2 lazyNode opts)]
+        (node-byte-length (get-inode m) (get-opts m))))
+    (deserialize [this lazyNode bb opts]
+      (let [opts (map-opts opts)]
+        (new AAMap (node-read bb opts) opts)))
+    (writeValue [this lazyNode buffer opts]
+      (let [^AAMap v (.getT2 lazyNode opts)]
         (node-write (get-inode v) buffer (get-opts v))))))
 
 (def ^LazyNode emptyLazyNode

@@ -35,3 +35,7 @@
 (def lv5 (lv4 0))
 (println lv5); -> [1 2 3]
 (println (class lv5)); -> aatree.AAVector
+
+(def lm1 (conj emptyLazyAAMap {:dog "Jack" :cat "Sammy" :rabbit "Henry"}))
+(def lv6 (conj lv4 lm1))
+(println lv6); -> [[1 2 3] {:cat Sammy, :dog Jack, :rabbit Henry}]
