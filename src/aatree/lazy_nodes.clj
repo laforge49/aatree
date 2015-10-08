@@ -204,6 +204,18 @@
           (compare-and-set! a nil (Node. t2 level left right cnt))))
       @a)))
 
+(definterface AAContext)
+
+(defn vector-opts [opts]
+  (assoc opts :aacontext
+              (reify AAContext
+                )))
+
+(defn map-opts [opts]
+  (assoc opts :aacontext
+              (reify AAContext
+                )))
+
 (register-factory
  default-factory-registry
  (reify aatree.lazy_nodes.IFactory
@@ -261,7 +273,8 @@
       (let [^aatree.AAVector v (.getT2 lazyNode opts)]
         (node-byte-length (get-inode v) (get-opts v))))
     (deserialize [this lazyNode bb opts]
-      (new AAVector (node-read bb opts) opts))
+      (let [opts (vector-opts opts)]
+        (new AAVector (node-read bb opts) opts)))
     (writeValue [this lazyNode buffer opts]
       (let [^aatree.AAVector v (.getT2 lazyNode opts)]
         (node-write (get-inode v) buffer (get-opts v))))))
