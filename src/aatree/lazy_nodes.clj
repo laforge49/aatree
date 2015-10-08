@@ -72,18 +72,20 @@
 
 (def default-factory-registry (create-factory-registry))
 
-(defn- ^aatree.lazy_nodes.IFactory factory-for-id [id opts]
+(definterface AAContext
+  (classAtom [])
+  (getDefaultFactory [])
+  (setDefaultFactory [factory]))
+
+(defn- ^IFactory factory-for-id [id opts]
   (let [^factory-registry r (:factory-registry opts)
         f (@(.-by_id_atom r) id)]
     (if (nil? f)
-      (factory-for-id (byte \e) opts)
+      (let [^AAContext context (:aacontext opts)]
+        (.getDefaultFactory context))
       f)))
 
-(definterface AAContext
-  (classAtom []))
-
-(defn- register-class [^AAContext aacontext
-                       ^aatree.lazy_nodes.IFactory factory]
+(defn- register-class [^AAContext aacontext ^IFactory factory]
   (let [clss (.instanceClass factory)]
     (if clss
       (swap! (.classAtom aacontext) assoc clss factory))))
@@ -213,15 +215,25 @@
           (compare-and-set! a nil (Node. t2 level left right cnt))))
       @a)))
 
-(def vector-context
-  (let [class-atom (atom {})]
+(def ^AAContext vector-context
+  (let [class-atom (atom {})
+        factory-atom (atom nil)]
     (reify AAContext
-      (classAtom [this] class-atom))))
+      (classAtom [this] class-atom)
+      (getDefaultFactory [this] @factory-atom)
+      (setDefaultFactory
+        [this f]
+        (compare-and-set! factory-atom nil f)))))
 
-(def map-context
-  (let [class-atom (atom {})]
+(def ^AAContext map-context
+  (let [class-atom (atom {})
+        factory-atom (atom nil)]
     (reify AAContext
-      (classAtom [this] class-atom))))
+      (classAtom [this] class-atom)
+      (getDefaultFactory [this] @factory-atom)
+      (setDefaultFactory
+        [this f]
+        (compare-and-set! factory-atom nil f)))))
 
 (defn vector-opts [opts]
   (assoc opts :aacontext vector-context))
@@ -253,6 +265,12 @@
    (writeValue [this lazyNode buffer opts]
      (default-write-value this lazyNode buffer opts))))
 
+(.setDefaultFactory
+  vector-context
+  (factory-for-id
+    (byte \e)
+    {:factory-registry default-factory-registry}))
+
 (register-factory
   default-factory-registry
   map-context
@@ -277,6 +295,12 @@
         t2))
     (writeValue [this lazyNode buffer opts]
       (default-write-value this lazyNode buffer opts))))
+
+(.setDefaultFactory
+  map-context
+  (factory-for-id
+    (byte \p)
+    {:factory-registry default-factory-registry}))
 
 (register-factory
   default-factory-registry
