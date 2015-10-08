@@ -79,14 +79,23 @@
       (factory-for-id (byte \e) opts)
       f)))
 
-(defn className [^Class c] (.getName c))
+(definterface AAContext
+  (classAtom []))
+
+(defn- register-class [^AAContext aacontext
+                       ^aatree.lazy_nodes.IFactory factory]
+  (let [clss (.instanceClass factory)]
+    (if clss
+      (swap! (.classAtom aacontext) assoc clss factory))))
 
 (defn ^aatree.lazy_nodes.IFactory factory-for-class [clss opts]
-  (let [^factory-registry r (:factory-registry opts)
-        f (@(.by_class_atom r) clss)]
+  (let [^AAContext aacontext (:aacontext opts)
+        f (@(.classAtom aacontext) clss)]
     (if (nil? f)
       (factory-for-id (byte \e) opts)
       f)))
+
+(defn className [^Class c] (.getName c))
 
 (defn- ^aatree.lazy_nodes.IFactory factory-for-instance [inst opts]
   (let [clss (class inst)
@@ -96,15 +105,11 @@
       (throw (UnsupportedOperationException. (str "Unknown qualified durable class: " (className clss))))
       q)))
 
-(definterface AAContext)
-
 (defn register-factory [^factory-registry fregistry
                         ^AAContext aacontext
                         ^aatree.lazy_nodes.IFactory factory]
   (swap! (.-by-id-atom fregistry) assoc (.factoryId factory) factory)
-  (let [clss (.instanceClass factory)]
-    (if clss
-      (swap! (.-by-class-atom fregistry) assoc clss factory))))
+  (register-class aacontext factory))
 
 (defn- str-val [^IFactory factory ^aatree.lazy_nodes.LazyNode lazyNode opts]
   (let [sval-atom (.-sval-atom lazyNode)]
@@ -209,12 +214,14 @@
       @a)))
 
 (def vector-context
-  (reify AAContext
-    ))
+  (let [class-atom (atom {})]
+    (reify AAContext
+      (classAtom [this] class-atom))))
 
 (def map-context
-  (reify AAContext
-    ))
+  (let [class-atom (atom {})]
+    (reify AAContext
+      (classAtom [this] class-atom))))
 
 (defn vector-opts [opts]
   (assoc opts :aacontext vector-context))
