@@ -18,6 +18,8 @@
 (def lm2 (load-aamap bb))
 (println lm2); -> {:cat Sammy, :dog Jack, :rabbit Henry}
 
+;new in 0.3.2
+
 (def lv1 (conj emptyLazyAAVector 1 2 3))
 (def lm3 (conj lm2 [:list lv1]))
 (println lm3); -> {:cat Sammy, :dog Jack, :list [1 2 3], :rabbit Henry}
