@@ -57,4 +57,4 @@
 
 (defn -count [^CountedSequence this]
   (let [s (.-state this)]
-  (.count (iter s) (:ndx s))))
+    (.count (iter s) (:ndx s))))
