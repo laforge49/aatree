@@ -125,6 +125,20 @@
 (defn- default-sval [this ^INode inode opts]
   (pr-str (.getT2 inode opts)))
 
+(defn- key-sval [this ^INode inode opts]
+  (let [^MapEntry map-entry (.getT2 inode opts)]
+    (pr-str (.getKey map-entry))))
+
+(defn- deserialize-sval [this ^LazyNode lazyNode ^ByteBuffer bb opts]
+  (let [svl (.getInt bb)
+        ^CharBuffer cb (.asCharBuffer bb)
+        svc (char-array svl)
+        _ (.get cb svc)
+        sv (String. svc)
+        _ (reset! (.-sval_atom lazyNode) sv)
+        _ (.position bb (+ (.position bb) (* 2 svl)))]
+    sv))
+
 (defn node-byte-length [^LazyNode lazy-node opts]
   (if (empty-node? lazy-node)
     1
@@ -242,6 +256,22 @@
         (let [^MapEntry map-entry inst]
           (.getValue map-entry))))))
 
+(def ^LazyNode emptyLazyNode
+  (->LazyNode
+    (atom emptyNode)
+    (atom nil)
+    (atom 1)
+    (atom nil)
+    (reify aatree.lazy_nodes.IFactory
+      (factoryId [this] (byte \n));;;;;;;;;;;;;;;;;;;;;;;; n - nil content
+      (instanceClass [this] nil)
+      (qualified [this t2 opts] this))))
+
+(register-factory default-factory-registry nil (.factory emptyLazyNode))
+
+(defn create-lazy-empty-node
+  [] emptyLazyNode)
+
 (defn vector-opts [opts]
   (assoc opts :aacontext vector-context))
 
@@ -251,7 +281,7 @@
 (register-factory
  default-factory-registry
  vector-context
- (reify aatree.lazy_nodes.IFactory
+ (reify IFactory
    (factoryId [this] (byte \e));;;;;;;;;;;;;;;;;;;;;; e - vector default factory
    (instanceClass [this] nil)
    (qualified [this t2 opts] this)
@@ -260,14 +290,8 @@
    (valueLength [this lazyNode opts]
      (default-valueLength this lazyNode opts))
    (deserialize [this lazyNode bb opts]
-     (let [svl (.getInt bb)
-           ^CharBuffer cb (.asCharBuffer bb)
-           svc (char-array svl)
-           _ (.get cb svc)
-           sv (String. svc)
-           _ (reset! (.-sval_atom lazyNode) sv)
-           t2 (read-string opts sv)
-           _ (.position bb (+ (.position bb) (* 2 svl)))]
+     (let [sv (deserialize-sval this lazyNode bb opts)
+           t2 (read-string opts sv)]
        t2))
    (writeValue [this lazyNode buffer opts]
      (default-write-value this lazyNode buffer opts))))
@@ -280,39 +304,8 @@
 
 (register-factory
   default-factory-registry
-  map-context
-  (reify aatree.lazy_nodes.IFactory
-    (factoryId [this] (byte \p));;;;;;;;;;;;;;;;;;;;;;;;;;; p - map default factory
-    (instanceClass [this] nil)
-    (qualified [this t2 opts] this)
-    (sval [this inode opts]
-      (default-sval this inode opts))
-    (valueLength [this lazyNode opts]
-      (default-valueLength this lazyNode opts))
-    (deserialize [this lazyNode bb opts]
-      (let [svl (.getInt bb)
-            ^CharBuffer cb (.asCharBuffer bb)
-            svc (char-array svl)
-            _ (.get cb svc)
-            sv (String. svc)
-            _ (reset! (.-sval_atom lazyNode) sv)
-            ^PersistentVector v (read-string opts sv)
-            t2 (MapEntry. (.get v 0) (.get v 1))
-            _ (.position bb (+ (.position bb) (* 2 svl)))]
-        t2))
-    (writeValue [this lazyNode buffer opts]
-      (default-write-value this lazyNode buffer opts))))
-
-(.setDefaultFactory
-  map-context
-  (factory-for-id
-    (byte \p)
-    {:factory-registry default-factory-registry}))
-
-(register-factory
-  default-factory-registry
   vector-context
-  (reify aatree.lazy_nodes.IFactory
+  (reify IFactory
     (factoryId [this] (byte \v));;;;;;;;;;;;;;;;;;;;;;;;;;; v aavector in aavector
     (instanceClass [this] aatree.AAVector)
     (qualified [this t2 opts] this)
@@ -329,7 +322,7 @@
 (register-factory
   default-factory-registry
   vector-context
-  (reify aatree.lazy_nodes.IFactory
+  (reify IFactory
     (factoryId [this] (byte \m));;;;;;;;;;;;;;;;;;;;;;;;;;; m aamap in aavector
     (instanceClass [this] aatree.AAMap)
     (qualified [this t2 opts] this)
@@ -343,18 +336,50 @@
       (let [^AAMap v (.getT2 lazyNode opts)]
         (node-write (get-inode v) buffer (get-opts v))))))
 
-(def ^LazyNode emptyLazyNode
-  (->LazyNode
-   (atom emptyNode)
-   (atom nil)
-   (atom 1)
-   (atom nil)
-   (reify aatree.lazy_nodes.IFactory
-     (factoryId [this] (byte \n));;;;;;;;;;;;;;;;;;;;;;;; n - nil content
-     (instanceClass [this] nil)
-     (qualified [this t2 opts] this))))
+(register-factory
+  default-factory-registry
+  map-context
+  (reify IFactory
+    (factoryId [this] (byte \p));;;;;;;;;;;;;;;;;;;;;;;;;;; p - map default factory
+    (instanceClass [this] nil)
+    (qualified [this t2 opts] this)
+    (sval [this inode opts]
+      (default-sval this inode opts))
+    (valueLength [this lazyNode opts]
+      (default-valueLength this lazyNode opts))
+    (deserialize [this lazyNode bb opts]
+      (let [sv (deserialize-sval this lazyNode bb opts)
+            ^PersistentVector v (read-string opts sv)
+            t2 (MapEntry. (.get v 0) (.get v 1))]
+        t2))
+    (writeValue [this lazyNode buffer opts]
+      (default-write-value this lazyNode buffer opts))))
 
-(register-factory default-factory-registry nil (.factory emptyLazyNode))
+(.setDefaultFactory
+  map-context
+  (factory-for-id
+    (byte \p)
+    {:factory-registry default-factory-registry}))
 
-(defn create-lazy-empty-node
-  [] emptyLazyNode)
+(register-factory
+  default-factory-registry
+  map-context
+  (reify IFactory
+    (factoryId [this] (byte \V));;;;;;;;;;;;;;;;;;;;;;;;;;; V aavector in aamap
+    (instanceClass [this] aatree.AAVector)
+    (qualified [this t2 opts] this)
+    (sval [this inode opts]
+      (key-sval this inode opts))
+    (valueLength [this lazyNode opts]
+      (let [^MapEntry map-entry (.getT2 lazyNode opts)
+            ^AAVector v (.getValue map-entry)]
+        (+ (default-valueLength this lazyNode opts)
+           (node-byte-length (get-inode v) (get-opts v)))))
+    (deserialize [this lazyNode bb opts]
+      (let [opts (vector-opts opts)]
+        (new AAVector (node-read bb opts) opts)))
+    (writeValue [this lazyNode buffer opts]
+      (default-write-value this lazyNode buffer opts)
+      (let [^MapEntry map-entry (.getT2 lazyNode opts)
+            ^AAVector v (.getValue map-entry)]
+        (node-write (get-inode v) buffer (get-opts v))))))
