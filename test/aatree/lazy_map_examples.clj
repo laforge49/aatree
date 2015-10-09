@@ -32,3 +32,16 @@
 (.flip bb)
 (def lm4 (load-aamap bb))
 (println lm4); -> {:cat Sammy, :dog Jack, :list [1 2 3], :rabbit Henry}
+
+(def lm5 (conj emptyLazyAAMap {"b" :bandana "h" :hat}))
+(def lm6 (conj lm4 [:map lm5]))
+(println lm6); -> {:cat Sammy, :dog Jack, :list [1 2 3], :map {b :bandana, h :hat}, :rabbit Henry}
+
+(def lm6-len (lazy-byte-length lm6))
+(println lm6-len); -> 343
+
+(def ^ByteBuffer bb (ByteBuffer/allocate lm6-len))
+(lazy-write lm6 bb)
+(.flip bb)
+(def lm7 (load-aamap bb))
+(println lm7); -> {:cat Sammy, :dog Jack, :list [1 2 3], :map {b :bandana, h :hat}, :rabbit Henry}
