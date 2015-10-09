@@ -376,8 +376,10 @@
         (+ (default-valueLength this lazyNode opts)
            (node-byte-length (get-inode v) (get-opts v)))))
     (deserialize [this lazyNode bb opts]
-      (let [opts (vector-opts opts)]
-        (new AAVector (node-read bb opts) opts)))
+      (let [k (deserialize-sval this lazyNode bb opts)
+            opts (vector-opts opts)
+            v (new AAVector (node-read bb opts) opts)]
+        (MapEntry. k v)))
     (writeValue [this lazyNode buffer opts]
       (default-write-value this lazyNode buffer opts)
       (let [^MapEntry map-entry (.getT2 lazyNode opts)
