@@ -15,5 +15,18 @@
 (def ^ByteBuffer bb (ByteBuffer/allocate lm1-len))
 (lazy-write lm1 bb)
 (.flip bb)
-(def lv2 (load-aamap bb))
-(println lv2); -> {:cat Sammy, :dog Jack, :rabbit Henry}
+(def lm2 (load-aamap bb))
+(println lm2); -> {:cat Sammy, :dog Jack, :rabbit Henry}
+
+(def lv1 (conj emptyLazyAAVector 1 2 3))
+(def lm3 (conj lm2 [:list lv1]))
+(println lm3); -> {:cat Sammy, :dog Jack, :list [1 2 3], :rabbit Henry}
+
+(def lm3-len (lazy-byte-length lm3))
+(println lm3-len); -> 232
+
+(def ^ByteBuffer bb (ByteBuffer/allocate lm3-len))
+(lazy-write lm3 bb)
+(.flip bb)
+(def lm4 (load-aamap bb))
+(println lm4); -> {:cat Sammy, :dog Jack, :list [1 2 3], :rabbit Henry}
