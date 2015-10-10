@@ -21,9 +21,6 @@
 (defn -getState [^AAVector this]
   (.-state this))
 
-(defn ^IPersistentMap -getOpts [this]
-  (.opts (get-state this)))
-
 (defn- ^IPersistentMap get-state-meta [this]
   (.-meta (get-state this)))
 
@@ -35,14 +32,14 @@
 
 (defn -meta [^AAVector this] (get-state-meta this))
 
-(defn -withMeta [^AAVector this meta] (new AAVector (get-inode this) (-getOpts this) meta))
+(defn -withMeta [^AAVector this meta] (new AAVector (get-inode this) (get-opts this) meta))
 
 (defn -count [this]
-  (.getCnt (get-inode this) (-getOpts this)))
+  (.getCnt (get-inode this) (get-opts this)))
 
 (defn -nth
   ([^AAVector this i]
-   (nth-t2 (get-inode this) i (-getOpts this)))
+   (nth-t2 (get-inode this) i (get-opts this)))
   ([this i notFound]
    (if (and (>= i 0) (< i (-count this)))
      (-nth this i)
@@ -50,8 +47,8 @@
 
 (defn -cons [^AAVector this val]
   (let [n0 (get-inode this)
-        n1 (vector-add n0 val (-count this) (-getOpts this))]
-    (new AAVector n1 (-getOpts this) (get-state-meta this))))
+        n1 (vector-add n0 val (-count this) (get-opts this))]
+    (new AAVector n1 (get-opts this) (get-state-meta this))))
 
 (defn -addNode [^AAVector this i val]
   (let [c (-count this)]
@@ -60,8 +57,8 @@
       (-cons this val)
       (and (>= i 0) (< i c))
       (let [n0 (get-inode this)
-            n1 (vector-add n0 val i (-getOpts this))]
-        (new AAVector n1 (-getOpts this) (get-state-meta this)))
+            n1 (vector-add n0 val i (get-opts this))]
+        (new AAVector n1 (get-opts this) (get-state-meta this)))
       :else
       (throw (IndexOutOfBoundsException.)))))
 
@@ -72,35 +69,35 @@
       (-cons this val)
       (and (>= i 0) (< i c))
       (let [n0 (get-inode this)
-            n1 (vector-set n0 val i (-getOpts this))]
-        (new AAVector n1 (-getOpts this) (get-state-meta this)))
+            n1 (vector-set n0 val i (get-opts this))]
+        (new AAVector n1 (get-opts this) (get-state-meta this)))
       :else
       (throw (IndexOutOfBoundsException.)))))
 
 (defn -empty [^AAVector this]
   (new AAVector
-       (empty-node (get-inode this) (-getOpts this))
-       (-getOpts this)
+       (empty-node (get-inode this) (get-opts this))
+       (get-opts this)
        (get-state-meta this)))
 
 (defn -iterator [^AAVector this]
-  (new-counted-iterator (get-inode this) (-getOpts this)))
+  (new-counted-iterator (get-inode this) (get-opts this)))
 
 (defn -seq
   [^AAVector this]
-  (new-counted-seq (get-inode this) (-getOpts this)))
+  (new-counted-seq (get-inode this) (get-opts this)))
 
 (defn -pop [^AAVector this]
   (if (empty? this)
     this
     (let [n0 (get-inode this)
-          n1 (deln n0 (- (-count this) 1) (-getOpts this))]
-      (new AAVector n1 (-getOpts this) (get-state-meta this)))))
+          n1 (deln n0 (- (-count this) 1) (get-opts this))]
+      (new AAVector n1 (get-opts this) (get-state-meta this)))))
 
 (defn -dropNode [^AAVector this i]
   (if (or (< i 0) (>= i (-count this)))
     this
     (new AAVector
-         (deln (get-inode this) i (-getOpts this))
-         (-getOpts this)
+         (deln (get-inode this) i (get-opts this))
+         (get-opts this)
          (get-state-meta this))))

@@ -18,8 +18,7 @@
 (deftype noded-state [node opts meta])
 
 (definterface INoded
-  (getState [])
-  (getOpts []))
+  (getState []))
 
 (defn ^noded-state get-state [^INoded this]
   (.getState this))
@@ -27,8 +26,8 @@
 (defn ^INode get-inode [noded]
   (.-node (get-state noded)))
 
-(defn get-opts [^aatree.nodes.INoded noded]
-  (.getOpts noded))
+(defn get-opts [noded]
+  (.-opts (get-state noded)))
 
 (defn empty-node? [^INode n]
   (or (nil? n) (identical? n (.getNada n))))
