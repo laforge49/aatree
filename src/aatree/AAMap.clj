@@ -81,12 +81,6 @@
      (-seq this)
      (-rseq this))))
 
-(defn -keyIterator [^AAMap this]
-  (new-map-key-seq (get-inode this) (get-opts this)))
-
-(defn -valIterator [^AAMap this]
-  (new-map-value-seq (get-inode this) (get-opts this)))
-
 (defn -seqFrom [^AAMap this key ascending]
   (if ascending
     (new-map-entry-seq (get-inode this) key (get-opts this))
