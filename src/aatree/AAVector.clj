@@ -21,16 +21,13 @@
 (defn -getState [^AAVector this]
   (.-state this))
 
-(defn- ^IPersistentMap get-state-meta [this]
-  (.-meta (get-state this)))
-
 (defn -init
   ([node opts]
    [[] (->noded-state node opts nil)])
   ([node opts meta]
    [[] (->noded-state node opts meta)]))
 
-(defn -meta [^AAVector this] (get-state-meta this))
+(defn -meta [^AAVector this] (get-meta this))
 
 (defn -withMeta [^AAVector this meta] (new AAVector (get-inode this) (get-opts this) meta))
 
@@ -48,7 +45,7 @@
 (defn -cons [^AAVector this val]
   (let [n0 (get-inode this)
         n1 (vector-add n0 val (-count this) (get-opts this))]
-    (new AAVector n1 (get-opts this) (get-state-meta this))))
+    (new AAVector n1 (get-opts this) (get-meta this))))
 
 (defn -addNode [^AAVector this i val]
   (let [c (-count this)]
@@ -58,7 +55,7 @@
       (and (>= i 0) (< i c))
       (let [n0 (get-inode this)
             n1 (vector-add n0 val i (get-opts this))]
-        (new AAVector n1 (get-opts this) (get-state-meta this)))
+        (new AAVector n1 (get-opts this) (get-meta this)))
       :else
       (throw (IndexOutOfBoundsException.)))))
 
@@ -70,7 +67,7 @@
       (and (>= i 0) (< i c))
       (let [n0 (get-inode this)
             n1 (vector-set n0 val i (get-opts this))]
-        (new AAVector n1 (get-opts this) (get-state-meta this)))
+        (new AAVector n1 (get-opts this) (get-meta this)))
       :else
       (throw (IndexOutOfBoundsException.)))))
 
@@ -78,7 +75,7 @@
   (new AAVector
        (empty-node (get-inode this) (get-opts this))
        (get-opts this)
-       (get-state-meta this)))
+       (get-meta this)))
 
 (defn -iterator [^AAVector this]
   (new-counted-iterator (get-inode this) (get-opts this)))
@@ -92,7 +89,7 @@
     this
     (let [n0 (get-inode this)
           n1 (deln n0 (- (-count this) 1) (get-opts this))]
-      (new AAVector n1 (get-opts this) (get-state-meta this)))))
+      (new AAVector n1 (get-opts this) (get-meta this)))))
 
 (defn -dropNode [^AAVector this i]
   (if (or (< i 0) (>= i (-count this)))
@@ -100,4 +97,4 @@
     (new AAVector
          (deln (get-inode this) i (get-opts this))
          (get-opts this)
-         (get-state-meta this))))
+         (get-meta this))))

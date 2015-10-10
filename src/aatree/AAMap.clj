@@ -24,16 +24,13 @@
 (defn -getState [^AAMap this]
   (.-state this))
 
-(defn- ^IPersistentMap get-state-meta [this]
-  (.-meta (get-state this)))
-
 (defn -init
   ([node opts]
    [[] (->noded-state node opts nil)])
   ([node opts meta]
    [[] (->noded-state node opts meta)]))
 
-(defn -meta [^AAMap this] (get-state-meta this))
+(defn -meta [^AAMap this] (get-meta this))
 
 (defn -withMeta [^AAMap this meta] (new AAMap (get-inode this) (get-opts this) meta))
 
@@ -55,7 +52,7 @@
         n1 (map-insert n0 (new MapEntry key val) (get-opts this))]
     (if (identical? n0 n1)
       this
-      (new AAMap n1 (get-opts this) (get-state-meta this)))))
+      (new AAMap n1 (get-opts this) (get-meta this)))))
 
 (defn -assocEx [^AAMap this key val]
   (let [n0 (get-inode this)]
@@ -64,14 +61,14 @@
       (new AAMap
            (map-insert n0 (new MapEntry key val) (get-opts this))
            (get-opts this)
-           (get-state-meta this)))))
+           (get-meta this)))))
 
 (defn -without [^AAMap this key]
   (let [n0 (get-inode this)
         n1 (map-del n0 key (get-opts this))]
     (if (identical? n0 n1)
       this
-      (new AAMap n1 (get-opts this) (get-state-meta this)))))
+      (new AAMap n1 (get-opts this) (get-meta this)))))
 
 (defn -rseq [^AAMap this]
   (new-counted-reverse-seq (get-inode this) (get-opts this)))
@@ -98,7 +95,7 @@
 (defn -empty [^AAMap this]
   (new AAMap (empty-node (get-inode this) (get-opts this))
        (get-opts this)
-       (get-state-meta this)))
+       (get-meta this)))
 
 (defn -count [this]
   (.getCnt (get-inode this) (get-opts this)))

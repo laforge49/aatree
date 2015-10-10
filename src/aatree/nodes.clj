@@ -29,6 +29,9 @@
 (defn get-opts [noded]
   (.-opts (get-state noded)))
 
+(defn get-meta [noded]
+  (.-meta (get-state noded)))
+
 (defn empty-node? [^INode n]
   (or (nil? n) (identical? n (.getNada n))))
 
