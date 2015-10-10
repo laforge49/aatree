@@ -23,3 +23,13 @@
 
 (defn -getState [^AASet this]
   (.-state this))
+
+(defn -init
+  ([node opts]
+   [[] (->noded-state node opts nil)])
+  ([node opts meta]
+   [[] (->noded-state node opts meta)]))
+
+(defn -meta [^AASet this] (get-meta this))
+
+(defn -withMeta [^AASet this meta] (new AASet (get-inode this) (get-opts this) meta))
