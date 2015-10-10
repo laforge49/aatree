@@ -24,9 +24,6 @@
 (defn -getState [^AAMap this]
   (.-state this))
 
-(defn- ^INode -getINode [this]
-  (.-node (get-state this)))
-
 (defn ^IPersistentMap -getOpts [this]
   (.opts (get-state this)))
 
@@ -41,9 +38,9 @@
 
 (defn -meta [^AAMap this] (get-state-meta this))
 
-(defn -withMeta [^AAMap this meta] (new AAMap (-getINode this) (-getOpts this) meta))
+(defn -withMeta [^AAMap this meta] (new AAMap (get-inode this) (-getOpts this) meta))
 
-(defn -entryAt [^AAMap this key] (map-get-t2 (-getINode this) key (-getOpts this)))
+(defn -entryAt [^AAMap this key] (map-get-t2 (get-inode this) key (-getOpts this)))
 
 (defn -containsKey [this key] (boolean (-entryAt this key)))
 
@@ -57,14 +54,14 @@
    (-valAt this key nil)))
 
 (defn -assoc [^AAMap this key val]
-  (let [n0 (-getINode this)
+  (let [n0 (get-inode this)
         n1 (map-insert n0 (new MapEntry key val) (-getOpts this))]
     (if (identical? n0 n1)
       this
       (new AAMap n1 (-getOpts this) (get-state-meta this)))))
 
 (defn -assocEx [^AAMap this key val]
-  (let [n0 (-getINode this)]
+  (let [n0 (get-inode this)]
     (if (-containsKey this key)
       this
       (new AAMap
@@ -73,51 +70,51 @@
            (get-state-meta this)))))
 
 (defn -without [^AAMap this key]
-  (let [n0 (-getINode this)
+  (let [n0 (get-inode this)
         n1 (map-del n0 key (-getOpts this))]
     (if (identical? n0 n1)
       this
       (new AAMap n1 (-getOpts this) (get-state-meta this)))))
 
 (defn -rseq [^AAMap this]
-  (new-counted-reverse-seq (-getINode this) (-getOpts this)))
+  (new-counted-reverse-seq (get-inode this) (-getOpts this)))
 
 (defn -seq
   ([^AAMap this]
-   (new-counted-seq (-getINode this) (-getOpts this)))
+   (new-counted-seq (get-inode this) (-getOpts this)))
   ([this ascending]
    (if ascending
      (-seq this)
      (-rseq this))))
 
 (defn -keyIterator [^AAMap this]
-  (new-map-key-seq (-getINode this) (-getOpts this)))
+  (new-map-key-seq (get-inode this) (-getOpts this)))
 
 (defn -valIterator [^AAMap this]
-  (new-map-value-seq (-getINode this) (-getOpts this)))
+  (new-map-value-seq (get-inode this) (-getOpts this)))
 
 (defn -seqFrom [^AAMap this key ascending]
   (if ascending
-    (new-map-entry-seq (-getINode this) key (-getOpts this))
-    (new-map-entry-reverse-seq (-getINode this) key (-getOpts this))))
+    (new-map-entry-seq (get-inode this) key (-getOpts this))
+    (new-map-entry-reverse-seq (get-inode this) key (-getOpts this))))
 
 (defn -empty [^AAMap this]
-  (new AAMap (empty-node (-getINode this) (-getOpts this))
+  (new AAMap (empty-node (get-inode this) (-getOpts this))
        (-getOpts this)
        (get-state-meta this)))
 
 (defn -count [this]
-  (.getCnt (-getINode this) (-getOpts this)))
+  (.getCnt (get-inode this) (-getOpts this)))
 
 (defn -entryKey [this ^MapEntry entry]
   (.getKey entry))
 
 (defn -iterator [^AAMap this]
-  (new-counted-iterator (-getINode this) (-getOpts this)))
+  (new-counted-iterator (get-inode this) (-getOpts this)))
 
 (defn -nth
   ([^AAMap this i]
-   (nth-t2 (-getINode this) i (-getOpts this)))
+   (nth-t2 (get-inode this) i (-getOpts this)))
   ([this i notFound]
    (if (and (>= i 0) (< i (-count this)))
      (-nth this i)

@@ -23,6 +23,3 @@
 
 (defn -getState [^AASet this]
   (.-state this))
-
-(defn- ^INode -getINode [this]
-  (.-node (get-state this)))
