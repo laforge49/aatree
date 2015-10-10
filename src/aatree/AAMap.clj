@@ -1,19 +1,19 @@
 (ns aatree.AAMap
   (:gen-class
-   :main false
-   :extends clojure.lang.APersistentMap
-   :implements [clojure.lang.IObj
-                clojure.lang.Reversible
-                clojure.lang.Sorted
-                clojure.lang.Counted
-                clojure.lang.Indexed
-                aatree.nodes.INoded]
-   :constructors {[aatree.nodes.INode clojure.lang.IPersistentMap]
-                  []
-                  [aatree.nodes.INode clojure.lang.IPersistentMap clojure.lang.IPersistentMap]
-                  []}
-   :init init
-   :state state)
+    :main false
+    :extends clojure.lang.APersistentMap
+    :implements [clojure.lang.IObj
+                 clojure.lang.Reversible
+                 clojure.lang.Sorted
+                 clojure.lang.Counted
+                 clojure.lang.Indexed
+                 aatree.nodes.INoded]
+    :constructors {[aatree.nodes.INode clojure.lang.IPersistentMap]
+                   []
+                   [aatree.nodes.INode clojure.lang.IPersistentMap clojure.lang.IPersistentMap]
+                   []}
+    :init init
+    :state state)
   (:require [aatree.nodes :refer :all])
   (:import (aatree AAMap)
            (clojure.lang MapEntry RT IPersistentMap)
@@ -21,9 +21,7 @@
 
 (set! *warn-on-reflection* true)
 
-(deftype map-state [node opts meta])
-
-(defn ^map-state get-state [^AAMap this]
+(defn -getState [^AAMap this]
   (.-state this))
 
 (defn- ^INode -getINode [this]
@@ -37,9 +35,9 @@
 
 (defn -init
   ([node opts]
-   [[] (->map-state node opts nil)])
+   [[] (->noded-state node opts nil)])
   ([node opts meta]
-   [[] (->map-state node opts meta)]))
+   [[] (->noded-state node opts meta)]))
 
 (defn -meta [^AAMap this] (get-state-meta this))
 

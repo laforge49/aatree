@@ -1,16 +1,16 @@
 (ns aatree.AAVector
   (:gen-class
-   :main false
-   :extends clojure.lang.APersistentVector
-   :implements [clojure.lang.IObj
-                aatree.nodes.FlexVector
-                aatree.nodes.INoded]
-   :constructors {[aatree.nodes.INode clojure.lang.IPersistentMap]
-                  []
-                  [aatree.nodes.INode clojure.lang.IPersistentMap clojure.lang.IPersistentMap]
-                  []}
-   :init init
-   :state state)
+    :main false
+    :extends clojure.lang.APersistentVector
+    :implements [clojure.lang.IObj
+                 aatree.nodes.FlexVector
+                 aatree.nodes.INoded]
+    :constructors {[aatree.nodes.INode clojure.lang.IPersistentMap]
+                   []
+                   [aatree.nodes.INode clojure.lang.IPersistentMap clojure.lang.IPersistentMap]
+                   []}
+    :init init
+    :state state)
   (:require [aatree.nodes :refer :all])
   (:import (aatree AAVector)
            (aatree.nodes INode)
@@ -18,9 +18,7 @@
 
 (set! *warn-on-reflection* true)
 
-(deftype vector-state [node opts meta])
-
-(defn ^vector-state get-state [^AAVector this]
+(defn -getState [^AAVector this]
   (.-state this))
 
 (defn ^INode -getINode [this]
@@ -34,9 +32,9 @@
 
 (defn -init
   ([node opts]
-   [[] (->vector-state node opts nil)])
+   [[] (->noded-state node opts nil)])
   ([node opts meta]
-   [[] (->vector-state node opts meta)]))
+   [[] (->noded-state node opts meta)]))
 
 (defn -meta [^AAVector this] (get-state-meta this))
 

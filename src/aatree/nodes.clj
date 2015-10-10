@@ -15,9 +15,15 @@
   (^Long getCnt [opts])
   (getNada []))
 
+(deftype noded-state [node opts meta])
+
 (definterface INoded
+  (getState [])
   (^aatree.nodes.INode getINode [])
   (getOpts []))
+
+(defn ^noded-state get-state [^INoded this]
+  (.getState this))
 
 (defn ^aatree.nodes.INode get-inode [^aatree.nodes.INoded noded]
   (.getINode noded))
