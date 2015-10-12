@@ -1,7 +1,7 @@
 (ns aatree.core
   (:require [aatree.nodes :refer :all])
   (:require [aatree.lazy-nodes :refer :all])
-  (:import (aatree AAMap AAVector)
+  (:import (aatree AAMap AAVector AASet)
            (aatree.nodes FlexVector)
            (clojure.lang RT)))
 
@@ -16,6 +16,18 @@
    (if (:coparator opts)
      (new AAMap emptyNode opts)
      (new AAMap emptyNode (assoc opts :comparator RT/DEFAULT_COMPARATOR)))))
+
+(def emptyAASet
+  (new AASet emptyAAMap))
+
+(defn create-aaset
+  ([] emptyAASet)
+  ([opts]
+   (let [mpl
+         (if (:coparator opts)
+           (new AAMap emptyNode opts)
+           (new AAMap emptyNode (assoc opts :comparator RT/DEFAULT_COMPARATOR)))]
+     (new AASet mpl))))
 
 (def emptyAAVector
   (new AAVector emptyNode {}))

@@ -151,3 +151,9 @@
                    emptyLazyAAMap
                    gen-element gen-element
                    {:base (sorted-map) :ordered? true}))
+
+(deftest set-tests
+  (assert-set-like 100
+                   emptyAAMap
+                   gen-element
+                   {:base (sorted-set) :ordered? true}))

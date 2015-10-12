@@ -9,9 +9,9 @@
                  clojure.lang.Indexed
                  aatree.nodes.INoded]
     :constructors {[aatree.AAMap]
-                   [aatree.AAMap]
+                   [clojure.lang.IPersistentMap]
                    [aatree.AAMap clojure.lang.IPersistentMap]
-                   [aatree.AAMap]}
+                   [clojure.lang.IPersistentMap]}
     :init init
     :state impl)
   (:require [aatree.nodes :refer :all])
