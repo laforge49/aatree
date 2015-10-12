@@ -16,7 +16,7 @@
     :state impl)
   (:require [aatree.nodes :refer :all])
   (:import (aatree AAMap AASet)
-           (clojure.lang MapEntry RT IPersistentMap)
+           (clojure.lang MapEntry RT IPersistentMap ISeq)
            (aatree.nodes INode)))
 
 (set! *warn-on-reflection* true)
@@ -48,3 +48,9 @@
 
 (defn -empty [^AASet this]
   (new AASet (empty (.-impl this))))
+
+(defn -rseq [^AASet this]
+  (let [^AAMap mpl (.-impl this)
+        ^ISeq rs (.rseq mpl)]
+    (clojure.lang.APersistentMap$KeySeq/create (rs))))
+
