@@ -54,3 +54,6 @@
         ^ISeq rs (.rseq mpl)]
     (clojure.lang.APersistentMap$KeySeq/create (rs))))
 
+(defn -comparator [^AASet this]
+  (let [^AAMap mpl (.-impl this)]
+    (.comparator mpl)))
