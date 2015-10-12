@@ -57,3 +57,7 @@
 (defn -comparator [^AASet this]
   (let [^AAMap mpl (.-impl this)]
     (.comparator mpl)))
+
+(defn -entryKey [entry]
+  entry)
+
