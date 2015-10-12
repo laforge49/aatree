@@ -37,4 +37,11 @@
 (defn -withMeta [^AASet this meta] (new AASet (.-impl this) meta))
 
 (defn -disjoin [^AASet this key]
-  (new AASet (dissoc (.-impl this) key) (get-meta this)))
+  (if (contains? this key)
+    (new AASet (dissoc (.-impl this) key) (get-meta this))
+    this))
+
+(defn -cons [^AASet this key]
+  (if (contains? this key)
+    this
+    (new AASet (assoc (.-impl this) key key) (get-meta this))))
