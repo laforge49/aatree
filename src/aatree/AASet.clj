@@ -38,10 +38,13 @@
 
 (defn -disjoin [^AASet this key]
   (if (contains? this key)
-    (new AASet (dissoc (.-impl this) key) (get-meta this))
+    (new AASet (dissoc (.-impl this) key))
     this))
 
 (defn -cons [^AASet this key]
   (if (contains? this key)
     this
-    (new AASet (assoc (.-impl this) key key) (get-meta this))))
+    (new AASet (assoc (.-impl this) key key))))
+
+(defn -empty [^AASet this]
+  (new AASet (empty (.-impl this))))
