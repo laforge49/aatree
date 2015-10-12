@@ -61,3 +61,6 @@
 (defn -entryKey [entry]
   entry)
 
+(defn -seq [^AASet this key ascending]
+  (let [^AAMap mpl (.-impl this)]
+    (RT/keys (.seqFrom mpl key ascending))))
