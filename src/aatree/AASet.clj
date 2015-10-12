@@ -8,28 +8,33 @@
                  clojure.lang.Counted
                  clojure.lang.Indexed
                  aatree.nodes.INoded]
-    :constructors {[aatree.nodes.INode clojure.lang.IPersistentMap]
-                   []
-                   [aatree.nodes.INode clojure.lang.IPersistentMap clojure.lang.IPersistentMap]
-                   []}
+    :constructors {[aatree.AAMap]
+                   [aatree.AAMap]
+                   [aatree.AAMap clojure.lang.IPersistentMap]
+                   [aatree.AAMap]}
     :init init
-    :state state)
+    :state impl)
   (:require [aatree.nodes :refer :all])
-  (:import (aatree AASet)
+  (:import (aatree AAMap AASet)
            (clojure.lang MapEntry RT IPersistentMap)
            (aatree.nodes INode)))
 
 (set! *warn-on-reflection* true)
 
 (defn -getState [^AASet this]
-  (.-state this))
+  (let [^AAMap mpl (.-impl this)]
+  (.-state mpl)))
 
 (defn -init
-  ([node opts]
-   [[] (->noded-state node opts nil)])
-  ([node opts meta]
-   [[] (->noded-state node opts meta)]))
+  ([aamap]
+   [[aamap] aamap])
+  ([aamap meta]
+   (let [mpl (with-meta aamap meta)]
+   [[mpl] mpl])))
 
-(defn -meta [^AASet this] (get-meta this))
+(defn -meta [this] (get-meta this))
 
-(defn -withMeta [^AASet this meta] (new AASet (get-inode this) (get-opts this) meta))
+(defn -withMeta [^AASet this meta] (new AASet (.-impl this) meta))
+
+(defn -disjoin [^AASet this key]
+  (new AASet (dissoc (.-impl this) key) (get-meta this)))
