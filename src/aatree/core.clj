@@ -17,18 +17,6 @@
      (new AAMap emptyNode opts)
      (new AAMap emptyNode (assoc opts :comparator RT/DEFAULT_COMPARATOR)))))
 
-(def emptyAASet
-  (new AASet emptyAAMap))
-
-(defn create-aaset
-  ([] emptyAASet)
-  ([opts]
-   (let [mpl
-         (if (:coparator opts)
-           (new AAMap emptyNode opts)
-           (new AAMap emptyNode (assoc opts :comparator RT/DEFAULT_COMPARATOR)))]
-     (new AASet mpl))))
-
 (def emptyAAVector
   (new AAVector emptyNode {}))
 
@@ -101,3 +89,17 @@
 
 (defn lazy-write [noded buffer]
   (node-write (get-inode noded) buffer (get-opts noded)))
+
+;new in 0.3.3
+
+(def emptyAASet
+  (new AASet emptyAAMap))
+
+(defn create-aaset
+  ([] emptyAASet)
+  ([opts]
+   (let [mpl
+         (if (:coparator opts)
+           (new AAMap emptyNode opts)
+           (new AAMap emptyNode (assoc opts :comparator RT/DEFAULT_COMPARATOR)))]
+     (new AASet mpl))))
