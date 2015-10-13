@@ -10,7 +10,7 @@
 (println ls1); -> #{:cat :dog :rabbit}
 
 (def ls1-len (lazy-byte-length ls1))
-(println ls1-len); -> 133 !!!!!!!!!!!
+(println ls1-len); -> 85
 
 (def ^ByteBuffer bb (ByteBuffer/allocate ls1-len))
 (lazy-write ls1 bb)

@@ -432,13 +432,12 @@
     (instanceClass [this] nil)
     (qualified [this t2 opts] this)
     (sval [this inode opts]
-      (default-sval this inode opts))
+      (key-sval this inode opts))
     (valueLength [this lazyNode opts]
       (default-valueLength this lazyNode opts))
     (deserialize [this lazyNode bb opts]
-      (let [^PersistentVector v (deserialize-sval this lazyNode bb opts)
-            t2 (MapEntry. (.get v 0) (.get v 1))]
-        t2))
+      (let [k (deserialize-sval this lazyNode bb opts)]
+        (MapEntry. k k)))
     (writeValue [this lazyNode buffer opts]
       (default-write-value this lazyNode buffer opts))))
 
