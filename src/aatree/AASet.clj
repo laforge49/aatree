@@ -68,3 +68,15 @@
 (defn -seqFrom [^AASet this key ascending]
   (let [^AAMap mpl (.-impl this)]
     (RT/keys (.seqFrom mpl key ascending))))
+
+(defn -count [^AASet this]
+  (let [^AAMap mpl (.-impl this)]
+    (.count mpl)))
+
+(defn -nth
+  ([^AASet this var1]
+   (let [^AAMap mpl (.-impl this)]
+     (.nth mpl var1)))
+  ([^AASet this var1 var2]
+   (let [^AAMap mpl (.-impl this)]
+     (.nth mpl var1 var2))))
