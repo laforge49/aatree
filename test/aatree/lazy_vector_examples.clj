@@ -49,6 +49,27 @@
 (def lv7 (load-aavector bb))
 (println lv7); -> [[1 2 3] {:cat Sammy, :dog Jack, :rabbit Henry}]
 
-(def lv8 (lv7 1))
-(println lv8); -> {:cat Sammy, :dog Jack, :rabbit Henry}
-(println (class lv8)); -> aatree.AAMap
+(def lm2 (lv7 1))
+(println lm2); -> {:cat Sammy, :dog Jack, :rabbit Henry}
+(println (class lm2)); -> aatree.AAMap
+
+;new in 0.3.3
+
+(def ls1 (conj emptyLazyAASet :dog :cat :rabbit))
+(def lv8 (conj lv7 ls1))
+(println lv8); -> [[1 2 3] {:cat Sammy, :dog Jack, :rabbit Henry}
+             ;     #{:cat :dog :rabbit}]
+
+(def lv8-len (lazy-byte-length lv8))
+(println lv8-len); -> 332
+
+(def ^ByteBuffer bb (ByteBuffer/allocate lv8-len))
+(lazy-write lv8 bb)
+(.flip bb)
+(def lv9 (load-aavector bb))
+(println lv9); -> [[1 2 3] {:cat Sammy, :dog Jack, :rabbit Henry}
+             ;     #{:cat :dog :rabbit}]
+
+(def ls2 (lv9 2))
+(println ls2); -> #{:cat :dog :rabbit}
+(println (class ls2)); -> aatree.AASet
