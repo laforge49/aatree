@@ -6,6 +6,6 @@
 (def bs1 (conj emptyAASet :dog :cat :rabbit))
 (println bs1); -> #{:cat :dog :rabbit}
 
-(println (nth bs1 1)); :dog
+(println (nth bs1 1)); -> :dog
 
 (println (rseq bs1)); -> (:rabbit :dog :cat)
