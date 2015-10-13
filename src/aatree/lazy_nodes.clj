@@ -256,6 +256,19 @@
         (let [^MapEntry map-entry inst]
           (.getValue map-entry))))))
 
+(def ^AAContext set-context
+  (let [class-atom (atom {})
+        factory-atom (atom nil)]
+    (reify AAContext
+      (classAtom [this] class-atom)
+      (getDefaultFactory [this] @factory-atom)
+      (setDefaultFactory
+        [this f]
+        (compare-and-set! factory-atom nil f))
+      (refineInstance [this inst]
+        (let [^MapEntry map-entry inst]
+          (.getValue map-entry))))))
+
 (def ^LazyNode emptyLazyNode
   (->LazyNode
    (atom emptyNode)
@@ -279,7 +292,7 @@
   (assoc opts :aacontext map-context))
 
 (defn set-opts [opts]
-  (assoc opts :aacontext map-context))
+  (assoc opts :aacontext set-context))
 
 (register-factory
  default-factory-registry
@@ -410,3 +423,27 @@
      (let [^MapEntry map-entry (.getT2 lazyNode opts)
            ^AAMap m (.getValue map-entry)]
        (node-write (get-inode m) buffer (get-opts m))))))
+
+(register-factory
+  default-factory-registry
+  set-context
+  (reify IFactory
+    (factoryId [this] (byte \q));;;;;;;;;;;;;;;;;;;;;;;;;;; q - set default factory
+    (instanceClass [this] nil)
+    (qualified [this t2 opts] this)
+    (sval [this inode opts]
+      (default-sval this inode opts))
+    (valueLength [this lazyNode opts]
+      (default-valueLength this lazyNode opts))
+    (deserialize [this lazyNode bb opts]
+      (let [^PersistentVector v (deserialize-sval this lazyNode bb opts)
+            t2 (MapEntry. (.get v 0) (.get v 1))]
+        t2))
+    (writeValue [this lazyNode buffer opts]
+      (default-write-value this lazyNode buffer opts))))
+
+(.setDefaultFactory
+  set-context
+  (factory-for-id
+    (byte \q)
+    {:factory-registry default-factory-registry}))
