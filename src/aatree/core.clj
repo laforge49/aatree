@@ -103,3 +103,37 @@
            (new AAMap emptyNode opts)
            (new AAMap emptyNode (assoc opts :comparator RT/DEFAULT_COMPARATOR)))]
      (new AASet mpl))))
+
+(def emptyLazyAASet
+  (new AASet
+       (new AAMap emptyLazyNode (map-opts {:comparator RT/DEFAULT_COMPARATOR
+                                           :factory-registry default-factory-registry}))))
+
+(defn create-lazy-aaset
+  ([] emptyLazyAASet)
+  ([opts]
+   (let [r opts
+         r (if (:comparator r)
+             r
+             (assoc r :comparator RT/DEFAULT_COMPARATOR))
+         r (if (:factory-registry r)
+             r
+             (assoc r :factory-registry default-factory-registry))
+         r (map-opts r)]
+     (new AASet
+          (new AAMap emptyLazyNode r)))))
+
+(defn load-aaset
+  ([buffer]
+   (load-aaset buffer {}))
+  ([buffer opts]
+   (let [r opts
+         r (if (:comparator r)
+             r
+             (assoc r :comparator RT/DEFAULT_COMPARATOR))
+         r (if (:factory-registry r)
+             r
+             (assoc r :factory-registry default-factory-registry))
+         r (map-opts r)]
+     (new AASet
+          (new AAMap (node-read buffer r) r)))))
