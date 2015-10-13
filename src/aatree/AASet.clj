@@ -52,7 +52,7 @@
 (defn -rseq [^AASet this]
   (let [^AAMap mpl (.-impl this)
         ^ISeq rs (.rseq mpl)]
-    (clojure.lang.APersistentMap$KeySeq/create (rs))))
+    (clojure.lang.APersistentMap$KeySeq/create rs)))
 
 (defn -comparator [^AASet this]
   (let [^AAMap mpl (.-impl this)]
@@ -61,9 +61,12 @@
 (defn -entryKey [entry]
   entry)
 
-(defn -seq [^AASet this ascending]
-  (let [^AAMap mpl (.-impl this)]
-    (RT/keys (.seq mpl ascending))))
+(defn -seq
+  ([^AASet this]
+   (-seq this true))
+  ([^AASet this ascending]
+   (let [^AAMap mpl (.-impl this)]
+     (RT/keys (.seq mpl ascending)))))
 
 (defn -seqFrom [^AASet this key ascending]
   (let [^AAMap mpl (.-impl this)]
@@ -75,8 +78,10 @@
 
 (defn -nth
   ([^AASet this var1]
-   (let [^AAMap mpl (.-impl this)]
-     (.nth mpl var1)))
+   (let [^AAMap mpl (.-impl this)
+         ^MapEntry e (.nth mpl var1)]
+     (.getKey e)))
   ([^AASet this var1 var2]
-   (let [^AAMap mpl (.-impl this)]
-     (.nth mpl var1 var2))))
+   (let [^AAMap mpl (.-impl this)
+         ^MapEntry e (.nth mpl var1 var2)]
+     (.getKey e))))
