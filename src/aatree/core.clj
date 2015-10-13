@@ -106,7 +106,7 @@
 
 (def emptyLazyAASet
   (new AASet
-       (new AAMap emptyLazyNode (map-opts {:comparator RT/DEFAULT_COMPARATOR
+       (new AAMap emptyLazyNode (set-opts {:comparator RT/DEFAULT_COMPARATOR
                                            :factory-registry default-factory-registry}))))
 
 (defn create-lazy-aaset
@@ -119,7 +119,7 @@
          r (if (:factory-registry r)
              r
              (assoc r :factory-registry default-factory-registry))
-         r (map-opts r)]
+         r (set-opts r)]
      (new AASet
           (new AAMap emptyLazyNode r)))))
 
@@ -134,6 +134,6 @@
          r (if (:factory-registry r)
              r
              (assoc r :factory-registry default-factory-registry))
-         r (map-opts r)]
+         r (set-opts r)]
      (new AASet
           (new AAMap (node-read buffer r) r)))))

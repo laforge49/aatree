@@ -278,6 +278,9 @@
 (defn map-opts [opts]
   (assoc opts :aacontext map-context))
 
+(defn set-opts [opts]
+  (assoc opts :aacontext map-context))
+
 (register-factory
  default-factory-registry
  vector-context
