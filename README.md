@@ -22,7 +22,7 @@ use of warn-on-reflection.
 
 ## Lazy Map Benchmark
 
-Time to build a lazy map of size 1,000,000 = 24 seconds.
+Time to build a lazy sorted map of size 1,000,000 = 24 seconds.
 
 Time per entry: 24 microseconds.
 
