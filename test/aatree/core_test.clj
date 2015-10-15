@@ -160,6 +160,6 @@
 
 (deftest lazy-set-tests
   (assert-set-like 100
-                   emptyLazyAASet
+                   (new-set (lazy-opts))
                    gen-element
                    {:base (sorted-set) :ordered? true}))
