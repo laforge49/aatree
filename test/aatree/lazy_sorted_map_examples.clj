@@ -1,4 +1,4 @@
-(ns aatree.lazy-map-examples
+(ns aatree.lazy-sorted-map-examples
   (:require [aatree.core :refer :all])
   (:import (java.nio ByteBuffer)))
 
@@ -6,8 +6,8 @@
 
 (def opts (lazy-opts))
 
-(def empty-set (new-set opts))
-(def empty-map (new-map opts))
+(def empty-set (new-sorted-set opts))
+(def empty-map (new-sorted-map opts))
 (def empty-vec (new-vec opts))
 
 (println (lazy-byte-length empty-map)); -> 1

@@ -1,4 +1,4 @@
-(ns aatree.lazy-set-examples
+(ns aatree.lazy-sorted-set-examples
   (:require [aatree.core :refer :all])
   (:import (java.nio ByteBuffer)))
 
@@ -6,7 +6,7 @@
 
 (def opts (lazy-opts))
 
-(def empty-set (new-set opts))
+(def empty-set (new-sorted-set opts))
 (println (lazy-byte-length empty-set)); -> 1
 
 (def ls1 (conj empty-set :dog :cat :rabbit))

@@ -144,7 +144,7 @@
   ([] (standard-opts {}))
   ([opts]
    (-> opts
-       (assoc :new-map
+       (assoc :new-sorted-map
               (fn [o]
                 (let [c (:comparator o)]
                   (if c
@@ -152,7 +152,7 @@
                     (sorted-map)))))
        (assoc :new-vec
               (fn [o] []))
-       (assoc :new-set
+       (assoc :new-sorted-set
               (fn [o]
                 (let [c (:comparator o)]
                   (if c
@@ -163,7 +163,7 @@
   ([] (basic-opts {}))
   ([opts]
    (-> opts
-       (assoc :new-map
+       (assoc :new-sorted-map
               (fn [o]
                 (if (:coparator opts)
                   (new AAMap emptyNode o)
@@ -172,7 +172,7 @@
                        (assoc o :comparator RT/DEFAULT_COMPARATOR)))))
        (assoc :new-vec
               (fn [o] (new AAVector emptyNode o)))
-       (assoc :new-set
+       (assoc :new-sorted-set
               (fn [o]
                 (let [mpl
                       (if (:coparator o)
@@ -187,7 +187,7 @@
   ([] (lazy-opts {}))
   ([opts]
    (-> opts
-       (assoc :new-map
+       (assoc :new-sorted-map
               (fn [r]
                 (let [r (if (:comparator r)
                           r
@@ -204,7 +204,7 @@
                   (new AAVector
                        emptyLazyNode
                        (vector-opts (assoc o :factory-registry default-factory-registry))))))
-       (assoc :new-set
+       (assoc :new-sorted-set
               (fn [o]
                 (let [r opts
                       r (if (:comparator r)
@@ -217,11 +217,11 @@
                   (new AASet
                        (new AAMap emptyLazyNode r))))))))
 
-(defn new-map [opts]
-  ((:new-map opts) opts))
+(defn new-sorted-map [opts]
+  ((:new-sorted-map opts) opts))
 
 (defn new-vec [opts]
   ((:new-vec opts) opts))
 
-(defn new-set [opts]
-  ((:new-set opts) opts))
+(defn new-sorted-set [opts]
+  ((:new-sorted-set opts) opts))
