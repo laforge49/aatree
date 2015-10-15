@@ -154,6 +154,6 @@
 
 (deftest set-tests
   (assert-set-like 100
-                   (new-aamap (basic-opts))
+                   emptyAASet
                    gen-element
                    {:base (sorted-set) :ordered? true}))
