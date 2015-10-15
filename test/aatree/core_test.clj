@@ -101,7 +101,7 @@
 (println Y)
 
 (println)
-(def elm emptyLazyAAMap)
+(def elm (new-map (lazy-opts)))
 (println elm)
 (println "map len" (lazy-byte-length elm))
 (def elmb (ByteBuffer/allocate (lazy-byte-length elm)))
@@ -148,7 +148,7 @@
 
 (deftest lazy-map-tests
   (assert-map-like 100
-                   emptyLazyAAMap
+                   (new-map (lazy-opts))
                    gen-element gen-element
                    {:base (sorted-map) :ordered? true}))
 

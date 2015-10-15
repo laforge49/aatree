@@ -12,7 +12,7 @@
 
 (println)
 (def t0 (System/currentTimeMillis))
-(def lazy-map (reduce bld emptyLazyAAMap (range map-size)))
+(def lazy-map (reduce bld (new-map (lazy-opts)) (range map-size)))
 (def t1 (System/currentTimeMillis))
 (def micr-0 (* 1000. (- t1 t0)))
 (println "Time to build a map of size" map-size "=" micr-0 "microseconds")
