@@ -7,20 +7,20 @@
 
 (set! *warn-on-reflection* true)
 
-(def ^{:deprecated "0.3.4"} emptyAAMap
+(def ^{:deprecated "0.4.0"} emptyAAMap
   (new AAMap emptyNode {:comparator RT/DEFAULT_COMPARATOR}))
 
-(defn ^{:deprecated "0.3.4"} create-aamap
+(defn ^{:deprecated "0.4.0"} create-aamap
   ([] emptyAAMap)
   ([opts]
    (if (:coparator opts)
      (new AAMap emptyNode opts)
      (new AAMap emptyNode (assoc opts :comparator RT/DEFAULT_COMPARATOR)))))
 
-(def ^{:deprecated "0.3.4"} emptyAAVector
+(def ^{:deprecated "0.4.0"} emptyAAVector
   (new AAVector emptyNode {}))
 
-(defn ^{:deprecated "0.3.4"} create-aavector
+(defn ^{:deprecated "0.4.0"} create-aavector
   ([] emptyAAVector)
   ([opts] (new AAVector emptyNode opts)))
 
@@ -30,11 +30,11 @@
 (defn dropn [vec & args]
   (reduce (fn [^FlexVector v i] (.dropNode v i)) vec args))
 
-(def ^{:deprecated "0.3.4"} emptyLazyAAMap
+(def ^{:deprecated "0.4.0"} emptyLazyAAMap
   (new AAMap emptyLazyNode (map-opts {:comparator RT/DEFAULT_COMPARATOR
                                       :factory-registry default-factory-registry})))
 
-(defn ^{:deprecated "0.3.4"} create-lazy-aamap
+(defn ^{:deprecated "0.4.0"} create-lazy-aamap
   ([] emptyLazyAAMap)
   ([opts]
    (let [r opts
@@ -47,10 +47,10 @@
          r (map-opts r)]
      (new AAMap emptyLazyNode r))))
 
-(def ^{:deprecated "0.3.4"} emptyLazyAAVector
+(def ^{:deprecated "0.4.0"} emptyLazyAAVector
   (new AAVector emptyLazyNode (vector-opts {:factory-registry default-factory-registry})))
 
-(defn ^{:deprecated "0.3.4"} create-lazy-aavector
+(defn ^{:deprecated "0.4.0"} create-lazy-aavector
   ([] emptyLazyAAVector)
   ([opts]
    (if (:factory-registry opts)
@@ -92,10 +92,10 @@
 
 ;new in 0.3.3
 
-(def ^{:deprecated "0.3.4"} emptyAASet
+(def ^{:deprecated "0.4.0"} emptyAASet
   (new AASet emptyAAMap))
 
-(defn ^{:deprecated "0.3.4"} create-aaset
+(defn ^{:deprecated "0.4.0"} create-aaset
   ([] emptyAASet)
   ([opts]
    (let [mpl
@@ -104,12 +104,12 @@
            (new AAMap emptyNode (assoc opts :comparator RT/DEFAULT_COMPARATOR)))]
      (new AASet mpl))))
 
-(def ^{:deprecated "0.3.4"} emptyLazyAASet
+(def ^{:deprecated "0.4.0"} emptyLazyAASet
   (new AASet
        (new AAMap emptyLazyNode (set-opts {:comparator RT/DEFAULT_COMPARATOR
                                            :factory-registry default-factory-registry}))))
 
-(defn ^{:deprecated "0.3.4"} create-lazy-aaset
+(defn ^{:deprecated "0.4.0"} create-lazy-aaset
   ([] emptyLazyAASet)
   ([opts]
    (let [r opts
@@ -138,7 +138,7 @@
      (new AASet
           (new AAMap (node-read buffer r) r)))))
 
-;new in 0.3.4
+;new in 0.4.0
 
 (defn standard-opts
   ([] (standard-opts {}))
