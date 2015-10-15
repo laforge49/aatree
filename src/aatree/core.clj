@@ -188,11 +188,34 @@
   ([opts]
    (-> opts
        (assoc :new-map
-              create-lazy-aamap)
+              (fn [r]
+                (let [r (if (:comparator r)
+                          r
+                          (assoc r :comparator RT/DEFAULT_COMPARATOR))
+                      r (if (:factory-registry r)
+                          r
+                          (assoc r :factory-registry default-factory-registry))
+                      r (map-opts r)]
+                  (new AAMap emptyLazyNode r))))
        (assoc :new-vec
-              create-lazy-aavector)
+              (fn [o]
+                (if (:factory-registry o)
+                  (new AAVector emptyLazyNode (vector-opts o))
+                  (new AAVector
+                       emptyLazyNode
+                       (vector-opts (assoc o :factory-registry default-factory-registry))))))
        (assoc :new-set
-              create-lazy-aaset))))
+              (fn [o]
+                (let [r opts
+                      r (if (:comparator r)
+                          r
+                          (assoc r :comparator RT/DEFAULT_COMPARATOR))
+                      r (if (:factory-registry r)
+                          r
+                          (assoc r :factory-registry default-factory-registry))
+                      r (set-opts r)]
+                  (new AASet
+                       (new AAMap emptyLazyNode r))))))))
 
 (defn new-aamap [opts]
   ((:new-map opts) opts))
