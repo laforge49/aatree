@@ -154,7 +154,7 @@
 
 (deftest set-tests
   (assert-set-like 100
-                   emptyAASet
+                   (new-set (basic-opts))
                    gen-element
                    {:base (sorted-set) :ordered? true}))
 
