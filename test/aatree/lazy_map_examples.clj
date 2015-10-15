@@ -4,9 +4,15 @@
 
 (set! *warn-on-reflection* true)
 
-(println (lazy-byte-length emptyLazyAAMap)); -> 1
+(def opts (lazy-opts))
 
-(def lm1 (conj emptyLazyAAMap {:dog "Jack" :cat "Sammy" :rabbit "Henry"}))
+(def empty-set (new-aaset opts))
+(def empty-map (new-aamap opts))
+(def empty-vec (new-aavec opts))
+
+(println (lazy-byte-length empty-map)); -> 1
+
+(def lm1 (conj empty-map {:dog "Jack" :cat "Sammy" :rabbit "Henry"}))
 (println lm1); -> {:cat Sammy, :dog Jack, :rabbit Henry}
 
 (def lm1-len (lazy-byte-length lm1))
@@ -20,7 +26,7 @@
 
 ;new in 0.3.2
 
-(def lv1 (conj emptyLazyAAVector 1 2 3))
+(def lv1 (conj empty-vec 1 2 3))
 (def lm3 (conj lm2 [:vct lv1]))
 (println lm3); -> {:cat Sammy, :dog Jack, :vct [1 2 3], :rabbit Henry}
 
@@ -33,7 +39,7 @@
 (def lm4 (load-aamap bb))
 (println lm4); -> {:cat Sammy, :dog Jack, :vct [1 2 3], :rabbit Henry}
 
-(def lm5 (conj emptyLazyAAMap {"b" :bandana "h" :hat}))
+(def lm5 (conj empty-map {"b" :bandana "h" :hat}))
 (def lm6 (conj lm4 [:map lm5]))
 (println lm6); -> {:cat Sammy, :dog Jack, :vct [1 2 3], :map {b :bandana, h :hat}, :rabbit Henry}
 
@@ -48,7 +54,7 @@
 
 ;new in 0.3.3
 
-(def ls1 (conj emptyLazyAASet "a" "c" "b"))
+(def ls1 (conj empty-set "a" "c" "b"))
 (def lm8 (conj lm7 [:set ls1]))
 (println lm8); -> {:cat Sammy, :dog Jack, :map {b :bandana, h :hat}, :rabbit Henry, :set #{a b c}, :vct [1 2 3]}
 

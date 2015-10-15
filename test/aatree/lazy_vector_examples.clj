@@ -4,9 +4,15 @@
 
 (set! *warn-on-reflection* true)
 
-(println (lazy-byte-length emptyLazyAAVector)); -> 1
+(def opts (lazy-opts))
 
-(def lv1 (conj emptyLazyAAVector 1 2 3))
+(def empty-set (new-aaset opts))
+(def empty-map (new-aamap opts))
+(def empty-vec (new-aavec opts))
+
+(println (lazy-byte-length empty-vec)); -> 1
+
+(def lv1 (conj empty-vec 1 2 3))
 (println lv1); -> [1 2 3]
 
 (def lv1-len (lazy-byte-length lv1))
@@ -20,7 +26,7 @@
 
 ;new in 0.3.2
 
-(def lv3 (conj emptyLazyAAVector lv1))
+(def lv3 (conj empty-vec lv1))
 (println lv3); -> [[1 2 3]]
 
 (def lv3-len (lazy-byte-length lv3))
@@ -36,7 +42,7 @@
 (println lv5); -> [1 2 3]
 (println (class lv5)); -> aatree.AAVector
 
-(def lm1 (conj emptyLazyAAMap {:dog "Jack" :cat "Sammy" :rabbit "Henry"}))
+(def lm1 (conj empty-map {:dog "Jack" :cat "Sammy" :rabbit "Henry"}))
 (def lv6 (conj lv4 lm1))
 (println lv6); -> [[1 2 3] {:cat Sammy, :dog Jack, :rabbit Henry}]
 
@@ -55,7 +61,7 @@
 
 ;new in 0.3.3
 
-(def ls1 (conj emptyLazyAASet :dog :cat :rabbit))
+(def ls1 (conj empty-set :dog :cat :rabbit))
 (def lv8 (conj lv7 ls1))
 (println lv8); -> [[1 2 3] {:cat Sammy, :dog Jack, :rabbit Henry}
              ;     #{:cat :dog :rabbit}]

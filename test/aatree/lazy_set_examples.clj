@@ -4,9 +4,12 @@
 
 (set! *warn-on-reflection* true)
 
-(println (lazy-byte-length emptyLazyAASet)); -> 1
+(def opts (lazy-opts))
 
-(def ls1 (conj emptyLazyAASet :dog :cat :rabbit))
+(def empty-set (new-aaset opts))
+(println (lazy-byte-length empty-set)); -> 1
+
+(def ls1 (conj empty-set :dog :cat :rabbit))
 (println ls1); -> #{:cat :dog :rabbit}
 
 (def ls1-len (lazy-byte-length ls1))

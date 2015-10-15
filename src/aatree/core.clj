@@ -183,6 +183,17 @@
                                                RT/DEFAULT_COMPARATOR)))]
                   (new AASet mpl)))))))
 
+(defn lazy-opts
+  ([] (lazy-opts {}))
+  ([opts]
+   (-> opts
+       (assoc :new-map
+              create-lazy-aamap)
+       (assoc :new-vec
+              create-lazy-aavector)
+       (assoc :new-set
+              create-lazy-aaset))))
+
 (defn new-aamap [opts]
   ((:new-map opts) opts))
 
