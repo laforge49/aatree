@@ -5,7 +5,7 @@
             [clojure.test.check.generators :as gen])
   (:import (java.nio ByteBuffer)))
 
-(def x emptyAAMap)
+(def x (new-aamap (basic-opts)))
 (println (.entryAt x 1))
 (println (.containsKey x 1))
 (println (type x))
@@ -32,7 +32,7 @@
 (println (.seqFrom x123 2 false))
 
 (println)
-(def t1 emptyAAMap)
+(def t1 (new-aamap (basic-opts)))
 (def t2 (assoc t1 3 -3))
 (println t2)
 (def t3 (assoc t2 3 2))
@@ -47,7 +47,7 @@
 (println (meta (first (seq (keys t8)))))
 (println (meta (first (seq (vals t8)))))
 
-(def t9 (-> emptyAAMap
+(def t9 (-> (new-aamap (basic-opts))
             (assoc (clojure.core/with-meta [0] {:foo 0}) (clojure.core/with-meta [0] {:foo 0}))
             (assoc (clojure.core/with-meta [0] {:foo 0}) (clojure.core/with-meta [0] {:foo nil}))))
 (println t9)
@@ -142,7 +142,7 @@
 
 (deftest map-tests
   (assert-map-like 100
-                   emptyAAMap
+                   (new-aamap (basic-opts))
                    gen-element gen-element
                    {:base (sorted-map) :ordered? true}))
 
@@ -154,6 +154,6 @@
 
 (deftest set-tests
   (assert-set-like 100
-                   emptyAAMap
+                   (new-aamap (basic-opts))
                    gen-element
                    {:base (sorted-set) :ordered? true}))
