@@ -150,7 +150,7 @@
                   (if c
                     (sorted-map-by c)
                     (sorted-map)))))
-       (assoc :new-vec
+       (assoc :new-vector
               (fn [o] []))
        (assoc :new-sorted-set
               (fn [o]
@@ -170,7 +170,7 @@
                   (new AAMap
                        emptyNode
                        (assoc o :comparator RT/DEFAULT_COMPARATOR)))))
-       (assoc :new-vec
+       (assoc :new-vector
               (fn [o] (new AAVector emptyNode o)))
        (assoc :new-sorted-set
               (fn [o]
@@ -197,7 +197,7 @@
                           (assoc r :factory-registry default-factory-registry))
                       r (map-opts r)]
                   (new AAMap emptyLazyNode r))))
-       (assoc :new-vec
+       (assoc :new-vector
               (fn [o]
                 (if (:factory-registry o)
                   (new AAVector emptyLazyNode (vector-opts o))
@@ -220,8 +220,8 @@
 (defn new-sorted-map [opts]
   ((:new-sorted-map opts) opts))
 
-(defn new-vec [opts]
-  ((:new-vec opts) opts))
+(defn new-vector [opts]
+  ((:new-vector opts) opts))
 
 (defn new-sorted-set [opts]
   ((:new-sorted-set opts) opts))

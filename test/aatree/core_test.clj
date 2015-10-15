@@ -62,7 +62,7 @@
 (println (nth x123 3 nil))
 
 (println)
-(def y (new-vec (lazy-opts)))
+(def y (new-vector (lazy-opts)))
 (println (count y))
 (def y1 (conj y 1001))
 (println (count y1))
@@ -80,7 +80,7 @@
 (println (dropn y012 1 1))
 (println (dropn y012 3))
 
-(println (conj (new-vec (lazy-opts)) 0))
+(println (conj (new-vector (lazy-opts)) 0))
 
 (println "pr-str y" (pr-str y))
 (println "y length" (lazy-byte-length y))
@@ -135,10 +135,10 @@
   (gen/tuple gen/int))
 
 (deftest vec-tests
-  (assert-vector-like 100 (new-vec (basic-opts)) gen-element))
+  (assert-vector-like 100 (new-vector (basic-opts)) gen-element))
 
 (deftest lazy-vec-tests
-  (assert-vector-like 100 (new-vec (lazy-opts)) gen-element))
+  (assert-vector-like 100 (new-vector (lazy-opts)) gen-element))
 
 (deftest map-tests
   (assert-map-like 100

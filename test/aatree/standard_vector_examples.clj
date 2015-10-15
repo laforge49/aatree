@@ -5,7 +5,7 @@
 
 (def opts (standard-opts))
 
-(def bv1 (conj (new-vec opts) 1 2 3))
+(def bv1 (conj (new-vector opts) 1 2 3))
 (println bv1); -> [1 2 3]
 
 (def s1 (seq bv1))

@@ -9,7 +9,7 @@
 
 (println)
 (def t0 (System/currentTimeMillis))
-(def lazy-vector (reduce conj (new-vec (lazy-opts)) (range vector-size)))
+(def lazy-vector (reduce conj (new-vector (lazy-opts)) (range vector-size)))
 (def t1 (System/currentTimeMillis))
 (def micr-0 (* 1000. (- t1 t0)))
 (println "Time to build a vector of size" vector-size "=" micr-0 "microseconds")
