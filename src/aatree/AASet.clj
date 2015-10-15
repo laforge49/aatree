@@ -1,19 +1,19 @@
 (ns aatree.AASet
   (:gen-class
-    :main false
-    :extends clojure.lang.APersistentSet
-    :implements [clojure.lang.IObj
-                 clojure.lang.Reversible
-                 clojure.lang.Sorted
-                 clojure.lang.Counted
-                 clojure.lang.Indexed
-                 aatree.nodes.INoded]
-    :constructors {[aatree.AAMap]
-                   [clojure.lang.IPersistentMap]
-                   [aatree.AAMap clojure.lang.IPersistentMap]
-                   [clojure.lang.IPersistentMap]}
-    :init init
-    :state impl)
+   :main false
+   :extends clojure.lang.APersistentSet
+   :implements [clojure.lang.IObj
+                clojure.lang.Reversible
+                clojure.lang.Sorted
+                clojure.lang.Counted
+                clojure.lang.Indexed
+                aatree.nodes.INoded]
+   :constructors {[aatree.AAMap]
+                  [clojure.lang.IPersistentMap]
+                  [aatree.AAMap clojure.lang.IPersistentMap]
+                  [clojure.lang.IPersistentMap]}
+   :init init
+   :state impl)
   (:require [aatree.nodes :refer :all])
   (:import (aatree AAMap AASet)
            (clojure.lang MapEntry RT IPersistentMap ISeq)
@@ -23,14 +23,14 @@
 
 (defn -getState [^AASet this]
   (let [^AAMap mpl (.-impl this)]
-  (.-state mpl)))
+    (.-state mpl)))
 
 (defn -init
   ([aamap]
    [[aamap] aamap])
   ([aamap meta]
    (let [mpl (with-meta aamap meta)]
-   [[mpl] mpl])))
+     [[mpl] mpl])))
 
 (defn -meta [this] (get-meta this))
 

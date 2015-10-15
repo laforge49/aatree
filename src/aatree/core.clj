@@ -178,9 +178,9 @@
                       (if (:coparator o)
                         (new AAMap emptyNode o)
                         (new AAMap emptyNode (assoc
-                                               o
-                                               :comparator
-                                               RT/DEFAULT_COMPARATOR)))]
+                                              o
+                                              :comparator
+                                              RT/DEFAULT_COMPARATOR)))]
                   (new AASet mpl)))))))
 
 (defn lazy-opts

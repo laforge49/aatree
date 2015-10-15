@@ -1,16 +1,16 @@
 (ns aatree.AAVector
   (:gen-class
-    :main false
-    :extends clojure.lang.APersistentVector
-    :implements [clojure.lang.IObj
-                 aatree.nodes.FlexVector
-                 aatree.nodes.INoded]
-    :constructors {[aatree.nodes.INode clojure.lang.IPersistentMap]
-                   []
-                   [aatree.nodes.INode clojure.lang.IPersistentMap clojure.lang.IPersistentMap]
-                   []}
-    :init init
-    :state state)
+   :main false
+   :extends clojure.lang.APersistentVector
+   :implements [clojure.lang.IObj
+                aatree.nodes.FlexVector
+                aatree.nodes.INoded]
+   :constructors {[aatree.nodes.INode clojure.lang.IPersistentMap]
+                  []
+                  [aatree.nodes.INode clojure.lang.IPersistentMap clojure.lang.IPersistentMap]
+                  []}
+   :init init
+   :state state)
   (:require [aatree.nodes :refer :all])
   (:import (aatree AAVector)
            (aatree.nodes INode)
