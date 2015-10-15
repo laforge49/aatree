@@ -15,7 +15,7 @@
 (def lazy-map (reduce bld (new-sorted-map (lazy-opts)) (range map-size)))
 (def t1 (System/currentTimeMillis))
 (def micr-0 (* 1000. (- t1 t0)))
-(println "Time to build a map of size" map-size "=" micr-0 "microseconds")
+(println "Time to build a lazy sorted map of size" map-size "=" micr-0 "microseconds")
 (println "Time per entry:" (/ micr-0 map-size) "microseconds")
 
 (defn upd [m i]
