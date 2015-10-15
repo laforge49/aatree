@@ -7,9 +7,9 @@ are simpler than red-black trees,
 which makes them easier to modify and extend.
 But the performance is about the same.
 
-In addition to implementing complete replacements for vector and map, an extension is
+In addition to implementing complete replacements for vector, set and map, an extension is
 provided for lazy deserialization/reserialization.
-These can be used to minimize the time to deserialize, update and reserialize
+This can be used to minimize the time to deserialize, update and reserialize
 a large block of data. Because only a small portion of a data block
 needs to be processed, processing is ridiculously fast when compared to
 the processing time needed if the entire data block is deserialized / reserialized,
