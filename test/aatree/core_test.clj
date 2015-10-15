@@ -157,3 +157,9 @@
                    emptyAASet
                    gen-element
                    {:base (sorted-set) :ordered? true}))
+
+(deftest set-tests
+  (assert-set-like 100
+                   emptyLazyAASet
+                   gen-element
+                   {:base (sorted-set) :ordered? true}))
