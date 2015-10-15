@@ -24,8 +24,6 @@
 (def lv2 (load-aavector bb))
 (println lv2); -> [1 2 3]
 
-;new in 0.3.2
-
 (def lv3 (conj empty-vec lv1))
 (println lv3); -> [[1 2 3]]
 
@@ -58,8 +56,6 @@
 (def lm2 (lv7 1))
 (println lm2); -> {:cat Sammy, :dog Jack, :rabbit Henry}
 (println (class lm2)); -> aatree.AAMap
-
-;new in 0.3.3
 
 (def ls1 (conj empty-set :dog :cat :rabbit))
 (def lv8 (conj lv7 ls1))

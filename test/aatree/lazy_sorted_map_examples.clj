@@ -24,8 +24,6 @@
 (def lm2 (load-aamap bb))
 (println lm2); -> {:cat Sammy, :dog Jack, :rabbit Henry}
 
-;new in 0.3.2
-
 (def lv1 (conj empty-vec 1 2 3))
 (def lm3 (conj lm2 [:vct lv1]))
 (println lm3); -> {:cat Sammy, :dog Jack, :vct [1 2 3], :rabbit Henry}
@@ -51,8 +49,6 @@
 (.flip bb)
 (def lm7 (load-aamap bb))
 (println lm7); -> {:cat Sammy, :dog Jack, :vct [1 2 3], :map {b :bandana, h :hat}, :rabbit Henry}
-
-;new in 0.3.3
 
 (def ls1 (conj empty-set "a" "c" "b"))
 (def lm8 (conj lm7 [:set ls1]))
