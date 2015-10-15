@@ -5,7 +5,7 @@
 
 (def opts (basic-opts))
 
-(def bs1 (conj (new-aaset opts) :dog :cat :rabbit))
+(def bs1 (conj (new-set opts) :dog :cat :rabbit))
 (println bs1); -> #{:cat :dog :rabbit}
 
 (println (nth bs1 1)); -> :dog

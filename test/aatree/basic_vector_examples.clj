@@ -5,7 +5,7 @@
 
 (def opts (basic-opts))
 
-(def bv1 (conj (new-aavec opts) 1 2 3))
+(def bv1 (conj (new-vec opts) 1 2 3))
 (println bv1); -> [1 2 3]
 
 (def bv2 (addn bv1 0 0))

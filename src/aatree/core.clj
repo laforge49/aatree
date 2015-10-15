@@ -217,11 +217,11 @@
                   (new AASet
                        (new AAMap emptyLazyNode r))))))))
 
-(defn new-aamap [opts]
+(defn new-map [opts]
   ((:new-map opts) opts))
 
-(defn new-aavec [opts]
+(defn new-vec [opts]
   ((:new-vec opts) opts))
 
-(defn new-aaset [opts]
+(defn new-set [opts]
   ((:new-set opts) opts))

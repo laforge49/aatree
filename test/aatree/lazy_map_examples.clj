@@ -6,9 +6,9 @@
 
 (def opts (lazy-opts))
 
-(def empty-set (new-aaset opts))
-(def empty-map (new-aamap opts))
-(def empty-vec (new-aavec opts))
+(def empty-set (new-set opts))
+(def empty-map (new-map opts))
+(def empty-vec (new-vec opts))
 
 (println (lazy-byte-length empty-map)); -> 1
 

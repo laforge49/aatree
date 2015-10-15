@@ -6,7 +6,7 @@
 
 (def opts (lazy-opts))
 
-(def empty-set (new-aaset opts))
+(def empty-set (new-set opts))
 (println (lazy-byte-length empty-set)); -> 1
 
 (def ls1 (conj empty-set :dog :cat :rabbit))

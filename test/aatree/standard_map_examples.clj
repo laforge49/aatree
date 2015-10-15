@@ -5,7 +5,7 @@
 
 (def opts (standard-opts))
 
-(def bm1 (conj (new-aamap opts) {:dog "Jack" :cat "Sammy" :rabbit "Henry"}))
+(def bm1 (conj (new-map opts) {:dog "Jack" :cat "Sammy" :rabbit "Henry"}))
 (println bm1); -> {:cat Sammy, :dog Jack, :rabbit Henry}
 
 (println (rseq bm1)); -> ([:rabbit Henry] [:dog Jack] [:cat Sammy])
