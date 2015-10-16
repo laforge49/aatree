@@ -115,7 +115,10 @@
 (defn byte-length [noded]
   (node-byte-length (get-inode noded) (get-opts noded)))
 
-(defn lazy-write [noded buffer]
+(defn ^{:deprecated "0.4.0"} lazy-write [noded buffer]
+  (node-write (get-inode noded) buffer (get-opts noded)))
+
+(defn put-bytebuffer [noded buffer]
   (node-write (get-inode noded) buffer (get-opts noded)))
 
 ;new in 0.3.3

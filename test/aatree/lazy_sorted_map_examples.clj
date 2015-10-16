@@ -19,7 +19,7 @@
 (println lm1-len); -> 143
 
 (def ^ByteBuffer bb (ByteBuffer/allocate lm1-len))
-(lazy-write lm1 bb)
+(put-bytebuffer lm1 bb)
 (.flip bb)
 (def lm2 (load-lazy-map bb))
 (println lm2); -> {:cat Sammy, :dog Jack, :rabbit Henry}
@@ -32,7 +32,7 @@
 (println lm3-len); -> 230
 
 (def ^ByteBuffer bb (ByteBuffer/allocate lm3-len))
-(lazy-write lm3 bb)
+(put-bytebuffer lm3 bb)
 (.flip bb)
 (def lm4 (load-lazy-map bb))
 (println lm4); -> {:cat Sammy, :dog Jack, :vct [1 2 3], :rabbit Henry}
@@ -45,7 +45,7 @@
 (println lm6-len); -> 341
 
 (def ^ByteBuffer bb (ByteBuffer/allocate lm6-len))
-(lazy-write lm6 bb)
+(put-bytebuffer lm6 bb)
 (.flip bb)
 (def lm7 (load-lazy-map bb))
 (println lm7); -> {:cat Sammy, :dog Jack, :vct [1 2 3], :map {b :bandana, h :hat}, :rabbit Henry}
@@ -58,7 +58,7 @@
 (println lm8-len); -> 440
 
 (def ^ByteBuffer bb (ByteBuffer/allocate lm8-len))
-(lazy-write lm8 bb)
+(put-bytebuffer lm8 bb)
 (.flip bb)
 (def lm9 (load-lazy-map bb))
 (println lm9); -> {:cat Sammy, :dog Jack, :map {b :bandana, h :hat}, :rabbit Henry, :set #{a b c}, :vct [1 2 3]}

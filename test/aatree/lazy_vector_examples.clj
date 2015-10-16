@@ -19,7 +19,7 @@
 (println lv1-len); -> 61
 
 (def ^ByteBuffer bb (ByteBuffer/allocate lv1-len))
-(lazy-write lv1 bb)
+(put-bytebuffer lv1 bb)
 (.flip bb)
 (def lv2 (load-lazy-vector bb))
 (println lv2); -> [1 2 3]
@@ -31,7 +31,7 @@
 (println lv3-len); -> 76
 
 (def ^ByteBuffer bb (ByteBuffer/allocate lv3-len))
-(lazy-write lv3 bb)
+(put-bytebuffer lv3 bb)
 (.flip bb)
 (def lv4 (load-lazy-vector bb))
 (println lv4); -> [[1 2 3]]
@@ -48,7 +48,7 @@
 (println lv6-len); -> 233
 
 (def ^ByteBuffer bb (ByteBuffer/allocate lv6-len))
-(lazy-write lv6 bb)
+(put-bytebuffer lv6 bb)
 (.flip bb)
 (def lv7 (load-lazy-vector bb))
 (println lv7); -> [[1 2 3] {:cat Sammy, :dog Jack, :rabbit Henry}]
@@ -66,7 +66,7 @@
 (println lv8-len); -> 332
 
 (def ^ByteBuffer bb (ByteBuffer/allocate lv8-len))
-(lazy-write lv8 bb)
+(put-bytebuffer lv8 bb)
 (.flip bb)
 (def lv9 (load-lazy-vector bb))
 (println lv9); -> [[1 2 3] {:cat Sammy, :dog Jack, :rabbit Henry}
