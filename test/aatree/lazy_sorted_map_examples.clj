@@ -10,12 +10,12 @@
 (def empty-map (new-sorted-map opts))
 (def empty-vec (new-vector opts))
 
-(println (lazy-byte-length empty-map)); -> 1
+(println (byte-length empty-map)); -> 1
 
 (def lm1 (conj empty-map {:dog "Jack" :cat "Sammy" :rabbit "Henry"}))
 (println lm1); -> {:cat Sammy, :dog Jack, :rabbit Henry}
 
-(def lm1-len (lazy-byte-length lm1))
+(def lm1-len (byte-length lm1))
 (println lm1-len); -> 143
 
 (def ^ByteBuffer bb (ByteBuffer/allocate lm1-len))
@@ -28,7 +28,7 @@
 (def lm3 (conj lm2 [:vct lv1]))
 (println lm3); -> {:cat Sammy, :dog Jack, :vct [1 2 3], :rabbit Henry}
 
-(def lm3-len (lazy-byte-length lm3))
+(def lm3-len (byte-length lm3))
 (println lm3-len); -> 230
 
 (def ^ByteBuffer bb (ByteBuffer/allocate lm3-len))
@@ -41,7 +41,7 @@
 (def lm6 (conj lm4 [:map lm5]))
 (println lm6); -> {:cat Sammy, :dog Jack, :vct [1 2 3], :map {b :bandana, h :hat}, :rabbit Henry}
 
-(def lm6-len (lazy-byte-length lm6))
+(def lm6-len (byte-length lm6))
 (println lm6-len); -> 341
 
 (def ^ByteBuffer bb (ByteBuffer/allocate lm6-len))
@@ -54,7 +54,7 @@
 (def lm8 (conj lm7 [:set ls1]))
 (println lm8); -> {:cat Sammy, :dog Jack, :map {b :bandana, h :hat}, :rabbit Henry, :set #{a b c}, :vct [1 2 3]}
 
-(def lm8-len (lazy-byte-length lm8))
+(def lm8-len (byte-length lm8))
 (println lm8-len); -> 440
 
 (def ^ByteBuffer bb (ByteBuffer/allocate lm8-len))

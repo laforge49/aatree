@@ -7,12 +7,12 @@
 (def opts (lazy-opts))
 
 (def empty-set (new-sorted-set opts))
-(println (lazy-byte-length empty-set)); -> 1
+(println (byte-length empty-set)); -> 1
 
 (def ls1 (conj empty-set :dog :cat :rabbit))
 (println ls1); -> #{:cat :dog :rabbit}
 
-(def ls1-len (lazy-byte-length ls1))
+(def ls1-len (byte-length ls1))
 (println ls1-len); -> 85
 
 (def ^ByteBuffer bb (ByteBuffer/allocate ls1-len))

@@ -109,7 +109,10 @@
          r (map-opts r)]
      (new AAMap (node-read buffer r) r))))
 
-(defn lazy-byte-length [noded]
+(defn ^{:deprecated "0.4.0"} lazy-byte-length [noded]
+  (node-byte-length (get-inode noded) (get-opts noded)))
+
+(defn byte-length [noded]
   (node-byte-length (get-inode noded) (get-opts noded)))
 
 (defn lazy-write [noded buffer]

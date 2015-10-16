@@ -20,7 +20,7 @@
 
 (defn upd [m i]
   (let [m1 (assoc m i (- i))
-        bb (ByteBuffer/allocate (lazy-byte-length m1))]
+        bb (ByteBuffer/allocate (byte-length m1))]
     (lazy-write m1 bb)
     (.flip bb)
     (load-lazy-map bb)))
