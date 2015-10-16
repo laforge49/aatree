@@ -7,7 +7,8 @@ are simpler than red-black trees,
 which makes them easier to modify and extend.
 But the performance is about the same.
 
-In addition to implementing complete replacements for vector, set and map, an extension is
+In addition to implementing complete replacements for vector, sorted-set 
+and sorted-map, an extension is
 provided for lazy deserialization/reserialization.
 This can be used to minimize the time to deserialize, update and reserialize
 a large block of data. Because only a small portion of a data block
@@ -20,36 +21,14 @@ Validation has been done using
 Compiled AOT with Clojure 1.7.0. Reflection has been avoided through the
 use of warn-on-reflection.
 
-## Lazy Map Benchmark
-
-Time to build a lazy sorted map of size 1,000,000 = 24 seconds.
-
-Time per entry: 24 microseconds.
-
-Time to deserialize/update/reserialize  1,000 times = 31 seconds.
-
-Time per complete update: 31 milliseconds.
-
-(Times will vary depending on the host system used to run the benchmarks.)
-
-## Lazy Vector Benchmark
-
-Time to build a lazy vector of size 1,000,000 = 27 seconds.
-
-Time per entry: 27 seconds.
-
-Time to deserialize/update/reserialize  1,000 times = 17 seconds.
-
-Time per complete update: 17 milliseconds.
-
-(Times will vary depending on the host system used to run the benchmarks.)
-
 ##[Releases](https://github.com/laforge49/aatree/releases)
 [![Clojars Project](http://clojars.org/aatree/latest-version.svg)](http://clojars.org/aatree)
 
 ## Wiki
 
 [API](https://github.com/laforge49/aatree/wiki/API)
+
+[Lazy Benchmarks](https://github.com/laforge49/aatree/wiki/Lazy-Benchmarks)
 
 [Immutable Value, Mutable Form](https://github.com/laforge49/aatree/wiki/Immutable-Value,-Mutable-Form)
 
