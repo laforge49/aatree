@@ -20,7 +20,7 @@
         bb (ByteBuffer/allocate (lazy-byte-length v1))]
     (lazy-write v1 bb)
     (.flip bb)
-    (load-aavector bb)))
+    (load-lazy-vector bb)))
 
 (println)
 (def t0 (System/currentTimeMillis))

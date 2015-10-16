@@ -21,7 +21,7 @@
 (def ^ByteBuffer bb (ByteBuffer/allocate lm1-len))
 (lazy-write lm1 bb)
 (.flip bb)
-(def lm2 (load-aamap bb))
+(def lm2 (load-lazy-map bb))
 (println lm2); -> {:cat Sammy, :dog Jack, :rabbit Henry}
 
 (def lv1 (conj empty-vec 1 2 3))
@@ -34,7 +34,7 @@
 (def ^ByteBuffer bb (ByteBuffer/allocate lm3-len))
 (lazy-write lm3 bb)
 (.flip bb)
-(def lm4 (load-aamap bb))
+(def lm4 (load-lazy-map bb))
 (println lm4); -> {:cat Sammy, :dog Jack, :vct [1 2 3], :rabbit Henry}
 
 (def lm5 (conj empty-map {"b" :bandana "h" :hat}))
@@ -47,7 +47,7 @@
 (def ^ByteBuffer bb (ByteBuffer/allocate lm6-len))
 (lazy-write lm6 bb)
 (.flip bb)
-(def lm7 (load-aamap bb))
+(def lm7 (load-lazy-map bb))
 (println lm7); -> {:cat Sammy, :dog Jack, :vct [1 2 3], :map {b :bandana, h :hat}, :rabbit Henry}
 
 (def ls1 (conj empty-set "a" "c" "b"))
@@ -60,5 +60,5 @@
 (def ^ByteBuffer bb (ByteBuffer/allocate lm8-len))
 (lazy-write lm8 bb)
 (.flip bb)
-(def lm9 (load-aamap bb))
+(def lm9 (load-lazy-map bb))
 (println lm9); -> {:cat Sammy, :dog Jack, :map {b :bandana, h :hat}, :rabbit Henry, :set #{a b c}, :vct [1 2 3]}

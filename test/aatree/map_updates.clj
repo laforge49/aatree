@@ -23,7 +23,7 @@
         bb (ByteBuffer/allocate (lazy-byte-length m1))]
     (lazy-write m1 bb)
     (.flip bb)
-    (load-aamap bb)))
+    (load-lazy-map bb)))
 
 (println)
 (def t0 (System/currentTimeMillis))

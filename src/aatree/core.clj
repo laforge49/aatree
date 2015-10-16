@@ -59,7 +59,7 @@
           emptyLazyNode
           (vector-opts (assoc opts :factory-registry default-factory-registry))))))
 
-(defn load-aavector
+(defn ^{:deprecated "0.4.0"} load-aavector
   ([buffer]
    (load-aavector buffer {}))
   ([buffer opts]
@@ -70,9 +70,34 @@
            r (vector-opts r)]
        (new AAVector (node-read buffer r) r)))))
 
-(defn load-aamap
+(defn load-lazy-vector
+  ([buffer]
+   (load-lazy-vector buffer {}))
+  ([buffer opts]
+   (if (:factory-registry opts)
+     (let [r (vector-opts opts)]
+       (new AAVector (node-read buffer r) r))
+     (let [r (assoc opts :factory-registry default-factory-registry)
+           r (vector-opts r)]
+       (new AAVector (node-read buffer r) r)))))
+
+(defn ^{:deprecated "0.4.0"} load-aamap
   ([buffer]
    (load-aamap buffer {}))
+  ([buffer opts]
+   (let [r opts
+         r (if (:comparator r)
+             r
+             (assoc r :comparator RT/DEFAULT_COMPARATOR))
+         r (if (:factory-registry r)
+             r
+             (assoc r :factory-registry default-factory-registry))
+         r (map-opts r)]
+     (new AAMap (node-read buffer r) r))))
+
+(defn load-lazy-map
+  ([buffer]
+   (load-lazy-map buffer {}))
   ([buffer opts]
    (let [r opts
          r (if (:comparator r)
@@ -123,9 +148,24 @@
      (new AASet
           (new AAMap emptyLazyNode r)))))
 
-(defn load-aaset
+(defn ^{:deprecated "0.4.0"} load-aaset
   ([buffer]
    (load-aaset buffer {}))
+  ([buffer opts]
+   (let [r opts
+         r (if (:comparator r)
+             r
+             (assoc r :comparator RT/DEFAULT_COMPARATOR))
+         r (if (:factory-registry r)
+             r
+             (assoc r :factory-registry default-factory-registry))
+         r (set-opts r)]
+     (new AASet
+          (new AAMap (node-read buffer r) r)))))
+
+(defn load-lazy-set
+  ([buffer]
+   (load-lazy-set buffer {}))
   ([buffer opts]
    (let [r opts
          r (if (:comparator r)
