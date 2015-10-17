@@ -31,7 +31,7 @@
   (reduce (fn [^FlexVector v i] (.dropNode v i)) vec args))
 
 (def ^{:deprecated "0.4.0"} emptyLazyAAMap
-  (new AAMap emptyLazyNode (map-opts {:comparator RT/DEFAULT_COMPARATOR
+  (new AAMap emptyLazyNode (map-opts {:comparator       RT/DEFAULT_COMPARATOR
                                       :factory-registry default-factory-registry})))
 
 (defn ^{:deprecated "0.4.0"} create-lazy-aamap
@@ -121,8 +121,6 @@
 (defn put-bytebuffer [noded buffer]
   (node-write (get-inode noded) buffer (get-opts noded)))
 
-;new in 0.3.3
-
 (def ^{:deprecated "0.4.0"} emptyAASet
   (new AASet emptyAAMap))
 
@@ -137,7 +135,7 @@
 
 (def ^{:deprecated "0.4.0"} emptyLazyAASet
   (new AASet
-       (new AAMap emptyLazyNode (set-opts {:comparator RT/DEFAULT_COMPARATOR
+       (new AAMap emptyLazyNode (set-opts {:comparator       RT/DEFAULT_COMPARATOR
                                            :factory-registry default-factory-registry}))))
 
 (defn ^{:deprecated "0.4.0"} create-lazy-aaset
@@ -224,9 +222,9 @@
                       (if (:coparator o)
                         (new AAMap emptyNode o)
                         (new AAMap emptyNode (assoc
-                                              o
-                                              :comparator
-                                              RT/DEFAULT_COMPARATOR)))]
+                                               o
+                                               :comparator
+                                               RT/DEFAULT_COMPARATOR)))]
                   (new AASet mpl)))))))
 
 (defn lazy-opts
