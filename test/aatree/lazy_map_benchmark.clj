@@ -23,7 +23,7 @@
         bb (ByteBuffer/allocate (byte-length m1))]
     (put-bytebuffer m1 bb)
     (.flip bb)
-    (load-lazy-map bb)))
+    (load-map bb (lazy-opts))))
 
 (println)
 (def t0 (System/currentTimeMillis))

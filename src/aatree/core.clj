@@ -95,7 +95,7 @@
          r (map-opts r)]
      (new AAMap (node-read buffer r) r))))
 
-(defn load-lazy-map
+(defn ^{:deprecated "0.4.0"} load-lazy-map
   ([buffer]
    (load-lazy-map buffer {}))
   ([buffer opts]
@@ -108,6 +108,18 @@
              (assoc r :factory-registry default-factory-registry))
          r (map-opts r)]
      (new AAMap (node-read buffer r) r))))
+
+(defn load-map
+  [buffer opts]
+  (let [r opts
+        r (if (:comparator r)
+            r
+            (assoc r :comparator RT/DEFAULT_COMPARATOR))
+        r (if (:factory-registry r)
+            r
+            (assoc r :factory-registry default-factory-registry))
+        r (map-opts r)]
+    (new AAMap (node-read buffer r) r)))
 
 (defn ^{:deprecated "0.4.0"} lazy-byte-length [noded]
   (node-byte-length (get-inode noded) (get-opts noded)))

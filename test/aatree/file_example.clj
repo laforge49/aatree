@@ -6,6 +6,8 @@
            (java.net URI)
            (java.io File)))
 
+(set! *warn-on-reflection* true)
+
 (defn save-bytebuffer [^ByteBuffer buffer ^File file]
   (let [^FileChannel fc (FileChannel/open (.toPath file)
                                           (into-array OpenOption
@@ -37,11 +39,11 @@
 
 (def bm1 (conj (new-sorted-map opts) {:dog "Jack" :cat "Sammy" :rabbit "Henry"}))
 (def bm1-len (byte-length bm1))
-(def bb (ByteBuffer/allocate bm1-len))
+(def ^ByteBuffer bb (ByteBuffer/allocate bm1-len))
 (put-bytebuffer bm1 bb)
 (.flip bb)
 (save-bytebuffer bb (File. "file-example.lazy"))
 
 (let [^ByteBuffer bb (load-bytebuffer (File. "file-example.lazy"))
-      bm2 (load-lazy-map bb opts)]
+      bm2 (load-map bb opts)]
   (println bm2))
