@@ -1,7 +1,6 @@
 (ns aatree.cs256-example
   (:require [aatree.core :refer :all])
-  (:import (java.util.zip Adler32)
-           (java.nio ByteBuffer)
+  (:import (java.nio ByteBuffer)
            (java.io File)))
 
 (set! *warn-on-reflection* true)
