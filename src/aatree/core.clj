@@ -304,7 +304,7 @@
         off (.position bb)]
     (reduce (fn [^BitSet bitset i]
               (let [bbv (- (.get bb (int (+ i off))) Byte/MIN_VALUE)
-                    j (mod ((+ bbv (* i 7))) 256)]
+                    j (mod (+ bbv (* i 7)) 256)]
                 (.flip bitset j))
               bitset)
             bs
