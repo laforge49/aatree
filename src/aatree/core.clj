@@ -4,10 +4,11 @@
   (:import (aatree AAMap AAVector AASet)
            (aatree.nodes FlexVector)
            (clojure.lang RT)
+           (java.io File)
            (java.nio ByteBuffer)
            (java.nio.file StandardOpenOption OpenOption)
-           (java.io File)
-           (java.nio.channels FileChannel)))
+           (java.nio.channels FileChannel)
+           (java.util BitSet)))
 
 (set! *warn-on-reflection* true)
 
@@ -295,3 +296,28 @@
         bb)
       (finally
         (.close fc)))))
+
+(defn ^BitSet cs256 [^ByteBuffer bb]
+  (let [^BitSet bs (BitSet. 256)
+        _ (.flip bs 255)
+        len (.remaining bb)
+        off (.position bb)]
+    (reduce (fn [^BitSet bitset i]
+              (let [bbv (- (.get bb (int (+ i off))) Byte/MIN_VALUE)
+                    j (mod ((+ bbv (* i 7))) 256)]
+                (.flip bitset j))
+              bitset)
+            bs
+            (range len))
+    bs))
+
+(defn put-cs256 [^ByteBuffer bb ^BitSet cs256]
+  (.put (.asLongBuffer bb) (.toLongArray cs256))
+  (.position bb (+ (.position bb) 32)))
+
+(defn ^BitSet get-cs256 [^ByteBuffer bb]
+  (let [la (long-array 4)
+        _ (.get (.asLongBuffer bb) (longs la))
+        bs (BitSet/valueOf (longs la))]
+    (.position bb (+ (.position bb) 32))
+    bs))
