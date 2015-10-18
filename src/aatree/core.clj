@@ -3,7 +3,11 @@
   (:require [aatree.lazy-nodes :refer :all])
   (:import (aatree AAMap AAVector AASet)
            (aatree.nodes FlexVector)
-           (clojure.lang RT)))
+           (clojure.lang RT)
+           (java.nio ByteBuffer)
+           (java.nio.file StandardOpenOption OpenOption)
+           (java.io File)
+           (java.nio.channels FileChannel)))
 
 (set! *warn-on-reflection* true)
 
@@ -264,3 +268,30 @@
 
 (defn new-sorted-set [opts]
   ((:new-sorted-set opts) opts))
+
+(defn file-save [^ByteBuffer buffer ^File file]
+  (let [^FileChannel fc (FileChannel/open (.toPath file)
+                                          (into-array OpenOption
+                                                      [StandardOpenOption/CREATE
+                                                       StandardOpenOption/TRUNCATE_EXISTING
+                                                       StandardOpenOption/WRITE]))]
+    (try
+      (.write fc buffer)
+      (catch Exception e
+        (.close fc)
+        (throw e)))
+    (.close fc)))
+
+(defn ^ByteBuffer file-load [^File file]
+  (let [^FileChannel fc (FileChannel/open (.toPath file)
+                                          (into-array OpenOption
+                                                      [StandardOpenOption/CREATE
+                                                       StandardOpenOption/READ]))]
+    (try
+      (let [size (.size fc)
+            bb (ByteBuffer/allocate size)]
+        (.read fc bb)
+        (.flip bb)
+        bb)
+      (finally
+        (.close fc)))))

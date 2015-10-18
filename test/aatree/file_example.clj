@@ -1,39 +1,9 @@
 (ns aatree.file-example
   (:require [aatree.core :refer :all])
   (:import (java.nio ByteBuffer)
-           (java.nio.file Path StandardOpenOption Paths OpenOption)
-           (java.nio.channels FileChannel)
-           (java.net URI)
            (java.io File)))
 
 (set! *warn-on-reflection* true)
-
-(defn file-save [^ByteBuffer buffer ^File file]
-  (let [^FileChannel fc (FileChannel/open (.toPath file)
-                                          (into-array OpenOption
-                                                      [StandardOpenOption/CREATE
-                                                       StandardOpenOption/TRUNCATE_EXISTING
-                                                       StandardOpenOption/WRITE]))]
-    (try
-      (.write fc buffer)
-      (catch Exception e
-        (.close fc)
-        (throw e)))
-    (.close fc)))
-
-(defn ^ByteBuffer file-load [^File file]
-  (let [^FileChannel fc (FileChannel/open (.toPath file)
-                                          (into-array OpenOption
-                                                      [StandardOpenOption/CREATE
-                                                       StandardOpenOption/READ]))]
-    (try
-      (let [size (.size fc)
-            bb (ByteBuffer/allocate size)]
-      (.read fc bb)
-      (.flip bb)
-      bb)
-      (finally
-        (.close fc)))))
 
 (def opts (lazy-opts))
 
