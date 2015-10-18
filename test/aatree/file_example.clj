@@ -45,5 +45,5 @@
 (save-bytebuffer bb (File. "file-example.lazy"))
 
 (let [^ByteBuffer bb (load-bytebuffer (File. "file-example.lazy"))
-      bm2 (load-map bb opts)]
+      bm2 (load-sorted-map bb opts)]
   (println bm2))

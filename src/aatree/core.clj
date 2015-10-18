@@ -70,16 +70,13 @@
            r (vector-opts r)]
        (new AAVector (node-read buffer r) r)))))
 
-(defn load-lazy-vector
-  ([buffer]
-   (load-lazy-vector buffer {}))
-  ([buffer opts]
-   (if (:factory-registry opts)
-     (let [r (vector-opts opts)]
-       (new AAVector (node-read buffer r) r))
-     (let [r (assoc opts :factory-registry default-factory-registry)
-           r (vector-opts r)]
-       (new AAVector (node-read buffer r) r)))))
+(defn load-vector [buffer opts]
+  (if (:factory-registry opts)
+    (let [r (vector-opts opts)]
+      (new AAVector (node-read buffer r) r))
+    (let [r (assoc opts :factory-registry default-factory-registry)
+          r (vector-opts r)]
+      (new AAVector (node-read buffer r) r))))
 
 (defn ^{:deprecated "0.4.0"} load-aamap
   ([buffer]
@@ -95,21 +92,7 @@
          r (map-opts r)]
      (new AAMap (node-read buffer r) r))))
 
-(defn ^{:deprecated "0.4.0"} load-lazy-map
-  ([buffer]
-   (load-lazy-map buffer {}))
-  ([buffer opts]
-   (let [r opts
-         r (if (:comparator r)
-             r
-             (assoc r :comparator RT/DEFAULT_COMPARATOR))
-         r (if (:factory-registry r)
-             r
-             (assoc r :factory-registry default-factory-registry))
-         r (map-opts r)]
-     (new AAMap (node-read buffer r) r))))
-
-(defn load-map
+(defn load-sorted-map
   [buffer opts]
   (let [r opts
         r (if (:comparator r)
