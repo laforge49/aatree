@@ -34,8 +34,7 @@ use of warn-on-reflection.
 
 [Towards Greater Code Reuse](https://github.com/laforge49/aatree/wiki/Towards-Greater-Code-Reuse)
 
-### Simple Applications
-
-[File Load and Save](https://github.com/laforge49/aatree/wiki/File-Load-and-Save)
-
-[Using Adler32](https://github.com/laforge49/aatree/wiki/Using-Adler32)
+### Durable Applications
+1. [File Load and Save](https://github.com/laforge49/aatree/wiki/File-Load-and-Save)
+1. [Using Adler32](https://github.com/laforge49/aatree/wiki/Using-Adler32)
+1. [A 256-bit Checksum](https://github.com/laforge49/aatree/wiki/A-256-Bit-Checksum)
