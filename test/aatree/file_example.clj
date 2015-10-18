@@ -16,4 +16,4 @@
 
 (let [^ByteBuffer bb (file-load (File. "file-example.lazy"))
       bm2 (load-sorted-map bb opts)]
-  (println bm2))
+  (println bm2)); -> {:cat Sammy, :dog Jack, :rabbit Henry}

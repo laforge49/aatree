@@ -33,3 +33,9 @@ use of warn-on-reflection.
 [Immutable Value, Mutable Form](https://github.com/laforge49/aatree/wiki/Immutable-Value,-Mutable-Form)
 
 [Towards Greater Code Reuse](https://github.com/laforge49/aatree/wiki/Towards-Greater-Code-Reuse)
+
+### Simple Applications
+
+[File Load and Save](https://github.com/laforge49/aatree/wiki/File-Load-and-Save)
+
+[Using Adler32](https://github.com/laforge49/aatree/wiki/Using-Adler32)
