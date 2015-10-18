@@ -21,5 +21,13 @@
 (file-save bb (File. "adler32-example.lazy"))
 
 (let [^ByteBuffer bb (file-load (File. "adler32-example.lazy"))
-      lv2 (load-vector bb opts)]
+      csp (- (.limit bb) 8)
+      ^ByteBuffer abb (.limit (.duplicate bb) csp)
+      ^Adler32 adler32 (Adler32.)
+      _ (.update adler32 abb)
+      cs (.getValue adler32)
+      ocs (.getLong bb csp)
+      lv2 (if (= cs ocs)
+            (load-vector bb opts)
+            (throw (java.lang.Exception. "Checksum does not match")))]
   (println lv2)); -> [1 2 3]
