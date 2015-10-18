@@ -162,9 +162,9 @@
      (new AASet
           (new AAMap (node-read buffer r) r)))))
 
-(defn load-lazy-set
+(defn load-sorted-set
   ([buffer]
-   (load-lazy-set buffer {}))
+   (load-sorted-set buffer {}))
   ([buffer opts]
    (let [r opts
          r (if (:comparator r)

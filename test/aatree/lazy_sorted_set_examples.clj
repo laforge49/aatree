@@ -18,5 +18,5 @@
 (def ^ByteBuffer bb (ByteBuffer/allocate ls1-len))
 (put-bytebuffer ls1 bb)
 (.flip bb)
-(def ls2 (load-lazy-set bb))
+(def ls2 (load-sorted-set bb opts))
 (println ls2); -> #{:cat :dog :rabbit}
