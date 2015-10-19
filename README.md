@@ -34,7 +34,14 @@ use of warn-on-reflection.
 
 [Towards Greater Code Reuse](https://github.com/laforge49/aatree/wiki/Towards-Greater-Code-Reuse)
 
-### Durable Applications
+### Durable Applications--File Load and Save
+
+It is not often that you need lazy deserialization when doing a file load. 
+Rather, we are using file load and save here to illustrate how to use the lazy 
+structures of aatree. 
+(A better use of these structures would be in implementing a database, of course.
+But that will not be covered for a release or three.)
+
 1. [File Load and Save](https://github.com/laforge49/aatree/wiki/File-Load-and-Save)
 1. [Using Adler32](https://github.com/laforge49/aatree/wiki/Using-Adler32)
 1. [A 256-bit Checksum](https://github.com/laforge49/aatree/wiki/A-256-Bit-Checksum)
