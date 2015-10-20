@@ -1,4 +1,4 @@
-(defproject aatree "0.4.0"
+(defproject aatree "0.4.1-SNAPSHOT"
   :description "A Clojure library for AA Trees"
   :url "https://github.com/laforge49/aatree"
   :license {:name "Eclipse Public License"
