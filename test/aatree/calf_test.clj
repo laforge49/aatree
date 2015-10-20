@@ -5,8 +5,8 @@
 
 (set! *warn-on-reflection* true)
 
-(def opts (calf-open (File. "file-example.lazy") 1000))
+(def opts (calf-open (File. "calf-test.lazy") 1000))
 
-(println opts)
+(println (transaction-count opts))
 
 (db-close opts)
