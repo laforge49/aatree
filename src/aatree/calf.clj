@@ -22,28 +22,46 @@
     (put-bytebuffer aamap bb)
     (put-cs256 bb (cs256 (.flip (.duplicate bb))))
     (.position file-channel (long position))
+    (.flip bb)
     (.write file-channel bb)
     db-state))
 
 (defn calf-send-write [aamap opts]
   (let [^Agent db-agent (:db-agent opts)]
-    (send db-agent calf-writer aamap opts)))
+    (send-off db-agent calf-writer aamap opts)))
 
 (defn calf-write [aamap opts]
   (calf-send-write aamap opts)
-  (await (:db-agent opts)))
+  (let [send-write-timeout (:send-write-timeout opts)
+        db-agent (:db-agent opts)]
+    (if send-write-timeout
+      (await-for send-write-timeout db-agent)
+      (await db-agent))))
 
 (defn- calf-new [opts]
   (let [data (new-sorted-map opts)
         db-state {:transaction-count 0 :data data}
-        db-agent (agent db-state)
+        db-agent-options (get opts :db-agent-options [])
+        db-agent (apply agent db-state db-agent-options)
         opts (assoc opts :db-agent db-agent)]
-    (calf-send-write data opts)
-    (calf-send-write data opts)
+    (calf-write data opts)
+    (calf-write data opts)
   opts))
 
+(defn- calf-read [position opts]
+  (let [^FileChannel file-channel (:file-channel opts)
+        _ (.position file-channel (long position))
+        block-size (:block-size opts)
+        ^ByteBuffer bb (ByteBuffer/allocate block-size)
+        bytes-read (.read file-channel bb)
+        _ (println bytes-read)]))
+
 (defn- calf-old [opts]
-  opts)
+  (println "old")
+  (let [block-size (:block-size opts)]
+    (calf-read 0 opts)
+    (calf-read block-size opts)
+    opts))
 
 (defn calf-open
   ([file block-size] (calf-open file block-size {}))
@@ -64,10 +82,14 @@
                   opts
                   (lazy-opts opts))
            opts (assoc opts :root-header-size (+ 4 4 8 32))
+;           _ (println (.size file-channel))
            opts (if (= 0 (.size file-channel))
                   (calf-new opts)
                   (calf-old opts))]
        opts))))
 
-(defn transaction-count [opts]
+(defn calf-transaction-count [opts]
   (:transaction-count @(:db-agent opts)))
+
+(defn calf-get [opts]
+  (:data @(:db-agent opts)))
