@@ -182,7 +182,7 @@
      (new AASet
           (new AAMap (node-read buffer r) r)))))
 
-;new in 0.4.0
+(defn has-aafactories [opts] (:new-sorted-map opts))
 
 (defn standard-opts
   ([] (standard-opts {}))
@@ -321,3 +321,11 @@
         bs (BitSet/valueOf (longs la))]
     (.position bb (+ (.position bb) 32))
     bs))
+
+(defn db-close [opts]
+  (let [^FileChannel fc (:file-channel opts)]
+    (if fc
+      (do
+        (.close fc)
+        (assoc opts :file-channel nil))
+      opts)))
