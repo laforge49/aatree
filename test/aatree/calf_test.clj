@@ -17,12 +17,13 @@
 (calf-write data opts)
 (def data (calf-get opts))
 (println data); -> {:fun Clojure}
+(println (calf-transaction-count opts)); -> 3
 (db-close opts)
 
 (def opts (calf-open calf-test 10000))
-(comment (println (calf-transaction-count opts)); -> 2
+(println (calf-transaction-count opts)); -> 2
 (def data (calf-get opts))
 (println data); -> {}
-(db-close opts))
+(db-close opts)
 
 (shutdown-agents)

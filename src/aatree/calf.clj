@@ -41,12 +41,13 @@
       (await-for send-write-timeout db-agent)
       (await db-agent))))
 
+(defn- create-db-agent [db-state opts]
+  (assoc opts :db-agent (apply agent db-state (get opts :db-agent-options []))))
+
 (defn- calf-new [opts]
   (let [data (new-sorted-map opts)
         db-state {:transaction-count 0 :data data}
-        db-agent-options (get opts :db-agent-options [])
-        db-agent (apply agent db-state db-agent-options)
-        opts (assoc opts :db-agent db-agent)]
+        opts (create-db-agent db-state opts)]
     (calf-write data opts)
     (calf-write data opts)
   opts))
@@ -58,30 +59,45 @@
         ^ByteBuffer bb (ByteBuffer/allocate block-size)
         _ (.limit bb 16)
         _ (.read file-channel bb)
-        _ (.flip bb)
-        _ (if (not= block-size (.getInt bb))
-            (throw (Exception. "db block-size is" block-size)))
-        data-size (.getInt bb)
-        _ (if (< block-size (+ 4 4 8 data-size 32))
-            (throw (Exception. "block-size exceeded on read")))
-        transaction-count (.getLong bb)
-        input-size (+ (.limit bb) data-size 32)
-        _ (.limit bb input-size)
-        _ (.read file-channel bb)
-        _ (.flip bb)
-        csp (- input-size 32)
-        _ (.limit bb csp)
-        cs (compute-cs256 bb)
-        _ (.limit bb input-size)
-        _ (println (.position bb) (.limit bb))
-        ocs (get-cs256 bb)
-        ]))
+        _ (.flip bb)]
+    (if (not= block-size (.getInt bb))
+      nil
+      (let [data-size (.getInt bb)
+            _ (if (< block-size (+ 4 4 8 data-size 32))
+                (throw (Exception. "block-size exceeded on read")))
+            transaction-count (.getLong bb)
+            input-size (+ (.limit bb) data-size 32)
+            _ (.limit bb input-size)
+            _ (.read file-channel bb)
+            _ (.flip bb)
+            csp (- input-size 32)
+            _ (.limit bb csp)
+            cs (compute-cs256 bb)
+            _ (.limit bb input-size)
+            ocs (get-cs256 bb)
+            _ (.position bb (+ 4 4 8))
+            _ (.limit bb csp)
+            data (load-sorted-map bb opts)]
+        (if (not= cs ocs)
+          nil
+          {:transaction-count transaction-count :data data})))))
+
+(defn- choose [state0 state1]
+  (if state0
+    (if state1
+      (if (> (:transaction-count state0) (:transaction-count state1))
+        state0
+        state1)
+      state0)
+    (if state1
+      state1
+      (throw (Exception. "corrupted database")))))
 
 (defn- calf-old [opts]
   (let [block-size (:block-size opts)
         state0 (calf-read 0 opts)
         state1 (calf-read block-size opts)]
-    opts))
+    (create-db-agent (choose state0 state1) opts)))
 
 (defn calf-open
   ([file block-size] (calf-open file block-size {}))
@@ -102,7 +118,6 @@
                   opts
                   (lazy-opts opts))
            opts (assoc opts :root-header-size (+ 4 4 8 32))
-;           _ (println (.size file-channel))
            opts (if (= 0 (.size file-channel))
                   (calf-new opts)
                   (calf-old opts))]
