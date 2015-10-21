@@ -4,8 +4,10 @@
 
 (set! *warn-on-reflection* true)
 
-(def map-size 1000000)
-(def updates 1000)
+;(def map-size 1000000)
+(def map-size 1)
+;(def updates 1000)
+(def updates 1)
 
 (defn bld [m i]
   (conj m [i i]))

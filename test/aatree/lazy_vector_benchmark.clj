@@ -4,8 +4,10 @@
 
 (set! *warn-on-reflection* true)
 
-(def vector-size 1000000)
-(def updates 1000)
+;(def vector-size 1000000)
+(def vector-size 1)
+;(def updates 1000)
+(def updates 1)
 
 (println)
 (def t0 (System/currentTimeMillis))

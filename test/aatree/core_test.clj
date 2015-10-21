@@ -135,31 +135,37 @@
   (gen/tuple gen/int))
 
 (deftest vec-tests
-  (assert-vector-like 100 (new-vector (basic-opts)) gen-element))
+  ;  (assert-vector-like 100 (new-vector (basic-opts)) gen-element))
+  (assert-vector-like 1 (new-vector (basic-opts)) gen-element))
 
 (deftest lazy-vec-tests
-  (assert-vector-like 100 (new-vector (lazy-opts)) gen-element))
+  ;  (assert-vector-like 100 (new-vector (lazy-opts)) gen-element))
+  (assert-vector-like 1 (new-vector (lazy-opts)) gen-element))
 
 (deftest map-tests
-  (assert-map-like 100
+  ;  (assert-map-like 100
+  (assert-map-like 1
                    (new-sorted-map (basic-opts))
                    gen-element gen-element
                    {:base (sorted-map) :ordered? true}))
 
 (deftest lazy-map-tests
-  (assert-map-like 100
+  ;  (assert-map-like 100
+  (assert-map-like 1
                    (new-sorted-map (lazy-opts))
                    gen-element gen-element
                    {:base (sorted-map) :ordered? true}))
 
 (deftest set-tests
-  (assert-set-like 100
+  ;  (assert-set-like 100
+  (assert-set-like 1
                    (new-sorted-set (basic-opts))
                    gen-element
                    {:base (sorted-set) :ordered? true}))
 
 (deftest lazy-set-tests
-  (assert-set-like 100
+  ;  (assert-set-like 100
+  (assert-set-like 1
                    (new-sorted-set (lazy-opts))
                    gen-element
                    {:base (sorted-set) :ordered? true}))
