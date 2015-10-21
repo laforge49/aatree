@@ -13,7 +13,7 @@
       ^ByteBuffer bb (ByteBuffer/allocate bb-len)
       _ (put-aa bb ls1)
       ^ByteBuffer csbb (.flip (.duplicate bb))
-      cs (cs256 csbb)]
+      cs (compute-cs256 csbb)]
   (put-cs256 bb cs)
   (.flip bb)
   (file-save bb (File. "cs245-example.lazy")))
@@ -21,7 +21,7 @@
 (let [^ByteBuffer bb (file-load (File. "cs245-example.lazy"))
       csp (- (.limit bb) 32)
       ^ByteBuffer csbb (.limit (.duplicate bb) csp)
-      cs (cs256 csbb)
+      cs (compute-cs256 csbb)
       ocs (get-cs256 (.position (.duplicate bb) csp))
       lv2 (if (= cs ocs)
             (load-sorted-set bb opts)

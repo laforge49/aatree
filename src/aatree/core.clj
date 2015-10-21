@@ -300,7 +300,7 @@
       (finally
         (.close fc)))))
 
-(defn ^BitSet cs256 [^ByteBuffer bb]
+(defn ^{:deprecated "0.4.1"} ^BitSet cs256 [^ByteBuffer bb]
   (let [^BitSet bs (BitSet. 256)
         _ (.flip bs 255)
         len (.remaining bb)
@@ -312,6 +312,19 @@
               bitset)
             bs
             (range len))
+    bs))
+
+(defn ^BitSet compute-cs256 [^ByteBuffer bb]
+  (let [^BitSet bs (BitSet. 256)
+        _ (.flip bs 255)
+        len (.remaining bb)]
+    (reduce (fn [^BitSet bitset i]
+              (let [bbv (- (.get bb) Byte/MIN_VALUE)
+                    j (mod (+ bbv (* i 7)) 256)]
+                (.flip bitset j))
+              bitset)
+              bs
+              (range len))
     bs))
 
 (defn put-cs256 [^ByteBuffer bb ^BitSet cs256]
