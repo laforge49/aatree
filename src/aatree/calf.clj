@@ -8,7 +8,7 @@
 
 (set! *warn-on-reflection* true)
 
-(defn- calf-writer [db-state aamap opts]
+(defn- calf-putter [db-state aamap opts]
   (let [transaction-count (:transaction-count db-state)
         block-size (:block-size opts)
         position (* block-size (mod transaction-count 2))
@@ -30,12 +30,12 @@
     (.write file-channel bb)
     db-state))
 
-(defn calf-send-write [aamap opts]
+(defn calf-send-put [aamap opts]
   (let [^Agent db-agent (:db-agent opts)]
-    (send-off db-agent calf-writer aamap opts)))
+    (send-off db-agent calf-putter aamap opts)))
 
-(defn calf-write [aamap opts]
-  (calf-send-write aamap opts)
+(defn calf-put [aamap opts]
+  (calf-send-put aamap opts)
   (let [send-write-timeout (:send-write-timeout opts)
         db-agent (:db-agent opts)]
     (if send-write-timeout
@@ -49,8 +49,8 @@
   (let [data (new-sorted-map opts)
         db-state {:transaction-count 0 :data data}
         opts (create-db-agent db-state opts)]
-    (calf-write data opts)
-    (calf-write data opts)
+    (calf-put data opts)
+    (calf-put data opts)
   opts))
 
 (defn- calf-read [position opts]
@@ -129,3 +129,11 @@
 
 (defn calf-get [opts]
   (:data @(:db-agent opts)))
+
+(defn calf-close [opts]
+  (let [^FileChannel fc (:file-channel opts)]
+    (if fc
+      (do
+        (.close fc)
+        (assoc opts :file-channel nil))
+      opts)))

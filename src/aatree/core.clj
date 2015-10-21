@@ -337,11 +337,3 @@
         bs (BitSet/valueOf (longs la))]
     (.position bb (+ (.position bb) 32))
     bs))
-
-(defn db-close [opts]
-  (let [^FileChannel fc (:file-channel opts)]
-    (if fc
-      (do
-        (.close fc)
-        (assoc opts :file-channel nil))
-      opts)))
