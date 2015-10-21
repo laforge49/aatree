@@ -39,9 +39,17 @@ use of warn-on-reflection.
 It is not often that you need lazy deserialization when doing a file load. 
 Rather, we are using file load and save here to illustrate how to use the lazy 
 structures of aatree. 
-(A better use of these structures would be in implementing a database, of course.
-But that will not be covered for a release or three.)
 
 1. [File Load and Save](https://github.com/laforge49/aatree/wiki/File-Load-and-Save)
 1. [Using Adler32](https://github.com/laforge49/aatree/wiki/Using-Adler32)
 1. [A 256-bit Checksum](https://github.com/laforge49/aatree/wiki/A-256-Bit-Checksum)
+
+### Write Me a Database
+
+It is easy enough to code up 
+[A Small Database](https://github.com/laforge49/aatree/wiki/A-Small-Database)
+using lazy aatree structures.
+The catch is that the contents of the database must fit in memory.
+
+Later we will look at how to implement larger databases. But there will be a lot more code involved.
+So it is best to take things one step at a time.
