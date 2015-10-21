@@ -21,9 +21,9 @@
 (db-close opts)
 
 (def opts (calf-open calf-test 10000))
-(println (calf-transaction-count opts)); -> 2
+(println (calf-transaction-count opts)); -> 3
 (def data (calf-get opts))
-(println data); -> {}
+(println data); -> {:fun Clojure}
 (db-close opts)
 
 (shutdown-agents)
