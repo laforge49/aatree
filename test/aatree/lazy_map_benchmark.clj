@@ -21,7 +21,7 @@
 (defn upd [m i]
   (let [m1 (assoc m i (- i))
         bb (ByteBuffer/allocate (byte-length m1))]
-    (put-bytebuffer m1 bb)
+    (put-aa bb m1)
     (.flip bb)
     (load-sorted-map bb (lazy-opts))))
 

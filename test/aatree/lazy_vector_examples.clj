@@ -19,7 +19,7 @@
 (println lv1-len); -> 61
 
 (def ^ByteBuffer bb (ByteBuffer/allocate lv1-len))
-(put-bytebuffer lv1 bb)
+(put-aa bb lv1)
 (.flip bb)
 (def lv2 (load-vector bb opts))
 (println lv2); -> [1 2 3]
@@ -31,7 +31,7 @@
 (println lv3-len); -> 76
 
 (def ^ByteBuffer bb (ByteBuffer/allocate lv3-len))
-(put-bytebuffer lv3 bb)
+(put-aa bb lv3)
 (.flip bb)
 (def lv4 (load-vector bb opts))
 (println lv4); -> [[1 2 3]]
@@ -48,7 +48,7 @@
 (println lv6-len); -> 233
 
 (def ^ByteBuffer bb (ByteBuffer/allocate lv6-len))
-(put-bytebuffer lv6 bb)
+(put-aa bb lv6)
 (.flip bb)
 (def lv7 (load-vector bb opts))
 (println lv7); -> [[1 2 3] {:cat Sammy, :dog Jack, :rabbit Henry}]
@@ -66,7 +66,7 @@
 (println lv8-len); -> 332
 
 (def ^ByteBuffer bb (ByteBuffer/allocate lv8-len))
-(put-bytebuffer lv8 bb)
+(put-aa bb lv8)
 (.flip bb)
 (def lv9 (load-vector bb opts))
 (println lv9); -> [[1 2 3] {:cat Sammy, :dog Jack, :rabbit Henry}

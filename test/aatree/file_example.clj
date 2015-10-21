@@ -11,7 +11,7 @@
 (let [bm1 (conj empty-map {:dog "Jack" :cat "Sammy" :rabbit "Henry"})
       bm1-len (byte-length bm1)
       ^ByteBuffer bb (ByteBuffer/allocate bm1-len)]
-  (put-bytebuffer bm1 bb)
+  (put-aa bb bm1)
   (.flip bb)
   (file-save bb (File. "file-example.lazy")))
 

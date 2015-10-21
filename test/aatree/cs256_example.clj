@@ -11,7 +11,7 @@
 (let [ls1 (conj empty-set :dog :cat :rabbit)
       bb-len (+ (byte-length ls1) 32)
       ^ByteBuffer bb (ByteBuffer/allocate bb-len)
-      _ (put-bytebuffer ls1 bb)
+      _ (put-aa bb ls1)
       ^ByteBuffer csbb (.flip (.duplicate bb))
       cs (cs256 csbb)]
   (put-cs256 bb cs)

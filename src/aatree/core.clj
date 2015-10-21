@@ -118,8 +118,11 @@
 (defn ^{:deprecated "0.4.0"} lazy-write [noded buffer]
   (node-write (get-inode noded) buffer (get-opts noded)))
 
-(defn put-bytebuffer [noded buffer]
+(defn ^{:deprecated "0.4.1"} put-bytebuffer [noded buffer]
   (node-write (get-inode noded) buffer (get-opts noded)))
+
+(defn put-aa [buffer aa]
+  (node-write (get-inode aa) buffer (get-opts aa)))
 
 (def ^{:deprecated "0.4.0"} emptyAASet
   (new AASet emptyAAMap))

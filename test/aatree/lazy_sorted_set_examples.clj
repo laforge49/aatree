@@ -16,7 +16,7 @@
 (println ls1-len); -> 85
 
 (def ^ByteBuffer bb (ByteBuffer/allocate ls1-len))
-(put-bytebuffer ls1 bb)
+(put-aa bb ls1)
 (.flip bb)
 (def ls2 (load-sorted-set bb opts))
 (println ls2); -> #{:cat :dog :rabbit}

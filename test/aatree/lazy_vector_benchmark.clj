@@ -18,7 +18,7 @@
 (defn upd [v i]
   (let [v1 (assoc v i (- i))
         bb (ByteBuffer/allocate (byte-length v1))]
-    (put-bytebuffer v1 bb)
+    (put-aa bb v1)
     (.flip bb)
     (load-vector bb (lazy-opts))))
 

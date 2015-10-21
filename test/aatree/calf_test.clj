@@ -5,7 +5,7 @@
 
 (set! *warn-on-reflection* true)
 
-(def ^File calf-test (File. "calf-test.lazy"))
+(def ^File calf-test (File. "calf-test.calf"))
 (.delete calf-test)
 
 (def opts (calf-open calf-test 10000))
