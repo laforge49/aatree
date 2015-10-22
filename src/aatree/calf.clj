@@ -108,10 +108,10 @@
 (defn calf-transaction-count [opts]
   (:transaction-count @(:db-agent opts)))
 
-(defn calf-get-sorted-map [opts]
+(defn- calf-get-sorted-map [opts]
   (:aamap @(:db-agent opts)))
 
-(defn calf-close [opts]
+(defn- calf-close [opts]
   (let [^FileChannel fc (:db-file-channel opts)]
     (if fc
       (do
@@ -124,7 +124,9 @@
   ([^File file block-size opts]
    (if (:db-file-channel opts)
      opts
-     (let [opts (assoc opts :db-file file)
+     (let [opts (assoc opts :db-close calf-close)
+           opts (assoc opts :db-get-sorted-map calf-get-sorted-map)
+           opts (assoc opts :db-file file)
            opts (assoc opts :db-block-size block-size)
            file-channel
            (FileChannel/open (.toPath file)

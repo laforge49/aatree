@@ -337,3 +337,7 @@
         bs (BitSet/valueOf (longs la))]
     (.position bb (+ (.position bb) 32))
     bs))
+
+(defn db-close [opts] ((:db-close opts) opts))
+
+(defn db-get-sorted-map [opts] ((:db-get-sorted-map opts) opts))
