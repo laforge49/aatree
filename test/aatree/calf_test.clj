@@ -14,7 +14,6 @@
         data (calf-get opts)
         _ (is (= data {}))
         _ (calf-update (fn [aamap opts]
-                         (println 55555)
                          (assoc aamap :fun "Clojure"))
                        opts)
         data (calf-get opts)
