@@ -341,3 +341,5 @@
 (defn db-close [opts] ((:db-close opts) opts))
 
 (defn db-get-sorted-map [opts] ((:db-get-sorted-map opts) opts))
+
+(defn db-transaction-count [opts] ((:db-transaction-count opts) opts))

@@ -10,7 +10,7 @@
   (.delete (File. "calf-test.calf"))
 
   (let [opts (calf-open (File. "calf-test.calf") 10000)
-        _ (is (= (calf-transaction-count opts) 2))
+        _ (is (= (db-transaction-count opts) 2))
         aamap (db-get-sorted-map opts)
         _ (is (= aamap {}))
         _ (calf-update (fn [aamap opts]
@@ -18,11 +18,11 @@
                        opts)
         aamap (db-get-sorted-map opts)
         _ (is (= aamap {:fun "Clojure"}))
-        _ (is (= (calf-transaction-count opts) 3))
+        _ (is (= (db-transaction-count opts) 3))
         _ (db-close opts)])
 
   (let [opts (calf-open (File. "calf-test.calf") 10000)
-        _ (is (= (calf-transaction-count opts) 3))
+        _ (is (= (db-transaction-count opts) 3))
         aamap (db-get-sorted-map opts)
         _ (is (= aamap {:fun "Clojure"}))
         _ (db-close opts)]))

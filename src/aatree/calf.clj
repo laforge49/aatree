@@ -105,7 +105,7 @@
         state1 (calf-read block-size opts)]
     (create-db-agent (choose state0 state1) opts)))
 
-(defn calf-transaction-count [opts]
+(defn- calf-transaction-count [opts]
   (:transaction-count @(:db-agent opts)))
 
 (defn- calf-get-sorted-map [opts]
@@ -126,6 +126,7 @@
      opts
      (let [opts (assoc opts :db-close calf-close)
            opts (assoc opts :db-get-sorted-map calf-get-sorted-map)
+           opts (assoc opts :db-transaction-count calf-transaction-count)
            opts (assoc opts :db-file file)
            opts (assoc opts :db-block-size block-size)
            file-channel
