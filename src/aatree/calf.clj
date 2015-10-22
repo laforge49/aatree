@@ -105,6 +105,20 @@
         state1 (calf-read block-size opts)]
     (create-db-agent (choose state0 state1) opts)))
 
+(defn calf-transaction-count [opts]
+  (:transaction-count @(:db-agent opts)))
+
+(defn calf-get-sorted-map [opts]
+  (:aamap @(:db-agent opts)))
+
+(defn calf-close [opts]
+  (let [^FileChannel fc (:db-file-channel opts)]
+    (if fc
+      (do
+        (.close fc)
+        (assoc opts :db-file-channel nil))
+      opts)))
+
 (defn calf-open
   ([file block-size] (calf-open file block-size {}))
   ([^File file block-size opts]
@@ -127,17 +141,3 @@
                   (calf-new opts)
                   (calf-old opts))]
        opts))))
-
-(defn calf-transaction-count [opts]
-  (:transaction-count @(:db-agent opts)))
-
-(defn calf-get-sorted-map [opts]
-  (:aamap @(:db-agent opts)))
-
-(defn calf-close [opts]
-  (let [^FileChannel fc (:db-file-channel opts)]
-    (if fc
-      (do
-        (.close fc)
-        (assoc opts :db-file-channel nil))
-      opts)))
