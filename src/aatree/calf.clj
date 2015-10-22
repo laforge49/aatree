@@ -33,7 +33,7 @@
       db-state)
     (catch Exception e
       (.printStackTrace e)
-      db-state)))
+      (throw e))))
 
 (defn calf-send-updater [app-updater opts]
   (let [^Agent db-agent (:db-agent opts)]
