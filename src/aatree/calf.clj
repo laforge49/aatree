@@ -41,7 +41,7 @@
 
 (defn calf-update [app-updater opts]
   (calf-send-updater app-updater opts)
-  (let [send-write-timeout (:send-write-timeout opts)
+  (let [send-write-timeout (:send-update-timeout opts)
         db-agent (:db-agent opts)]
     (if send-write-timeout
       (await-for send-write-timeout db-agent)
