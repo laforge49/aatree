@@ -134,7 +134,7 @@
 (defn calf-transaction-count [opts]
   (:transaction-count @(:db-agent opts)))
 
-(defn calf-get-map [opts]
+(defn calf-get-sorted-map [opts]
   (:aamap @(:db-agent opts)))
 
 (defn calf-close [opts]
