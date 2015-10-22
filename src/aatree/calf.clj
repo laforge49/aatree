@@ -12,13 +12,13 @@
   (try
     (let [aamap (app-updater (:aamap db-state) opts)
           transaction-count (:transaction-count db-state)
-          block-size (:block-size opts)
+          block-size (:db-block-size opts)
           position (* block-size (mod transaction-count 2))
           transaction-count (+ transaction-count 1)
           db-state (assoc db-state :transaction-count transaction-count)
           db-state (assoc db-state :aamap aamap)
           ^ByteBuffer bb (ByteBuffer/allocate block-size)
-          ^FileChannel file-channel (:file-channel opts)
+          ^FileChannel file-channel (:db-file-channel opts)
           map-size (byte-length aamap)]
       (if (< block-size (+ 4 4 8 map-size 32))
         (throw (Exception. "block-size exceeded on write")))
@@ -60,8 +60,8 @@
     opts))
 
 (defn- calf-read [position opts]
-  (let [^FileChannel file-channel (:file-channel opts)
-        block-size (:block-size opts)
+  (let [^FileChannel file-channel (:db-file-channel opts)
+        block-size (:db-block-size opts)
         ^ByteBuffer bb (ByteBuffer/allocate block-size)
         _ (.limit bb 16)
         _ (.read file-channel bb (long position))
@@ -100,7 +100,7 @@
       (throw (Exception. "corrupted database")))))
 
 (defn- calf-old [opts]
-  (let [block-size (:block-size opts)
+  (let [block-size (:db-block-size opts)
         state0 (calf-read 0 opts)
         state1 (calf-read block-size opts)]
     (create-db-agent (choose state0 state1) opts)))
@@ -108,10 +108,10 @@
 (defn calf-open
   ([file block-size] (calf-open file block-size {}))
   ([^File file block-size opts]
-   (if (:file-channel opts)
+   (if (:db-file-channel opts)
      opts
-     (let [opts (assoc opts :file file)
-           opts (assoc opts :block-size block-size)
+     (let [opts (assoc opts :db-file file)
+           opts (assoc opts :db-block-size block-size)
            file-channel
            (FileChannel/open (.toPath file)
                              (into-array OpenOption
@@ -119,11 +119,10 @@
                                           StandardOpenOption/READ
                                           StandardOpenOption/WRITE
                                           StandardOpenOption/SYNC]))
-           opts (assoc opts :file-channel file-channel)
+           opts (assoc opts :db-file-channel file-channel)
            opts (if (has-aafactories opts)
                   opts
                   (lazy-opts opts))
-           opts (assoc opts :root-header-size (+ 4 4 8 32))
            opts (if (= 0 (.size file-channel))
                   (calf-new opts)
                   (calf-old opts))]
@@ -136,9 +135,9 @@
   (:aamap @(:db-agent opts)))
 
 (defn calf-close [opts]
-  (let [^FileChannel fc (:file-channel opts)]
+  (let [^FileChannel fc (:db-file-channel opts)]
     (if fc
       (do
         (.close fc)
-        (assoc opts :file-channel nil))
+        (assoc opts :db-file-channel nil))
       opts)))
