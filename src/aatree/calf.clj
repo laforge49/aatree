@@ -27,9 +27,8 @@
       (.putLong bb transaction-count)
       (put-aa bb aamap)
       (put-cs256 bb (compute-cs256 (.flip (.duplicate bb))))
-      (.position file-channel (long position))
       (.flip bb)
-      (.write file-channel bb)
+      (.write file-channel bb (long position))
       db-state)
     (catch Exception e
       (.printStackTrace e)
@@ -62,11 +61,10 @@
 
 (defn- calf-read [position opts]
   (let [^FileChannel file-channel (:file-channel opts)
-        _ (.position file-channel (long position))
         block-size (:block-size opts)
         ^ByteBuffer bb (ByteBuffer/allocate block-size)
         _ (.limit bb 16)
-        _ (.read file-channel bb)
+        _ (.read file-channel bb (long position))
         _ (.flip bb)]
     (if (not= block-size (.getInt bb))
       nil
@@ -76,7 +74,7 @@
             transaction-count (.getLong bb)
             input-size (+ (.limit bb) map-size 32)
             _ (.limit bb input-size)
-            _ (.read file-channel bb)
+            _ (.read file-channel bb (long (+ position 16)))
             _ (.flip bb)
             csp (- input-size 32)
             _ (.limit bb csp)
