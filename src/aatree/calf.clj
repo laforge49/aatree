@@ -9,27 +9,31 @@
 (set! *warn-on-reflection* true)
 
 (defn- calf-updater [db-state app-updater opts]
-  (let [aamap (app-updater (:data db-state) opts)
-        transaction-count (:transaction-count db-state)
-        block-size (:block-size opts)
-        position (* block-size (mod transaction-count 2))
-        transaction-count (+ transaction-count 1)
-        db-state (assoc db-state :transaction-count transaction-count)
-        db-state (assoc db-state :data aamap)
-        ^ByteBuffer bb (ByteBuffer/allocate block-size)
-        ^FileChannel file-channel (:file-channel opts)
-        data-size (byte-length aamap)]
-    (if (< block-size (+ 4 4 8 data-size 32))
-      (throw (Exception. "block-size exceeded on write")))
-    (.putInt bb block-size)
-    (.putInt bb data-size)
-    (.putLong bb transaction-count)
-    (put-aa bb aamap)
-    (put-cs256 bb (compute-cs256 (.flip (.duplicate bb))))
-    (.position file-channel (long position))
-    (.flip bb)
-    (.write file-channel bb)
-    db-state))
+  (try
+    (let [aamap (app-updater (:data db-state) opts)
+          transaction-count (:transaction-count db-state)
+          block-size (:block-size opts)
+          position (* block-size (mod transaction-count 2))
+          transaction-count (+ transaction-count 1)
+          db-state (assoc db-state :transaction-count transaction-count)
+          db-state (assoc db-state :data aamap)
+          ^ByteBuffer bb (ByteBuffer/allocate block-size)
+          ^FileChannel file-channel (:file-channel opts)
+          data-size (byte-length aamap)]
+      (if (< block-size (+ 4 4 8 data-size 32))
+        (throw (Exception. "block-size exceeded on write")))
+      (.putInt bb block-size)
+      (.putInt bb data-size)
+      (.putLong bb transaction-count)
+      (put-aa bb aamap)
+      (put-cs256 bb (compute-cs256 (.flip (.duplicate bb))))
+      (.position file-channel (long position))
+      (.flip bb)
+      (.write file-channel bb)
+      db-state)
+    (catch Exception e
+      (.printStackTrace e)
+      db-state)))
 
 (defn calf-send-updater [app-updater opts]
   (let [^Agent db-agent (:db-agent opts)]
@@ -54,7 +58,7 @@
         opts (create-db-agent db-state opts)]
     (calf-update calf-null-updater opts)
     (calf-update calf-null-updater opts)
-  opts))
+    opts))
 
 (defn- calf-read [position opts]
   (let [^FileChannel file-channel (:file-channel opts)
