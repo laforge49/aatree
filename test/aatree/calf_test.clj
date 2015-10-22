@@ -13,9 +13,10 @@
         _ (is (= (calf-transaction-count opts) 2))
         data (calf-get opts)
         _ (is (= data {}))
-        data (assoc data :fun "Clojure")
-        _ (is (= data {:fun "Clojure"}))
-        _ (calf-put data opts)
+        _ (calf-update (fn [aamap opts]
+                         (println 55555)
+                         (assoc aamap :fun "Clojure"))
+                       opts)
         data (calf-get opts)
         _ (is (= data {:fun "Clojure"}))
         _ (is (= (calf-transaction-count opts) 3))

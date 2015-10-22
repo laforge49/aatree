@@ -8,8 +8,9 @@
 
 (set! *warn-on-reflection* true)
 
-(defn- calf-putter [db-state aamap opts]
-  (let [transaction-count (:transaction-count db-state)
+(defn- calf-updater [db-state app-updater opts]
+  (let [aamap (app-updater (:data db-state) opts)
+        transaction-count (:transaction-count db-state)
         block-size (:block-size opts)
         position (* block-size (mod transaction-count 2))
         transaction-count (+ transaction-count 1)
@@ -30,12 +31,12 @@
     (.write file-channel bb)
     db-state))
 
-(defn calf-send-put [aamap opts]
+(defn calf-send-updater [app-updater opts]
   (let [^Agent db-agent (:db-agent opts)]
-    (send-off db-agent calf-putter aamap opts)))
+    (send-off db-agent calf-updater app-updater opts)))
 
-(defn calf-put [aamap opts]
-  (calf-send-put aamap opts)
+(defn calf-update [app-updater opts]
+  (calf-send-updater app-updater opts)
   (let [send-write-timeout (:send-write-timeout opts)
         db-agent (:db-agent opts)]
     (if send-write-timeout
@@ -45,12 +46,14 @@
 (defn- create-db-agent [db-state opts]
   (assoc opts :db-agent (apply agent db-state (get opts :db-agent-options []))))
 
+(defn calf-null-updater [aamap opts]
+  aamap)
+
 (defn- calf-new [opts]
-  (let [data (new-sorted-map opts)
-        db-state {:transaction-count 0 :data data}
+  (let [db-state {:transaction-count 0 :data (new-sorted-map opts)}
         opts (create-db-agent db-state opts)]
-    (calf-put data opts)
-    (calf-put data opts)
+    (calf-update calf-null-updater opts)
+    (calf-update calf-null-updater opts)
   opts))
 
 (defn- calf-read [position opts]
