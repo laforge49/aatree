@@ -34,12 +34,12 @@
       (.printStackTrace e)
       (throw e))))
 
-(defn calf-send-updater [app-updater opts]
+(defn- calf-send [app-updater opts]
   (let [^Agent db-agent (:db-agent opts)]
     (send-off db-agent calf-updater app-updater opts)))
 
 (defn calf-update [app-updater opts]
-  (calf-send-updater app-updater opts)
+  (db-send app-updater opts)
   (let [send-write-timeout (:send-update-timeout opts)
         db-agent (:db-agent opts)]
     (if send-write-timeout
@@ -127,6 +127,8 @@
      (let [opts (assoc opts :db-close calf-close)
            opts (assoc opts :db-get-sorted-map calf-get-sorted-map)
            opts (assoc opts :db-transaction-count calf-transaction-count)
+           opts (assoc opts :db-send calf-send)
+           opts (assoc opts :db-update calf-update)
            opts (assoc opts :db-file file)
            opts (assoc opts :db-block-size block-size)
            file-channel

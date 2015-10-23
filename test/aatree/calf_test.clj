@@ -13,7 +13,7 @@
         _ (is (= (db-transaction-count opts) 2))
         aamap (db-get-sorted-map opts)
         _ (is (= aamap {}))
-        _ (calf-update (fn [aamap opts]
+        _ (db-update (fn [aamap opts]
                          (assoc aamap :fun "Clojure"))
                        opts)
         aamap (db-get-sorted-map opts)

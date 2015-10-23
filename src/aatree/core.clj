@@ -343,3 +343,7 @@
 (defn db-get-sorted-map [opts] ((:db-get-sorted-map opts) opts))
 
 (defn db-transaction-count [opts] ((:db-transaction-count opts) opts))
+
+(defn db-send [app-updater opts] ((:db-send opts) app-updater opts))
+
+(defn db-update [app-updater opts] ((:db-update opts) app-updater opts))
