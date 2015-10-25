@@ -5,7 +5,7 @@
            (aatree.nodes FlexVector)
            (clojure.lang RT)
            (java.io File)
-           (java.nio ByteBuffer)
+           (java.nio ByteBuffer LongBuffer)
            (java.nio.file StandardOpenOption OpenOption)
            (java.nio.channels FileChannel)
            (java.util BitSet)))
@@ -316,7 +316,6 @@
 
 (defn ^BitSet compute-cs256 [^ByteBuffer bb]
   (let [^BitSet bs (BitSet. 256)
-        _ (.flip bs 255)
         len (.remaining bb)]
     (reduce (fn [^BitSet bitset i]
               (let [bbv (- (.get bb) Byte/MIN_VALUE)
@@ -328,7 +327,12 @@
     bs))
 
 (defn put-cs256 [^ByteBuffer bb ^BitSet cs256]
-  (.put (.asLongBuffer bb) (.toLongArray cs256))
+  (let [la (.toLongArray cs256)
+        lal (alength la)
+        r (range (- 4 lal))
+        ^LongBuffer lb (.asLongBuffer bb)]
+    (.put lb la)
+    (reduce (fn [a b] (.put lb 0)) 0 r))
   (.position bb (+ (.position bb) 32)))
 
 (defn ^BitSet get-cs256 [^ByteBuffer bb]
