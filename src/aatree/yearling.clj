@@ -3,7 +3,9 @@
   (:import (java.nio ByteBuffer)
            (java.nio.channels FileChannel)
            (java.util BitSet)
-           (clojure.lang Agent)))
+           (clojure.lang Agent)
+           (java.io File)
+           (java.nio.file OpenOption StandardOpenOption)))
 
 
 (set! *warn-on-reflection* true)
@@ -156,3 +158,32 @@
         (.close fc)
         (assoc opts :db-file-channel nil))
       opts)))
+
+(defn yearling-open
+  ([file db-block-size max-db-size] (yearling-open file db-block-size max-db-size {}))
+  ([^File file db-block-size max-db-size opts]
+   (if (:db-file-channel opts)
+     opts
+     (let [opts (assoc opts :db-close yearling-close)
+           opts (assoc opts :db-get-sorted-map yearling-get-sorted-map)
+           opts (assoc opts :db-transaction-count yearling-transaction-count)
+           opts (assoc opts :db-send yearling-send)
+           opts (assoc opts :db-update yearling-update)
+           opts (assoc opts :db-file file)
+           opts (assoc opts :db-block-size db-block-size)
+           opts (assoc opts :max-db-size max-db-size)
+           file-channel
+           (FileChannel/open (.toPath file)
+                             (into-array OpenOption
+                                         [StandardOpenOption/CREATE
+                                          StandardOpenOption/READ
+                                          StandardOpenOption/WRITE
+                                          StandardOpenOption/SYNC]))
+           opts (assoc opts :db-file-channel file-channel)
+           opts (if (has-aafactories opts)
+                  opts
+                  (lazy-opts opts))
+           opts (if (= 0 (.size file-channel))
+                  (yearling-new opts)
+                  (yearling-old opts))]
+       opts))))
