@@ -12,6 +12,9 @@
 
 (def ^:dynamic *release-pending*)
 
+(defn- max-blocks [opts] (quot (:max-db-size opts) (:block-size opts)))
+
+(defn- max-allocated-longs [opts] (quot (+ (max-blocks opts) 7) 8))
 
 (defn- yearling-updater [db-state app-updater opts]
   (let [uber-map (:uber-map db-state)]
@@ -31,17 +34,20 @@
               ^ByteBuffer bb (ByteBuffer/allocate block-size)
               ^FileChannel file-channel (:db-file-channel opts)
               map-size (byte-length uber-map)
-              available-long-array (.toLongArray *allocated*)
-              ala-len (alength available-long-array)
-              available-size (* ala-len 8)]
-          (if (< block-size (+ 4 4 4 8 map-size available-size 32))
+              allocated-long-array (.toLongArray *allocated*)
+              ala-len (alength allocated-long-array)
+              allocated-size (* ala-len 8)
+              mx-allocated-longs (max-allocated-longs opts)]
+          (if (< mx-allocated-longs ala-len)
+            (throw (Exception. "allocated size exceeded on write")))
+          (if (< block-size (+ 4 4 4 8 map-size mx-allocated-longs 32))
             (throw (Exception. "block-size exceeded on write")))
           (.putInt bb block-size)
           (.putInt bb map-size)
           (.putInt bb ala-len)
           (.putLong bb transaction-count)
           (put-aa bb uber-map)
-          (.put (.asLongBuffer bb) available-long-array)
+          (.put (.asLongBuffer bb) allocated-long-array)
           (.position bb (+ (.position bb) (* ala-len 8)))
           (put-cs256 bb (compute-cs256 (.flip (.duplicate bb))))
           (.flip bb)
@@ -73,8 +79,49 @@
   (let [uber-map (new-sorted-map opts)
         uber-map (assoc uber-map :release-pending (new-sorted-map opts))
         uber-map (assoc uber-map :app-map (new-sorted-map opts))
-        db-state {:transaction-count 0 :uber-map uber-map :allocated (BitSet.)}
+        ^BitSet allocated (BitSet.)
+        _ (.set allocated 0)
+        _ (.set allocated 1)
+        db-state {:transaction-count 0 :uber-map uber-map :allocated allocated}
         opts (create-db-agent db-state opts)]
-    (calf-update yearling-null-updater opts)
-    (calf-update yearling-null-updater opts)
+    (yearling-update yearling-null-updater opts)
+    (yearling-update yearling-null-updater opts)
     opts))
+
+(defn- yearling-read [position opts]
+  (let [^FileChannel file-channel (:db-file-channel opts)
+        block-size (:db-block-size opts)
+        ^ByteBuffer bb (ByteBuffer/allocate block-size)
+        _ (.limit bb (+ 4 4 4 8))
+        _ (.read file-channel bb (long position))
+        _ (.flip bb)]
+    (if (not= block-size (.getInt bb))
+      nil
+      (let [map-size (.getInt bb)
+            ala-len (.getInt bb)
+            mx-allocated-longs (max-allocated-longs opts)
+            _ (if (< mx-allocated-longs ala-len)
+                (throw (Exception. "allocated size exceeded on read")))
+            _ (if (< block-size (+ 4 4 4 8 map-size max-allocated-longs 32))
+                (throw (Exception. "block-size exceeded on read")))
+            transaction-count (.getLong bb)
+            input-size (+ (.limit bb) map-size ala-len 32)
+            _ (.limit bb input-size)
+            _ (.read file-channel bb (long (+ position 16)))
+            _ (.flip bb)
+            csp (- input-size 32)
+            _ (.limit bb csp)
+            cs (compute-cs256 bb)
+            _ (.limit bb input-size)
+            ocs (get-cs256 bb)
+            _ (.position bb (+ 4 4 8))
+            _ (.limit bb csp)
+            uber-map (load-sorted-map bb opts)
+            la (long-array ala-len)
+            _ (.get (.asLongBuffer bb) (longs la))
+            allocated (BitSet/valueOf (longs la))]
+        (if (not= cs ocs)
+          nil
+          {:transaction-count transaction-count
+           :uber-map uber-map
+           :allocated allocated})))))

@@ -63,7 +63,7 @@
   (let [^FileChannel file-channel (:db-file-channel opts)
         block-size (:db-block-size opts)
         ^ByteBuffer bb (ByteBuffer/allocate block-size)
-        _ (.limit bb 16)
+        _ (.limit bb (+ 4 4 8))
         _ (.read file-channel bb (long position))
         _ (.flip bb)]
     (if (not= block-size (.getInt bb))
