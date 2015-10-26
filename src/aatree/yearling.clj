@@ -125,3 +125,34 @@
           {:transaction-count transaction-count
            :uber-map uber-map
            :allocated allocated})))))
+
+(defn- choose [state0 state1]
+  (if state0
+    (if state1
+      (if (> (:transaction-count state0) (:transaction-count state1))
+        state0
+        state1)
+      state0)
+    (if state1
+      state1
+      (throw (Exception. "corrupted database")))))
+
+(defn- yearling-old [opts]
+  (let [block-size (:db-block-size opts)
+        state0 (yearling-read 0 opts)
+        state1 (yearling-read block-size opts)]
+    (create-db-agent (choose state0 state1) opts)))
+
+(defn- yearling-transaction-count [opts]
+  (:transaction-count @(:db-agent opts)))
+
+(defn- yearling-get-sorted-map [opts]
+  (:app-map (:uber-map @(:db-agent opts))))
+
+(defn- yearling-close [opts]
+  (let [^FileChannel fc (:db-file-channel opts)]
+    (if fc
+      (do
+        (.close fc)
+        (assoc opts :db-file-channel nil))
+      opts)))
