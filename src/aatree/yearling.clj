@@ -2,7 +2,8 @@
   (:require [aatree.core :refer :all])
   (:import (java.nio ByteBuffer)
            (java.nio.channels FileChannel)
-           (java.util BitSet)))
+           (java.util BitSet)
+           (clojure.lang Agent)))
 
 
 (set! *warn-on-reflection* true)
@@ -49,3 +50,31 @@
         (catch Exception e
           (.printStackTrace e)
           (throw e))))))
+
+(defn- yearling-send [app-updater opts]
+  (let [^Agent db-agent (:db-agent opts)]
+    (send-off db-agent yearling-updater app-updater opts)))
+
+(defn yearling-update [app-updater opts]
+  (db-send app-updater opts)
+  (let [send-write-timeout (:send-update-timeout opts)
+        db-agent (:db-agent opts)]
+    (if send-write-timeout
+      (await-for send-write-timeout db-agent)
+      (await db-agent))))
+
+(defn- create-db-agent [db-state opts]
+  (assoc opts :db-agent (apply agent db-state (get opts :db-agent-options []))))
+
+(defn yearling-null-updater [aamap opts]
+  aamap)
+
+(defn- yearling-new [opts]
+  (let [uber-map (new-sorted-map opts)
+        uber-map (assoc uber-map :release-pending (new-sorted-map opts))
+        uber-map (assoc uber-map :app-map (new-sorted-map opts))
+        db-state {:transaction-count 0 :uber-map uber-map :allocated (BitSet.)}
+        opts (create-db-agent db-state opts)]
+    (calf-update yearling-null-updater opts)
+    (calf-update yearling-null-updater opts)
+    opts))
