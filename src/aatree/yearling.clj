@@ -28,6 +28,7 @@
               uber-map (assoc uber-map :release-pending *release-pending*)
               transaction-count (:transaction-count db-state)
               block-size (:db-block-size opts)
+              max-db-size (:max-db-size opts)
               position (* block-size (mod transaction-count 2))
               transaction-count (+ transaction-count 1)
               db-state (assoc db-state :transaction-count transaction-count)
@@ -42,9 +43,10 @@
               mx-allocated-longs (max-allocated-longs opts)]
           (if (< mx-allocated-longs ala-len)
             (throw (Exception. "allocated size exceeded on write")))
-          (if (< block-size (+ 4 4 4 8 map-size mx-allocated-longs 32))
+          (if (< block-size (+ 4 8 4 4 8 map-size mx-allocated-longs 32))
             (throw (Exception. "block-size exceeded on write")))
           (.putInt bb block-size)
+          (.putLong bb max-db-size)
           (.putInt bb map-size)
           (.putInt bb ala-len)
           (.putLong bb transaction-count)
@@ -93,40 +95,43 @@
 (defn- yearling-read [position opts]
   (let [^FileChannel file-channel (:db-file-channel opts)
         block-size (:db-block-size opts)
+        max-db-size (:max-db-size opts)
         ^ByteBuffer bb (ByteBuffer/allocate block-size)
-        _ (.limit bb (+ 4 4 4 8))
+        _ (.limit bb (+ 4 8 4 4 8))
         _ (.read file-channel bb (long position))
         _ (.flip bb)]
     (if (not= block-size (.getInt bb))
       nil
-      (let [map-size (.getInt bb)
-            ala-len (.getInt bb)
-            mx-allocated-longs (max-allocated-longs opts)
-            _ (if (< mx-allocated-longs ala-len)
-                (throw (Exception. "allocated size exceeded on read")))
-            _ (if (< block-size (+ 4 4 4 8 map-size max-allocated-longs 32))
-                (throw (Exception. "block-size exceeded on read")))
-            transaction-count (.getLong bb)
-            input-size (+ (.limit bb) map-size ala-len 32)
-            _ (.limit bb input-size)
-            _ (.read file-channel bb (long (+ position 16)))
-            _ (.flip bb)
-            csp (- input-size 32)
-            _ (.limit bb csp)
-            cs (compute-cs256 bb)
-            _ (.limit bb input-size)
-            ocs (get-cs256 bb)
-            _ (.position bb (+ 4 4 8))
-            _ (.limit bb csp)
-            uber-map (load-sorted-map bb opts)
-            la (long-array ala-len)
-            _ (.get (.asLongBuffer bb) (longs la))
-            allocated (BitSet/valueOf (longs la))]
-        (if (not= cs ocs)
-          nil
-          {:transaction-count transaction-count
-           :uber-map uber-map
-           :allocated allocated})))))
+      (if (not= max-db-size (.getLong bb))
+        nil
+        (let [map-size (.getInt bb)
+              ala-len (.getInt bb)
+              mx-allocated-longs (max-allocated-longs opts)
+              _ (if (< mx-allocated-longs ala-len)
+                  (throw (Exception. "allocated size exceeded on read")))
+              _ (if (< block-size (+ 4 8 4 4 8 map-size max-allocated-longs 32))
+                  (throw (Exception. "block-size exceeded on read")))
+              transaction-count (.getLong bb)
+              input-size (+ (.limit bb) map-size ala-len 32)
+              _ (.limit bb input-size)
+              _ (.read file-channel bb (long (+ position 16)))
+              _ (.flip bb)
+              csp (- input-size 32)
+              _ (.limit bb csp)
+              cs (compute-cs256 bb)
+              _ (.limit bb input-size)
+              ocs (get-cs256 bb)
+              _ (.position bb (+ 4 8 4 4 8))
+              _ (.limit bb csp)
+              uber-map (load-sorted-map bb opts)
+              la (long-array ala-len)
+              _ (.get (.asLongBuffer bb) (longs la))
+              allocated (BitSet/valueOf (longs la))]
+          (if (not= cs ocs)
+            nil
+            {:transaction-count transaction-count
+             :uber-map          uber-map
+             :allocated         allocated}))))))
 
 (defn- choose [state0 state1]
   (if state0
