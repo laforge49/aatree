@@ -23,7 +23,8 @@
   (let [uber-map (:uber-map db-state)]
     (binding [*allocated* (:allocated db-state)
               *transaction-count* (+ (:transaction-count db-state) 1)
-              *release-pending* (:release-pending uber-map)]
+              *release-pending* (:release-pending uber-map)
+              *time-millis* (System/currentTimeMillis)]
       (try
         (let [app-map (app-updater (:app-map uber-map) opts)
               uber-map (assoc uber-map :app-map app-map)
