@@ -351,3 +351,5 @@
 (defn db-send [app-updater opts] ((:db-send opts) app-updater opts))
 
 (defn db-update [app-updater opts] ((:db-update opts) app-updater opts))
+
+(defn db-allocated [opts] ((:db-allocated opts) opts))

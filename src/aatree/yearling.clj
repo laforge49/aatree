@@ -14,7 +14,7 @@
 
 (def ^:dynamic *release-pending*)
 
-(defn- max-blocks [opts] (quot (:max-db-size opts) (:block-size opts)))
+(defn- max-blocks [opts] (quot (:max-db-size opts) (:db-block-size opts)))
 
 (defn- max-allocated-longs [opts] (quot (+ (max-blocks opts) 7) 8))
 
@@ -39,11 +39,10 @@
               map-size (byte-length uber-map)
               allocated-long-array (.toLongArray *allocated*)
               ala-len (alength allocated-long-array)
-              allocated-size (* ala-len 8)
               mx-allocated-longs (max-allocated-longs opts)]
           (if (< mx-allocated-longs ala-len)
             (throw (Exception. "allocated size exceeded on write")))
-          (if (< block-size (+ 4 8 4 4 8 map-size mx-allocated-longs 32))
+          (if (< block-size (+ 4 8 4 4 8 map-size (* mx-allocated-longs 8) 32))
             (throw (Exception. "block-size exceeded on write")))
           (.putInt bb block-size)
           (.putLong bb max-db-size)
@@ -109,10 +108,10 @@
               mx-allocated-longs (max-allocated-longs opts)
               _ (if (< mx-allocated-longs ala-len)
                   (throw (Exception. "allocated size exceeded on read")))
-              _ (if (< block-size (+ 4 8 4 4 8 map-size max-allocated-longs 32))
+              _ (if (< block-size (+ 4 8 4 4 8 map-size (* mx-allocated-longs 8) 32))
                   (throw (Exception. "block-size exceeded on read")))
               transaction-count (.getLong bb)
-              input-size (+ (.limit bb) map-size ala-len 32)
+              input-size (+ (.limit bb) map-size (* ala-len 8) 32)
               _ (.limit bb input-size)
               _ (.read file-channel bb (long (+ position 16)))
               _ (.flip bb)
@@ -122,7 +121,6 @@
               _ (.limit bb input-size)
               ocs (get-cs256 bb)
               _ (.position bb (+ 4 8 4 4 8))
-              _ (.limit bb csp)
               uber-map (load-sorted-map bb opts)
               la (long-array ala-len)
               _ (.get (.asLongBuffer bb) (longs la))
@@ -156,6 +154,11 @@
 (defn- yearling-get-sorted-map [opts]
   (:app-map (:uber-map @(:db-agent opts))))
 
+(defn- yearling-allocated [opts]
+  (let [state @(:db-agent opts)
+        ^BitSet allocated (:allocated state)]
+    (.cardinality allocated)))
+
 (defn- yearling-close [opts]
   (let [^FileChannel fc (:db-file-channel opts)]
     (if fc
@@ -177,6 +180,7 @@
            opts (assoc opts :db-file file)
            opts (assoc opts :db-block-size db-block-size)
            opts (assoc opts :max-db-size max-db-size)
+           opts (assoc opts :db-allocated yearling-allocated)
            file-channel
            (FileChannel/open (.toPath file)
                              (into-array OpenOption
