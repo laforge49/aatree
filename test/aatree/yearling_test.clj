@@ -26,6 +26,10 @@
                        (dissoc aamap :block))
                      opts)
         _ (is (= (db-transaction-count opts) 4))
+        aamap (db-get-sorted-map opts)
+        _ (is (= aamap {}))
+        _ (is (= (db-allocated opts) 3))
+        _ (is (= (count (db-release-pending opts)) 1))
         _ (db-close opts)])
 
   (let [opts (yearling-open (File. "yearling-test.yearling") 10000 100000)
