@@ -11,8 +11,9 @@
 (set! *warn-on-reflection* true)
 
 (def ^:dynamic ^BitSet *allocated*)
-
 (def ^:dynamic *release-pending*)
+(def ^:dynamic *time-millis*)
+(def ^:dynamic *transaction-count*)
 
 (defn- max-blocks [opts] (quot (:max-db-size opts) (:db-block-size opts)))
 
@@ -21,6 +22,7 @@
 (defn- yearling-updater [db-state app-updater opts]
   (let [uber-map (:uber-map db-state)]
     (binding [*allocated* (:allocated db-state)
+              *transaction-count* (+ (:transaction-count db-state) 1)
               *release-pending* (:release-pending uber-map)]
       (try
         (let [app-map (app-updater (:app-map uber-map) opts)
@@ -30,8 +32,7 @@
               db-block-size (:db-block-size opts)
               max-db-size (:max-db-size opts)
               position (* db-block-size (mod transaction-count 2))
-              transaction-count (+ transaction-count 1)
-              db-state (assoc db-state :transaction-count transaction-count)
+              db-state (assoc db-state :transaction-count *transaction-count*)
               db-state (assoc db-state :uber-map uber-map)
               db-state (assoc db-state :allocated *allocated*)
               ^ByteBuffer bb (ByteBuffer/allocate db-block-size)
@@ -48,7 +49,7 @@
           (.putLong bb max-db-size)
           (.putInt bb map-size)
           (.putInt bb ala-len)
-          (.putLong bb transaction-count)
+          (.putLong bb *transaction-count*)
           (put-aa bb uber-map)
           (.put (.asLongBuffer bb) allocated-long-array)
           (.position bb (+ (.position bb) (* ala-len 8)))
