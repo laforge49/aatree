@@ -179,6 +179,15 @@
       (throw (Exception. "block has not been allocated")))
     (set! *release-pending* (conj *release-pending* vec))))
 
+(defn- yearling-process-pending [age trans opts]
+  (if (not (empty? *release-pending*))
+    (let [oldest (*release-pending* 0)]
+      (when (and (<= (+ (oldest 0) age) *time-millis*)
+                 (<= (+ (oldest 1) trans) *transaction-count*))
+        (.clear *allocated* (oldest 2))
+        (set! *release-pending* (dropn *release-pending* 0))
+        (recur age trans opts)))))
+
 (defn- yearling-close [opts]
   (let [^FileChannel fc (:db-file-channel opts)]
     (if fc
@@ -204,6 +213,7 @@
            opts (assoc opts :db-allocate yearling-allocate)
            opts (assoc opts :db-release-pending yearling-release-pending)
            opts (assoc opts :db-release yearling-release)
+           opts (assoc opts :db-process-pending yearling-process-pending)
            file-channel
            (FileChannel/open (.toPath file)
                              (into-array OpenOption

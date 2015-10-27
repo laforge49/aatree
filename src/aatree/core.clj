@@ -359,3 +359,5 @@
 (defn db-release-pending [opts] ((:db-release-pending opts) opts))
 
 (defn db-release [block-position opts] ((:db-release opts) block-position opts))
+
+(defn db-process-pending [age trans opts] ((:db-process-pending opts) age trans opts))

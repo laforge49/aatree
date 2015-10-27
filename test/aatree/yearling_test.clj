@@ -38,6 +38,15 @@
         _ (is (= aamap {}))
         _ (is (= (db-allocated opts) 3))
         _ (is (= (count (db-release-pending opts)) 1))
+        _ (db-update (fn [aamap opts]
+                       (db-process-pending 0 1 opts)
+                       aamap)
+                     opts)
+        _ (is (= (db-transaction-count opts) 5))
+        aamap (db-get-sorted-map opts)
+        _ (is (= aamap {}))
+        _ (is (= (db-allocated opts) 2))
+        _ (is (= (count (db-release-pending opts)) 0))
         _ (db-close opts)])
 
   (Thread/sleep 200))
