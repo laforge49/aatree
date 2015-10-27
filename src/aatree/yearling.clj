@@ -113,7 +113,7 @@
               transaction-count (.getLong bb)
               input-size (+ (.limit bb) map-size (* ala-len 8) 32)
               _ (.limit bb input-size)
-              _ (.read file-channel bb (long (+ position 16)))
+              _ (.read file-channel bb (long (+ position 4 8 4 4 8)))
               _ (.flip bb)
               csp (- input-size 32)
               _ (.limit bb csp)
@@ -159,6 +159,9 @@
         ^BitSet allocated (:allocated state)]
     (.cardinality allocated)))
 
+(defn- yearling-release-pending [opts]
+  (:release-pending (:uber-map @(:db-agent opts))))
+
 (defn- yearling-close [opts]
   (let [^FileChannel fc (:db-file-channel opts)]
     (if fc
@@ -181,6 +184,7 @@
            opts (assoc opts :db-block-size db-block-size)
            opts (assoc opts :max-db-size max-db-size)
            opts (assoc opts :db-allocated yearling-allocated)
+           opts (assoc opts :db-release-pending yearling-release-pending)
            file-channel
            (FileChannel/open (.toPath file)
                              (into-array OpenOption

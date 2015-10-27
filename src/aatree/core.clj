@@ -353,3 +353,5 @@
 (defn db-update [app-updater opts] ((:db-update opts) app-updater opts))
 
 (defn db-allocated [opts] ((:db-allocated opts) opts))
+
+(defn db-release-pending [opts] ((:db-release-pending opts) opts))

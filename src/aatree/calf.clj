@@ -74,7 +74,7 @@
             transaction-count (.getLong bb)
             input-size (+ (.limit bb) map-size 32)
             _ (.limit bb input-size)
-            _ (.read file-channel bb (long (+ position 16)))
+            _ (.read file-channel bb (long (+ position 4 4 8)))
             _ (.flip bb)
             csp (- input-size 32)
             _ (.limit bb csp)
