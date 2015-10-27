@@ -51,5 +51,13 @@ It is easy enough to code up
 using lazy aatree structures.
 The catch is that the contents of the database must fit in memory.
 
+### Adding Disk Space Management
+
+[Yearling](https://github.com/laforge49/aatree/wiki/Yearling)
+takes the next step in providing
+[Disk Space Management](https://github.com/laforge49/aatree/wiki/Disk-Space-Management).
+But like Calf, Yearling remains a small Copy-On-Write \[COW\] database where
+everything must fit in memory.
+
 Later we will look at how to implement larger databases. But there will be a lot more code involved.
 So it is best to take things one step at a time.
