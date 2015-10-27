@@ -354,4 +354,6 @@
 
 (defn db-allocated [opts] ((:db-allocated opts) opts))
 
+(defn db-allocate [opts] ((:db-allocate opts) opts))
+
 (defn db-release-pending [opts] ((:db-release-pending opts) opts))

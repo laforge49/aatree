@@ -27,14 +27,14 @@
               uber-map (assoc uber-map :app-map app-map)
               uber-map (assoc uber-map :release-pending *release-pending*)
               transaction-count (:transaction-count db-state)
-              block-size (:db-block-size opts)
+              db-block-size (:db-block-size opts)
               max-db-size (:max-db-size opts)
-              position (* block-size (mod transaction-count 2))
+              position (* db-block-size (mod transaction-count 2))
               transaction-count (+ transaction-count 1)
               db-state (assoc db-state :transaction-count transaction-count)
               db-state (assoc db-state :uber-map uber-map)
               db-state (assoc db-state :allocated *allocated*)
-              ^ByteBuffer bb (ByteBuffer/allocate block-size)
+              ^ByteBuffer bb (ByteBuffer/allocate db-block-size)
               ^FileChannel file-channel (:db-file-channel opts)
               map-size (byte-length uber-map)
               allocated-long-array (.toLongArray *allocated*)
@@ -42,9 +42,9 @@
               mx-allocated-longs (max-allocated-longs opts)]
           (if (< mx-allocated-longs ala-len)
             (throw (Exception. "allocated size exceeded on write")))
-          (if (< block-size (+ 4 8 4 4 8 map-size (* mx-allocated-longs 8) 32))
+          (if (< db-block-size (+ 4 8 4 4 8 map-size (* mx-allocated-longs 8) 32))
             (throw (Exception. "block-size exceeded on write")))
-          (.putInt bb block-size)
+          (.putInt bb db-block-size)
           (.putLong bb max-db-size)
           (.putInt bb map-size)
           (.putInt bb ala-len)
@@ -93,13 +93,13 @@
 
 (defn- yearling-read [position opts]
   (let [^FileChannel file-channel (:db-file-channel opts)
-        block-size (:db-block-size opts)
+        db-block-size (:db-block-size opts)
         max-db-size (:max-db-size opts)
-        ^ByteBuffer bb (ByteBuffer/allocate block-size)
+        ^ByteBuffer bb (ByteBuffer/allocate db-block-size)
         _ (.limit bb (+ 4 8 4 4 8))
         _ (.read file-channel bb (long position))
         _ (.flip bb)]
-    (if (not= block-size (.getInt bb))
+    (if (not= db-block-size (.getInt bb))
       nil
       (if (not= max-db-size (.getLong bb))
         nil
@@ -108,7 +108,7 @@
               mx-allocated-longs (max-allocated-longs opts)
               _ (if (< mx-allocated-longs ala-len)
                   (throw (Exception. "allocated size exceeded on read")))
-              _ (if (< block-size (+ 4 8 4 4 8 map-size (* mx-allocated-longs 8) 32))
+              _ (if (< db-block-size (+ 4 8 4 4 8 map-size (* mx-allocated-longs 8) 32))
                   (throw (Exception. "block-size exceeded on read")))
               transaction-count (.getLong bb)
               input-size (+ (.limit bb) map-size (* ala-len 8) 32)
@@ -143,9 +143,9 @@
       (throw (Exception. "corrupted database")))))
 
 (defn- yearling-old [opts]
-  (let [block-size (:db-block-size opts)
+  (let [db-block-size (:db-block-size opts)
         state0 (yearling-read 0 opts)
-        state1 (yearling-read block-size opts)]
+        state1 (yearling-read db-block-size opts)]
     (create-db-agent (choose state0 state1) opts)))
 
 (defn- yearling-transaction-count [opts]
@@ -158,6 +158,11 @@
   (let [state @(:db-agent opts)
         ^BitSet allocated (:allocated state)]
     (.cardinality allocated)))
+
+(defn- yearling-allocate [opts]
+  (let [avail (.nextClearBit *allocated* 0)]
+    (.set *allocated* avail)
+    (* avail (:db-block-size opts))))
 
 (defn- yearling-release-pending [opts]
   (:release-pending (:uber-map @(:db-agent opts))))
@@ -184,6 +189,7 @@
            opts (assoc opts :db-block-size db-block-size)
            opts (assoc opts :max-db-size max-db-size)
            opts (assoc opts :db-allocated yearling-allocated)
+           opts (assoc opts :db-allocate yearling-allocate)
            opts (assoc opts :db-release-pending yearling-release-pending)
            file-channel
            (FileChannel/open (.toPath file)
