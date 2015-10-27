@@ -80,7 +80,7 @@
 
 (defn- yearling-new [opts]
   (let [uber-map (new-sorted-map opts)
-        uber-map (assoc uber-map :release-pending (new-sorted-map opts))
+        uber-map (assoc uber-map :release-pending (new-vector opts))
         uber-map (assoc uber-map :app-map (new-sorted-map opts))
         ^BitSet allocated (BitSet.)
         _ (.set allocated 0)
