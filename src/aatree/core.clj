@@ -357,3 +357,5 @@
 (defn db-allocate [opts] ((:db-allocate opts) opts))
 
 (defn db-release-pending [opts] ((:db-release-pending opts) opts))
+
+(defn db-release [block-position opts] ((:db-release opts) block-position opts))

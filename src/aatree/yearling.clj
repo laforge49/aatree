@@ -168,6 +168,17 @@
 (defn- yearling-release-pending [opts]
   (:release-pending (:uber-map @(:db-agent opts))))
 
+(defn- yearling-release [block-position opts]
+  (let [db-block-size (:db-block-size opts)
+        block (quot block-position db-block-size)
+        vec (new-vector opts)
+        vec (conj vec *time-millis* *transaction-count* block)]
+    (if (not= 0 (mod block-position db-block-size))
+      (throw (Exception. "block-position is not at start of block")))
+    (if (not (.get *allocated* block))
+      (throw (Exception. "block has not been allocated")))
+    (set! *release-pending* (conj *release-pending* vec))))
+
 (defn- yearling-close [opts]
   (let [^FileChannel fc (:db-file-channel opts)]
     (if fc
@@ -192,6 +203,7 @@
            opts (assoc opts :db-allocated yearling-allocated)
            opts (assoc opts :db-allocate yearling-allocate)
            opts (assoc opts :db-release-pending yearling-release-pending)
+           opts (assoc opts :db-release yearling-release)
            file-channel
            (FileChannel/open (.toPath file)
                              (into-array OpenOption
