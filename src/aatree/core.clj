@@ -39,7 +39,8 @@
     (new AAMap (lazy-read buffer r) r)))
 
 (defn byte-length [noded]
-  (lazy-byte-length (get-inode noded) (get-opts noded)))
+  (let [opts (get-opts noded)]
+    ((:byte-length opts) (get-inode noded) opts)))
 
 (defn put-aa [buffer aa]
   (lazy-write (get-inode aa) buffer (get-opts aa)))
@@ -105,6 +106,7 @@
   ([] (lazy-opts {}))
   ([opts]
    (-> opts
+       (assoc :byte-length lazy-byte-length)
        (assoc :new-sorted-map
               (fn [r]
                 (let [r (if (:comparator r)
@@ -124,7 +126,7 @@
                        (lazy-vector-opts (assoc o :factory-registry default-lazy-factory-registry))))))
        (assoc :new-sorted-set
               (fn [o]
-                (let [r opts
+                (let [r o
                       r (if (:comparator r)
                           r
                           (assoc r :comparator RT/DEFAULT_COMPARATOR))

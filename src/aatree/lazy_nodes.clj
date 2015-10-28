@@ -1,7 +1,7 @@
 (ns aatree.lazy-nodes
   (:require [aatree.nodes :refer :all])
   (:import (java.nio ByteBuffer CharBuffer)
-           (aatree.nodes Node INode IFactory)
+           (aatree.nodes Node INode IFactory AAContext)
            (clojure.lang MapEntry PersistentVector)
            (aatree AAVector AAMap AASet)))
 
@@ -9,7 +9,6 @@
 
 (declare ->LazyNode
          ^aatree.nodes.INode get-data
-         factory-for-instance
          create-lazy-empty-node
          node-byte-length
          node-write
@@ -38,7 +37,7 @@
 
 (defn- get-lazy-value [^LazyNode lazy-node opts] (.getT2 lazy-node opts))
 
-(defn- ^IFactory get-factory [^LazyNode lazy-node]
+(defn- ^IFactory get-lazy-factory [^LazyNode lazy-node]
   (.-factory lazy-node))
 
 (defn- get-buffer-atom [^LazyNode lazy-node]
@@ -49,61 +48,7 @@
 
 (defn- get-data-atom [^LazyNode this] (.-data-atom this))
 
-(deftype factory-registry [by-id-atom by-class-atom])
-
-(defn ^factory-registry create-factory-registry
-  ([]
-   (factory-registry. (atom {})
-                      (atom {})))
-  ([^factory-registry fregistry]
-   (factory-registry. (atom @(.-by_id_atom fregistry))
-                      (atom @(.by_class_atom fregistry)))))
-
 (def default-lazy-factory-registry (create-factory-registry))
-
-(definterface AAContext
-  (classAtom [])
-  (getDefaultFactory [])
-  (setDefaultFactory [factory])
-  (refineInstance [inst]))
-
-(defn- ^IFactory factory-for-id [id opts]
-  (let [^factory-registry r (:factory-registry opts)
-        f (@(.-by_id_atom r) id)]
-    (if (nil? f)
-      (let [^AAContext context (:aacontext opts)]
-        (.getDefaultFactory context))
-      f)))
-
-(defn- register-class [^AAContext aacontext ^IFactory factory]
-  (let [clss (.instanceClass factory)]
-    (if clss
-      (swap! (.classAtom aacontext) assoc clss factory))))
-
-(defn ^IFactory factory-for-class [^AAContext aacontext clss opts]
-  (let [f (@(.classAtom aacontext) clss)]
-    (if (nil? f)
-      (let [^AAContext context (:aacontext opts)]
-        (.getDefaultFactory context))
-      f)))
-
-(defn className [^Class c] (.getName c))
-
-(defn- ^IFactory factory-for-instance [inst opts]
-  (let [^AAContext aacontext (:aacontext opts)
-        inst (.refineInstance aacontext inst)
-        clss (class inst)
-        f (factory-for-class aacontext clss opts)
-        q (.qualified f inst opts)]
-    (if (nil? q)
-      (throw (UnsupportedOperationException. (str "Unknown qualified durable class: " (className clss))))
-      q)))
-
-(defn register-factory [^factory-registry fregistry
-                        ^AAContext aacontext
-                        ^IFactory factory]
-  (swap! (.-by-id-atom fregistry) assoc (.factoryId factory) factory)
-  (register-class aacontext factory))
 
 (defn- str-val [^IFactory factory ^LazyNode lazyNode opts]
   (let [sval-atom (.-sval-atom lazyNode)]
@@ -142,7 +87,7 @@
                         (lazy-byte-length (left-node lazy-node opts) opts) ;left node
                         4 ;level
                         4 ;cnt
-                        (.valueLength (get-factory lazy-node) lazy-node opts) ;t2
+                        (.valueLength (get-lazy-factory lazy-node) lazy-node opts) ;t2
                         (lazy-byte-length (right-node lazy-node opts) opts)))] ;right node
           (compare-and-set! a nil blen)))
       @a)))
@@ -216,7 +161,7 @@
               left (lazy-read bb opts)
               level (long (.getInt bb))
               cnt (long (.getInt bb))
-              t2 (.deserialize (get-factory this) this bb opts)
+              t2 (.deserialize (get-lazy-factory this) this bb opts)
               right (lazy-read bb opts)]
           (compare-and-set! a nil (Node. t2 level left right cnt))))
       @a)))

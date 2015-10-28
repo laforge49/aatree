@@ -443,3 +443,57 @@
   (writeValue [node
                ^java.nio.ByteBuffer buffer
                opts]))
+
+(deftype factory-registry [by-id-atom by-class-atom])
+
+(defn ^factory-registry create-factory-registry
+  ([]
+   (factory-registry. (atom {})
+                      (atom {})))
+  ([^factory-registry fregistry]
+   (factory-registry. (atom @(.-by_id_atom fregistry))
+                      (atom @(.by_class_atom fregistry)))))
+
+(definterface AAContext
+  (classAtom [])
+  (getDefaultFactory [])
+  (setDefaultFactory [factory])
+  (refineInstance [inst]))
+
+(defn ^IFactory factory-for-id [id opts]
+  (let [^factory-registry r (:factory-registry opts)
+        f (@(.-by_id_atom r) id)]
+    (if (nil? f)
+      (let [^AAContext context (:aacontext opts)]
+        (.getDefaultFactory context))
+      f)))
+
+(defn register-class [^AAContext aacontext ^IFactory factory]
+  (let [clss (.instanceClass factory)]
+    (if clss
+      (swap! (.classAtom aacontext) assoc clss factory))))
+
+(defn ^IFactory factory-for-class [^AAContext aacontext clss opts]
+  (let [f (@(.classAtom aacontext) clss)]
+    (if (nil? f)
+      (let [^AAContext context (:aacontext opts)]
+        (.getDefaultFactory context))
+      f)))
+
+(defn className [^Class c] (.getName c))
+
+(defn ^IFactory factory-for-instance [inst opts]
+  (let [^AAContext aacontext (:aacontext opts)
+        inst (.refineInstance aacontext inst)
+        clss (class inst)
+        f (factory-for-class aacontext clss opts)
+        q (.qualified f inst opts)]
+    (if (nil? q)
+      (throw (UnsupportedOperationException. (str "Unknown qualified durable class: " (className clss))))
+      q)))
+
+(defn register-factory [^factory-registry fregistry
+                        ^AAContext aacontext
+                        ^IFactory factory]
+  (swap! (.-by-id-atom fregistry) assoc (.factoryId factory) factory)
+  (register-class aacontext factory))
