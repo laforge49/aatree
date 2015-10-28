@@ -2,7 +2,7 @@
   (:require [aatree.nodes :refer :all])
   (:import (java.nio ByteBuffer CharBuffer)
            (aatree.nodes Node INode IFactory AAContext)
-           (clojure.lang MapEntry PersistentVector)
+           (clojure.lang MapEntry PersistentVector RT)
            (aatree AAVector AAMap AASet)))
 
 (set! *warn-on-reflection* true)
@@ -422,3 +422,34 @@
  (factory-for-id
   (byte \q)
   {:factory-registry default-lazy-factory-registry}))
+
+(defn load-lazy-vector [buffer opts]
+  (if (:factory-registry opts)
+    (let [r (lazy-vector-opts opts)]
+      (new AAVector (lazy-read buffer r) r))
+    (let [r (assoc opts :factory-registry default-lazy-factory-registry)
+          r (lazy-vector-opts r)]
+      (new AAVector (lazy-read buffer r) r))))
+
+(defn load-lazy-sorted-map [buffer opts]
+  (let [r opts
+        r (if (:comparator r)
+            r
+            (assoc r :comparator RT/DEFAULT_COMPARATOR))
+        r (if (:factory-registry r)
+            r
+            (assoc r :factory-registry default-lazy-factory-registry))
+        r (lazy-map-opts r)]
+    (new AAMap (lazy-read buffer r) r)))
+
+(defn load-lazy-sorted-set [buffer opts]
+  (let [r opts
+        r (if (:comparator r)
+            r
+            (assoc r :comparator RT/DEFAULT_COMPARATOR))
+        r (if (:factory-registry r)
+            r
+            (assoc r :factory-registry default-lazy-factory-registry))
+        r (lazy-set-opts r)]
+    (new AASet
+         (new AAMap (lazy-read buffer r) r))))
