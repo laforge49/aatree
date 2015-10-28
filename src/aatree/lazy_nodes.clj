@@ -180,7 +180,7 @@
        (node-byte-length (get-inode v) (get-opts v))))
    (deserialize [this node bb opts]
      (let [opts (vector-opts opts)]
-       (new AAVector (lazy-read bb opts) opts)))
+       (new AAVector (node-read bb opts) opts)))
    (writeValue [this node buffer opts]
      (let [^AAVector v (.getT2 node opts)]
        (node-write (get-inode v) buffer (get-opts v))))))
@@ -197,7 +197,7 @@
        (node-byte-length (get-inode m) (get-opts m))))
    (deserialize [this node bb opts]
      (let [opts (map-opts opts)]
-       (new AAMap (lazy-read bb opts) opts)))
+       (new AAMap (node-read bb opts) opts)))
    (writeValue [this node buffer opts]
      (let [^AAMap v (.getT2 node opts)]
        (node-write (get-inode v) buffer (get-opts v))))))
@@ -214,7 +214,7 @@
        (node-byte-length (get-inode m) (get-opts m))))
    (deserialize [this node bb opts]
      (let [opts (map-opts opts)]
-       (new AASet (new AAMap (lazy-read bb opts) opts))))
+       (new AASet (new AAMap (node-read bb opts) opts))))
    (writeValue [this node buffer opts]
      (let [^AASet s (.getT2 node opts)]
        (node-write (get-inode s) buffer (get-opts s))))))
@@ -260,7 +260,7 @@
    (deserialize [this node bb opts]
      (let [k (deserialize-sval this node bb opts)
            opts (vector-opts opts)
-           v (new AAVector (lazy-read bb opts) opts)]
+           v (new AAVector (node-read bb opts) opts)]
        (MapEntry. k v)))
    (writeValue [this node buffer opts]
      (default-write-value this node buffer opts)
@@ -285,7 +285,7 @@
    (deserialize [this node bb opts]
      (let [k (deserialize-sval this node bb opts)
            opts (map-opts opts)
-           v (new AAMap (lazy-read bb opts) opts)]
+           v (new AAMap (node-read bb opts) opts)]
        (MapEntry. k v)))
    (writeValue [this node buffer opts]
      (default-write-value this node buffer opts)
@@ -310,7 +310,7 @@
    (deserialize [this node bb opts]
      (let [k (deserialize-sval this node bb opts)
            opts (set-opts opts)
-           v (new AASet (new AAMap (lazy-read bb opts) opts))]
+           v (new AASet (new AAMap (node-read bb opts) opts))]
        (MapEntry. k v)))
    (writeValue [this node buffer opts]
      (default-write-value this node buffer opts)
@@ -344,10 +344,10 @@
 (defn load-lazy-vector [buffer opts]
   (if (:factory-registry opts)
     (let [r (vector-opts opts)]
-      (new AAVector (lazy-read buffer r) r))
+      (new AAVector (node-read buffer r) r))
     (let [r (assoc opts :factory-registry default-lazy-factory-registry)
           r (vector-opts r)]
-      (new AAVector (lazy-read buffer r) r))))
+      (new AAVector (node-read buffer r) r))))
 
 (defn load-lazy-sorted-map [buffer opts]
   (let [r opts
@@ -358,7 +358,7 @@
             r
             (assoc r :factory-registry default-lazy-factory-registry))
         r (map-opts r)]
-    (new AAMap (lazy-read buffer r) r)))
+    (new AAMap (node-read buffer r) r)))
 
 (defn load-lazy-sorted-set [buffer opts]
   (let [r opts
@@ -370,4 +370,4 @@
             (assoc r :factory-registry default-lazy-factory-registry))
         r (set-opts r)]
     (new AASet
-         (new AAMap (lazy-read buffer r) r))))
+         (new AAMap (node-read buffer r) r))))

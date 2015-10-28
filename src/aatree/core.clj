@@ -82,6 +82,7 @@
   ([] (lazy-opts {}))
   ([opts]
    (-> opts
+       (assoc :node-read lazy-read)
        (assoc :load-vector load-lazy-vector)
        (assoc :load-sorted-map load-lazy-sorted-map)
        (assoc :load-sorted-set load-lazy-sorted-set)

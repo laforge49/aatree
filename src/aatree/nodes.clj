@@ -609,3 +609,6 @@
 
 (defn set-opts [opts]
   (assoc opts :aacontext set-context))
+
+(defn node-read [buffer opts]
+  ((:node-read opts) buffer opts))
