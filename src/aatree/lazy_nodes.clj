@@ -35,8 +35,6 @@
 
   (getNada [this] (create-lazy-empty-node)))
 
-(defn- get-lazy-value [^LazyNode lazy-node opts] (.getT2 lazy-node opts))
-
 (defn- ^IFactory get-lazy-factory [^LazyNode lazy-node]
   (.-factory lazy-node))
 
@@ -258,13 +256,13 @@
    (instanceClass [this] aatree.AAVector)
    (qualified [this t2 opts] this)
    (valueLength [this lazyNode opts]
-     (let [^AAVector v (get-lazy-value lazyNode opts)]
+     (let [^AAVector v (.getT2 lazyNode opts)]
        (lazy-byte-length (get-inode v) (get-opts v))))
    (deserialize [this lazyNode bb opts]
      (let [opts (lazy-vector-opts opts)]
        (new AAVector (lazy-read bb opts) opts)))
    (writeValue [this lazyNode buffer opts]
-     (let [^AAVector v (get-lazy-value lazyNode opts)]
+     (let [^AAVector v (.getT2 lazyNode opts)]
        (lazy-write (get-inode v) buffer (get-opts v))))))
 
 (register-factory
@@ -275,13 +273,13 @@
    (instanceClass [this] aatree.AAMap)
    (qualified [this t2 opts] this)
    (valueLength [this lazyNode opts]
-     (let [^AAMap m (get-lazy-value lazyNode opts)]
+     (let [^AAMap m (.getT2 lazyNode opts)]
        (lazy-byte-length (get-inode m) (get-opts m))))
    (deserialize [this lazyNode bb opts]
      (let [opts (lazy-map-opts opts)]
        (new AAMap (lazy-read bb opts) opts)))
    (writeValue [this lazyNode buffer opts]
-     (let [^AAMap v (get-lazy-value lazyNode opts)]
+     (let [^AAMap v (.getT2 lazyNode opts)]
        (lazy-write (get-inode v) buffer (get-opts v))))))
 
 (register-factory
@@ -292,13 +290,13 @@
    (instanceClass [this] aatree.AASet)
    (qualified [this t2 opts] this)
    (valueLength [this lazyNode opts]
-     (let [^AAMap m (get-lazy-value lazyNode opts)]
+     (let [^AAMap m (.getT2 lazyNode opts)]
        (lazy-byte-length (get-inode m) (get-opts m))))
    (deserialize [this lazyNode bb opts]
      (let [opts (lazy-map-opts opts)]
        (new AASet (new AAMap (lazy-read bb opts) opts))))
    (writeValue [this lazyNode buffer opts]
-     (let [^AASet s (get-lazy-value lazyNode opts)]
+     (let [^AASet s (.getT2 lazyNode opts)]
        (lazy-write (get-inode s) buffer (get-opts s))))))
 
 (register-factory
@@ -335,7 +333,7 @@
    (sval [this inode opts]
      (key-sval this inode opts))
    (valueLength [this lazyNode opts]
-     (let [^MapEntry map-entry (get-lazy-value lazyNode opts)
+     (let [^MapEntry map-entry (.getT2 lazyNode opts)
            ^AAVector v (.getValue map-entry)]
        (+ (default-valueLength this lazyNode opts)
           (lazy-byte-length (get-inode v) (get-opts v)))))
@@ -346,7 +344,7 @@
        (MapEntry. k v)))
    (writeValue [this lazyNode buffer opts]
      (default-write-value this lazyNode buffer opts)
-     (let [^MapEntry map-entry (get-lazy-value lazyNode opts)
+     (let [^MapEntry map-entry (.getT2 lazyNode opts)
            ^AAVector v (.getValue map-entry)]
        (lazy-write (get-inode v) buffer (get-opts v))))))
 
@@ -360,7 +358,7 @@
    (sval [this inode opts]
      (key-sval this inode opts))
    (valueLength [this lazyNode opts]
-     (let [^MapEntry map-entry (get-lazy-value lazyNode opts)
+     (let [^MapEntry map-entry (.getT2 lazyNode opts)
            ^AAMap m (.getValue map-entry)]
        (+ (default-valueLength this lazyNode opts)
           (lazy-byte-length (get-inode m) (get-opts m)))))
@@ -371,7 +369,7 @@
        (MapEntry. k v)))
    (writeValue [this lazyNode buffer opts]
      (default-write-value this lazyNode buffer opts)
-     (let [^MapEntry map-entry (get-lazy-value lazyNode opts)
+     (let [^MapEntry map-entry (.getT2 lazyNode opts)
            ^AAMap m (.getValue map-entry)]
        (lazy-write (get-inode m) buffer (get-opts m))))))
 
@@ -385,7 +383,7 @@
    (sval [this inode opts]
      (key-sval this inode opts))
    (valueLength [this lazyNode opts]
-     (let [^MapEntry map-entry (get-lazy-value lazyNode opts)
+     (let [^MapEntry map-entry (.getT2 lazyNode opts)
            ^AASet s (.getValue map-entry)]
        (+ (default-valueLength this lazyNode opts)
           (lazy-byte-length (get-inode s) (get-opts s)))))
@@ -396,7 +394,7 @@
        (MapEntry. k v)))
    (writeValue [this lazyNode buffer opts]
      (default-write-value this lazyNode buffer opts)
-     (let [^MapEntry map-entry (get-lazy-value lazyNode opts)
+     (let [^MapEntry map-entry (.getT2 lazyNode opts)
            ^AASet s (.getValue map-entry)]
        (lazy-write (get-inode s) buffer (get-opts s))))))
 

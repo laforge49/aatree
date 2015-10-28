@@ -436,11 +436,12 @@
   (instanceClass [])
   (qualified [t2 opts])
   (sval [^aatree.nodes.INode inode opts])
-  (valueLength [node opts])
-  (deserialize [node
+  (valueLength [^aatree.nodes.INode node
+                opts])
+  (deserialize [^aatree.nodes.INode node
                 ^java.nio.ByteBuffer buffer
                 opts])
-  (writeValue [node
+  (writeValue [^aatree.nodes.INode node
                ^java.nio.ByteBuffer buffer
                opts]))
 
