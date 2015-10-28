@@ -1,5 +1,5 @@
 (ns aatree.nodes
-  (:import (clojure.lang Counted MapEntry IMapEntry)
+  (:import (clojure.lang Counted MapEntry IMapEntry PersistentVector)
            (java.util Iterator Comparator)
            (aatree CountedSequence)
            (aatree.CountedSequence XIterator)
@@ -456,6 +456,8 @@
    (factory-registry. (atom @(.-by_id_atom fregistry))
                       (atom @(.by_class_atom fregistry)))))
 
+(def default-factory-registry (create-factory-registry))
+
 (definterface AAContext
   (classAtom [])
   (getDefaultFactory [])
@@ -612,3 +614,80 @@
 
 (defn node-read [buffer opts]
   ((:node-read opts) buffer opts))
+
+(register-factory
+  default-factory-registry
+  nil
+  (reify IFactory
+    (factoryId [this] (byte \n));;;;;;;;;;;;;;;;;;;;;;;; n - nil content
+    (instanceClass [this] nil)
+    (qualified [this t2 opts] this)))
+
+(register-factory
+  default-factory-registry
+  vector-context
+  (reify IFactory
+    (factoryId [this] (byte \e));;;;;;;;;;;;;;;;;;;;;; e - vector default factory
+    (instanceClass [this] nil)
+    (qualified [this t2 opts] this)
+    (sval [this inode opts]
+      (default-sval this inode opts))
+    (valueLength [this node opts]
+      (default-valueLength this node opts))
+    (deserialize [this node bb opts]
+      (deserialize-sval this node bb opts))
+    (writeValue [this node buffer opts]
+      (default-write-value this node buffer opts))))
+
+(.setDefaultFactory
+  vector-context
+  (factory-for-id
+    (byte \e)
+    {:factory-registry default-factory-registry}))
+
+(register-factory
+  default-factory-registry
+  map-context
+  (reify IFactory
+    (factoryId [this] (byte \p));;;;;;;;;;;;;;;;;;;;;;;;;;; p - map default factory
+    (instanceClass [this] nil)
+    (qualified [this t2 opts] this)
+    (sval [this inode opts]
+      (default-sval this inode opts))
+    (valueLength [this node opts]
+      (default-valueLength this node opts))
+    (deserialize [this node bb opts]
+      (let [^PersistentVector v (deserialize-sval this node bb opts)
+            t2 (MapEntry. (.get v 0) (.get v 1))]
+        t2))
+    (writeValue [this node buffer opts]
+      (default-write-value this node buffer opts))))
+
+(.setDefaultFactory
+  map-context
+  (factory-for-id
+    (byte \p)
+    {:factory-registry default-factory-registry}))
+
+(register-factory
+  default-factory-registry
+  set-context
+  (reify IFactory
+    (factoryId [this] (byte \q));;;;;;;;;;;;;;;;;;;;;;;;;;; q - set default factory
+    (instanceClass [this] nil)
+    (qualified [this t2 opts] this)
+    (sval [this inode opts]
+      (key-sval this inode opts))
+    (valueLength [this node opts]
+      (default-valueLength this node opts))
+    (deserialize [this node bb opts]
+      (let [k (deserialize-sval this node bb opts)]
+        (MapEntry. k k)))
+    (writeValue [this node buffer opts]
+      (default-write-value this node buffer opts))))
+
+(.setDefaultFactory
+  set-context
+  (factory-for-id
+    (byte \q)
+    {:factory-registry default-factory-registry}))

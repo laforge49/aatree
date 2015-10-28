@@ -19,13 +19,13 @@
   (reduce (fn [^FlexVector v i] (.dropNode v i)) vec args))
 
 (defn load-vector [buffer opts]
-  ((:load-vector opts) buffer opts))
+  (load-vector- buffer opts))
 
 (defn load-sorted-map [buffer opts]
-  ((:load-sorted-map opts) buffer opts))
+  (load-sorted-map- buffer opts))
 
 (defn load-sorted-set [buffer opts]
-  ((:load-sorted-set opts) buffer opts))
+  (load-sorted-set- buffer opts))
 
 (defn byte-length [noded]
   (node-byte-length (get-inode noded) (get-opts noded)))
@@ -83,9 +83,6 @@
   ([opts]
    (-> opts
        (assoc :node-read lazy-read)
-       (assoc :load-vector load-lazy-vector)
-       (assoc :load-sorted-map load-lazy-sorted-map)
-       (assoc :load-sorted-set load-lazy-sorted-set)
        (assoc :new-sorted-map
               (fn [r]
                 (let [r (if (:comparator r)
@@ -93,7 +90,7 @@
                           (assoc r :comparator RT/DEFAULT_COMPARATOR))
                       r (if (:factory-registry r)
                           r
-                          (assoc r :factory-registry default-lazy-factory-registry))
+                          (assoc r :factory-registry default-factory-registry))
                       r (map-opts r)]
                   (new AAMap emptyLazyNode r))))
        (assoc :new-vector
@@ -102,7 +99,7 @@
                   (new AAVector emptyLazyNode (vector-opts o))
                   (new AAVector
                        emptyLazyNode
-                       (vector-opts (assoc o :factory-registry default-lazy-factory-registry))))))
+                       (vector-opts (assoc o :factory-registry default-factory-registry))))))
        (assoc :new-sorted-set
               (fn [o]
                 (let [r o
@@ -111,7 +108,7 @@
                           (assoc r :comparator RT/DEFAULT_COMPARATOR))
                       r (if (:factory-registry r)
                           r
-                          (assoc r :factory-registry default-lazy-factory-registry))
+                          (assoc r :factory-registry default-factory-registry))
                       r (set-opts r)]
                   (new AASet
                        (new AAMap emptyLazyNode r))))))))

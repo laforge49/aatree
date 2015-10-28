@@ -50,8 +50,6 @@
 
   (nodeWrite [this buffer opts] (lazy-write this buffer opts)))
 
-(def default-lazy-factory-registry (create-factory-registry))
-
 (defn lazy-byte-length [^LazyNode lazy-node opts]
   (if (empty-node? lazy-node)
     1
@@ -136,40 +134,15 @@
    (atom nil)
    (atom 1)
    (atom nil)
-   (reify IFactory
-     (factoryId [this] (byte \n));;;;;;;;;;;;;;;;;;;;;;;; n - nil content
-     (instanceClass [this] nil)
-     (qualified [this t2 opts] this))))
-
-(register-factory default-lazy-factory-registry nil (.factory emptyLazyNode))
+   (factory-for-id
+     (byte \n)
+     {:factory-registry default-factory-registry})))
 
 (defn create-lazy-empty-node
   [] emptyLazyNode)
 
 (register-factory
- default-lazy-factory-registry
- vector-context
- (reify IFactory
-   (factoryId [this] (byte \e));;;;;;;;;;;;;;;;;;;;;; e - vector default factory
-   (instanceClass [this] nil)
-   (qualified [this t2 opts] this)
-   (sval [this inode opts]
-     (default-sval this inode opts))
-   (valueLength [this node opts]
-     (default-valueLength this node opts))
-   (deserialize [this node bb opts]
-     (deserialize-sval this node bb opts))
-   (writeValue [this node buffer opts]
-     (default-write-value this node buffer opts))))
-
-(.setDefaultFactory
- vector-context
- (factory-for-id
-  (byte \e)
-  {:factory-registry default-lazy-factory-registry}))
-
-(register-factory
- default-lazy-factory-registry
+ default-factory-registry
  vector-context
  (reify IFactory
    (factoryId [this] (byte \v));;;;;;;;;;;;;;;;;;;;;;;;;;; v aavector in aavector
@@ -186,7 +159,7 @@
        (node-write (get-inode v) buffer (get-opts v))))))
 
 (register-factory
- default-lazy-factory-registry
+ default-factory-registry
  vector-context
  (reify IFactory
    (factoryId [this] (byte \m));;;;;;;;;;;;;;;;;;;;;;;;;;; m aamap in aavector
@@ -203,7 +176,7 @@
        (node-write (get-inode v) buffer (get-opts v))))))
 
 (register-factory
- default-lazy-factory-registry
+ default-factory-registry
  vector-context
  (reify IFactory
    (factoryId [this] (byte \s));;;;;;;;;;;;;;;;;;;;;;;;;;; s aaset in aavector
@@ -220,31 +193,7 @@
        (node-write (get-inode s) buffer (get-opts s))))))
 
 (register-factory
- default-lazy-factory-registry
- map-context
- (reify IFactory
-   (factoryId [this] (byte \p));;;;;;;;;;;;;;;;;;;;;;;;;;; p - map default factory
-   (instanceClass [this] nil)
-   (qualified [this t2 opts] this)
-   (sval [this inode opts]
-     (default-sval this inode opts))
-   (valueLength [this node opts]
-     (default-valueLength this node opts))
-   (deserialize [this node bb opts]
-     (let [^PersistentVector v (deserialize-sval this node bb opts)
-           t2 (MapEntry. (.get v 0) (.get v 1))]
-       t2))
-   (writeValue [this node buffer opts]
-     (default-write-value this node buffer opts))))
-
-(.setDefaultFactory
- map-context
- (factory-for-id
-  (byte \p)
-  {:factory-registry default-lazy-factory-registry}))
-
-(register-factory
- default-lazy-factory-registry
+ default-factory-registry
  map-context
  (reify IFactory
    (factoryId [this] (byte \V));;;;;;;;;;;;;;;;;;;;;;;;;;; V aavector in aamap
@@ -269,7 +218,7 @@
        (node-write (get-inode v) buffer (get-opts v))))))
 
 (register-factory
- default-lazy-factory-registry
+ default-factory-registry
  map-context
  (reify IFactory
    (factoryId [this] (byte \M));;;;;;;;;;;;;;;;;;;;;;;;;;; M aamap in aamap
@@ -294,7 +243,7 @@
        (node-write (get-inode m) buffer (get-opts m))))))
 
 (register-factory
- default-lazy-factory-registry
+ default-factory-registry
  map-context
  (reify IFactory
    (factoryId [this] (byte \S));;;;;;;;;;;;;;;;;;;;;;;;;;; S aaset in aamap
@@ -318,56 +267,33 @@
            ^AASet s (.getValue map-entry)]
        (node-write (get-inode s) buffer (get-opts s))))))
 
-(register-factory
- default-lazy-factory-registry
- set-context
- (reify IFactory
-   (factoryId [this] (byte \q));;;;;;;;;;;;;;;;;;;;;;;;;;; q - set default factory
-   (instanceClass [this] nil)
-   (qualified [this t2 opts] this)
-   (sval [this inode opts]
-     (key-sval this inode opts))
-   (valueLength [this node opts]
-     (default-valueLength this node opts))
-   (deserialize [this node bb opts]
-     (let [k (deserialize-sval this node bb opts)]
-       (MapEntry. k k)))
-   (writeValue [this node buffer opts]
-     (default-write-value this node buffer opts))))
-
-(.setDefaultFactory
- set-context
- (factory-for-id
-  (byte \q)
-  {:factory-registry default-lazy-factory-registry}))
-
-(defn load-lazy-vector [buffer opts]
+(defn load-vector- [buffer opts]
   (if (:factory-registry opts)
     (let [r (vector-opts opts)]
       (new AAVector (node-read buffer r) r))
-    (let [r (assoc opts :factory-registry default-lazy-factory-registry)
+    (let [r (assoc opts :factory-registry default-factory-registry)
           r (vector-opts r)]
       (new AAVector (node-read buffer r) r))))
 
-(defn load-lazy-sorted-map [buffer opts]
+(defn load-sorted-map- [buffer opts]
   (let [r opts
         r (if (:comparator r)
             r
             (assoc r :comparator RT/DEFAULT_COMPARATOR))
         r (if (:factory-registry r)
             r
-            (assoc r :factory-registry default-lazy-factory-registry))
+            (assoc r :factory-registry default-factory-registry))
         r (map-opts r)]
     (new AAMap (node-read buffer r) r)))
 
-(defn load-lazy-sorted-set [buffer opts]
+(defn load-sorted-set- [buffer opts]
   (let [r opts
         r (if (:comparator r)
             r
             (assoc r :comparator RT/DEFAULT_COMPARATOR))
         r (if (:factory-registry r)
             r
-            (assoc r :factory-registry default-lazy-factory-registry))
+            (assoc r :factory-registry default-factory-registry))
         r (set-opts r)]
     (new AASet
          (new AAMap (node-read buffer r) r))))
