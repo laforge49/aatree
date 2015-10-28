@@ -20,11 +20,11 @@
 
 (defn load-vector [buffer opts]
   (if (:factory-registry opts)
-    (let [r (vector-opts opts)]
-      (new AAVector (node-read buffer r) r))
-    (let [r (assoc opts :factory-registry default-factory-registry)
-          r (vector-opts r)]
-      (new AAVector (node-read buffer r) r))))
+    (let [r (lazy-vector-opts opts)]
+      (new AAVector (lazy-read buffer r) r))
+    (let [r (assoc opts :factory-registry default-lazy-factory-registry)
+          r (lazy-vector-opts r)]
+      (new AAVector (lazy-read buffer r) r))))
 
 (defn load-sorted-map
   [buffer opts]
@@ -34,30 +34,27 @@
             (assoc r :comparator RT/DEFAULT_COMPARATOR))
         r (if (:factory-registry r)
             r
-            (assoc r :factory-registry default-factory-registry))
-        r (map-opts r)]
-    (new AAMap (node-read buffer r) r)))
+            (assoc r :factory-registry default-lazy-factory-registry))
+        r (lazy-map-opts r)]
+    (new AAMap (lazy-read buffer r) r)))
 
 (defn byte-length [noded]
-  (node-byte-length (get-inode noded) (get-opts noded)))
+  (lazy-byte-length (get-inode noded) (get-opts noded)))
 
 (defn put-aa [buffer aa]
-  (node-write (get-inode aa) buffer (get-opts aa)))
+  (lazy-write (get-inode aa) buffer (get-opts aa)))
 
-(defn load-sorted-set
-  ([buffer]
-   (load-sorted-set buffer {}))
-  ([buffer opts]
+(defn load-sorted-set [buffer opts]
    (let [r opts
          r (if (:comparator r)
              r
              (assoc r :comparator RT/DEFAULT_COMPARATOR))
          r (if (:factory-registry r)
              r
-             (assoc r :factory-registry default-factory-registry))
-         r (set-opts r)]
+             (assoc r :factory-registry default-lazy-factory-registry))
+         r (lazy-set-opts r)]
      (new AASet
-          (new AAMap (node-read buffer r) r)))))
+          (new AAMap (lazy-read buffer r) r))))
 
 (defn has-aafactories [opts] (:new-sorted-map opts))
 
@@ -115,16 +112,16 @@
                           (assoc r :comparator RT/DEFAULT_COMPARATOR))
                       r (if (:factory-registry r)
                           r
-                          (assoc r :factory-registry default-factory-registry))
-                      r (map-opts r)]
+                          (assoc r :factory-registry default-lazy-factory-registry))
+                      r (lazy-map-opts r)]
                   (new AAMap emptyLazyNode r))))
        (assoc :new-vector
               (fn [o]
                 (if (:factory-registry o)
-                  (new AAVector emptyLazyNode (vector-opts o))
+                  (new AAVector emptyLazyNode (lazy-vector-opts o))
                   (new AAVector
                        emptyLazyNode
-                       (vector-opts (assoc o :factory-registry default-factory-registry))))))
+                       (lazy-vector-opts (assoc o :factory-registry default-lazy-factory-registry))))))
        (assoc :new-sorted-set
               (fn [o]
                 (let [r opts
@@ -133,8 +130,8 @@
                           (assoc r :comparator RT/DEFAULT_COMPARATOR))
                       r (if (:factory-registry r)
                           r
-                          (assoc r :factory-registry default-factory-registry))
-                      r (set-opts r)]
+                          (assoc r :factory-registry default-lazy-factory-registry))
+                      r (lazy-set-opts r)]
                   (new AASet
                        (new AAMap emptyLazyNode r))))))))
 
