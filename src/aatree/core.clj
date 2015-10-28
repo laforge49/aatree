@@ -2,7 +2,7 @@
   (:require [aatree.nodes :refer :all])
   (:require [aatree.lazy-nodes :refer :all])
   (:import (aatree AAMap AAVector AASet)
-           (aatree.nodes FlexVector)
+           (aatree.nodes FlexVector WrapperNode)
            (clojure.lang RT)
            (java.io File)
            (java.nio ByteBuffer LongBuffer)
@@ -28,8 +28,7 @@
   ((:load-sorted-set opts) buffer opts))
 
 (defn byte-length [noded]
-  (let [opts (get-opts noded)]
-    ((:byte-length opts) (get-inode noded) opts)))
+  (node-byte-length (get-inode noded) (get-opts noded)))
 
 (defn put-aa [buffer aa]
   (lazy-write (get-inode aa) buffer (get-opts aa)))
@@ -83,7 +82,6 @@
   ([] (lazy-opts {}))
   ([opts]
    (-> opts
-       (assoc :byte-length lazy-byte-length)
        (assoc :load-vector load-lazy-vector)
        (assoc :load-sorted-map load-lazy-sorted-map)
        (assoc :load-sorted-set load-lazy-sorted-set)
@@ -95,15 +93,15 @@
                       r (if (:factory-registry r)
                           r
                           (assoc r :factory-registry default-lazy-factory-registry))
-                      r (lazy-map-opts r)]
+                      r (map-opts r)]
                   (new AAMap emptyLazyNode r))))
        (assoc :new-vector
               (fn [o]
                 (if (:factory-registry o)
-                  (new AAVector emptyLazyNode (lazy-vector-opts o))
+                  (new AAVector emptyLazyNode (vector-opts o))
                   (new AAVector
                        emptyLazyNode
-                       (lazy-vector-opts (assoc o :factory-registry default-lazy-factory-registry))))))
+                       (vector-opts (assoc o :factory-registry default-lazy-factory-registry))))))
        (assoc :new-sorted-set
               (fn [o]
                 (let [r o
@@ -113,7 +111,7 @@
                       r (if (:factory-registry r)
                           r
                           (assoc r :factory-registry default-lazy-factory-registry))
-                      r (lazy-set-opts r)]
+                      r (set-opts r)]
                   (new AASet
                        (new AAMap emptyLazyNode r))))))))
 

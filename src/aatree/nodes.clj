@@ -505,7 +505,15 @@
   (svalAtom [])
   (blenAtom [])
   (bufferAtom [])
-  (factory []))
+  (factory [])
+  (nodeByteLength [opts])
+  (nodeWrite [buffer opts]))
+
+(defn node-byte-length [^WrapperNode wrapper-node opts]
+  (.nodeByteLength wrapper-node opts))
+
+(defn node-write [^WrapperNode wrapper-node buffer opts]
+  (.nodeWrite wrapper-node buffer opts))
 
 (defn ^IFactory get-factory [^WrapperNode wrapper-node]
   (.factory wrapper-node))
@@ -555,3 +563,49 @@
         ^CharBuffer cb (.asCharBuffer buffer)]
     (.put cb sv)
     (.position buffer (+ (* 2 svl) (.position buffer)))))
+
+(def ^AAContext vector-context
+  (let [class-atom (atom {})
+        factory-atom (atom nil)]
+    (reify AAContext
+      (classAtom [this] class-atom)
+      (getDefaultFactory [this] @factory-atom)
+      (setDefaultFactory
+        [this f]
+        (compare-and-set! factory-atom nil f))
+      (refineInstance [this inst] inst))))
+
+(def ^AAContext map-context
+  (let [class-atom (atom {})
+        factory-atom (atom nil)]
+    (reify AAContext
+      (classAtom [this] class-atom)
+      (getDefaultFactory [this] @factory-atom)
+      (setDefaultFactory
+        [this f]
+        (compare-and-set! factory-atom nil f))
+      (refineInstance [this inst]
+        (let [^MapEntry map-entry inst]
+          (.getValue map-entry))))))
+
+(def ^AAContext set-context
+  (let [class-atom (atom {})
+        factory-atom (atom nil)]
+    (reify AAContext
+      (classAtom [this] class-atom)
+      (getDefaultFactory [this] @factory-atom)
+      (setDefaultFactory
+        [this f]
+        (compare-and-set! factory-atom nil f))
+      (refineInstance [this inst]
+        (let [^MapEntry map-entry inst]
+          (.getKey map-entry))))))
+
+(defn vector-opts [opts]
+  (assoc opts :aacontext vector-context))
+
+(defn map-opts [opts]
+  (assoc opts :aacontext map-context))
+
+(defn set-opts [opts]
+  (assoc opts :aacontext set-context))
