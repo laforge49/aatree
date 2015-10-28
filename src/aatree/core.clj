@@ -1,8 +1,9 @@
 (ns aatree.core
-  (:require [aatree.nodes :refer :all])
-  (:require [aatree.lazy-nodes :refer :all])
+  (:require [aatree.nodes :refer :all]
+            [aatree.lazy-nodes :refer :all]
+            [aatree.virtual-nodes :refer :all])
   (:import (aatree AAMap AAVector AASet)
-           (aatree.nodes FlexVector WrapperNode INoded IFactory)
+           (aatree.nodes FlexVector INoded IFactory)
            (clojure.lang RT MapEntry)
            (java.io File)
            (java.nio ByteBuffer LongBuffer)
@@ -31,7 +32,7 @@
   (node-byte-length (get-inode noded) (get-opts noded)))
 
 (defn put-aa [buffer aa]
-  (lazy-write (get-inode aa) buffer (get-opts aa)))
+  (node-write (get-inode aa) buffer (get-opts aa)))
 
 (defn has-aafactories [opts] (:new-sorted-map opts))
 
@@ -115,6 +116,44 @@
                       r (set-opts r)]
                   (new AASet
                        (new AAMap emptyLazyNode r))))))))
+
+(defn virtual-opts
+  ([] (virtual-opts {}))
+  ([opts]
+   (-> opts
+       (assoc :node-read virtual-read)
+       (assoc :load-vector load-virtual-vector)
+       (assoc :load-sorted-map load-virtual-sorted-map)
+       (assoc :load-sorted-set load-virtual-sorted-set)
+       (assoc :new-sorted-map
+              (fn [r]
+                (let [r (if (:comparator r)
+                          r
+                          (assoc r :comparator RT/DEFAULT_COMPARATOR))
+                      r (if (:factory-registry r)
+                          r
+                          (assoc r :factory-registry default-factory-registry))
+                      r (map-opts r)]
+                  (new AAMap emptyVirtualNode r))))
+       (assoc :new-vector
+              (fn [o]
+                (if (:factory-registry o)
+                  (new AAVector emptyVirtualNode (vector-opts o))
+                  (new AAVector
+                       emptyVirtualNode
+                       (vector-opts (assoc o :factory-registry default-factory-registry))))))
+       (assoc :new-sorted-set
+              (fn [o]
+                (let [r o
+                      r (if (:comparator r)
+                          r
+                          (assoc r :comparator RT/DEFAULT_COMPARATOR))
+                      r (if (:factory-registry r)
+                          r
+                          (assoc r :factory-registry default-factory-registry))
+                      r (set-opts r)]
+                  (new AASet
+                       (new AAMap emptyVirtualNode r))))))))
 
 (defn new-sorted-map [opts]
   ((:new-sorted-map opts) opts))
