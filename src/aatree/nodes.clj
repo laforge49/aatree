@@ -430,3 +430,16 @@
 (definterface FlexVector
   (dropNode [i])
   (addNode [i v]))
+
+(definterface IFactory
+  (factoryId [])
+  (instanceClass [])
+  (qualified [t2 opts])
+  (sval [^aatree.nodes.INode inode opts])
+  (valueLength [node opts])
+  (deserialize [node
+                ^java.nio.ByteBuffer buffer
+                opts])
+  (writeValue [node
+               ^java.nio.ByteBuffer buffer
+               opts]))
