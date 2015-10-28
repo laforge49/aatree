@@ -235,12 +235,12 @@
    (qualified [this t2 opts] this)
    (sval [this inode opts]
      (default-sval this inode opts))
-   (valueLength [this lazyNode opts]
-     (default-valueLength this lazyNode opts))
-   (deserialize [this lazyNode bb opts]
-     (deserialize-sval this lazyNode bb opts))
-   (writeValue [this lazyNode buffer opts]
-     (default-write-value this lazyNode buffer opts))))
+   (valueLength [this node opts]
+     (default-valueLength this node opts))
+   (deserialize [this node bb opts]
+     (deserialize-sval this node bb opts))
+   (writeValue [this node buffer opts]
+     (default-write-value this node buffer opts))))
 
 (.setDefaultFactory
  lazy-vector-context
@@ -255,14 +255,14 @@
    (factoryId [this] (byte \v));;;;;;;;;;;;;;;;;;;;;;;;;;; v aavector in aavector
    (instanceClass [this] aatree.AAVector)
    (qualified [this t2 opts] this)
-   (valueLength [this lazyNode opts]
-     (let [^AAVector v (.getT2 lazyNode opts)]
+   (valueLength [this node opts]
+     (let [^AAVector v (.getT2 node opts)]
        (lazy-byte-length (get-inode v) (get-opts v))))
-   (deserialize [this lazyNode bb opts]
+   (deserialize [this node bb opts]
      (let [opts (lazy-vector-opts opts)]
        (new AAVector (lazy-read bb opts) opts)))
-   (writeValue [this lazyNode buffer opts]
-     (let [^AAVector v (.getT2 lazyNode opts)]
+   (writeValue [this node buffer opts]
+     (let [^AAVector v (.getT2 node opts)]
        (lazy-write (get-inode v) buffer (get-opts v))))))
 
 (register-factory
@@ -272,14 +272,14 @@
    (factoryId [this] (byte \m));;;;;;;;;;;;;;;;;;;;;;;;;;; m aamap in aavector
    (instanceClass [this] aatree.AAMap)
    (qualified [this t2 opts] this)
-   (valueLength [this lazyNode opts]
-     (let [^AAMap m (.getT2 lazyNode opts)]
+   (valueLength [this node opts]
+     (let [^AAMap m (.getT2 node opts)]
        (lazy-byte-length (get-inode m) (get-opts m))))
-   (deserialize [this lazyNode bb opts]
+   (deserialize [this node bb opts]
      (let [opts (lazy-map-opts opts)]
        (new AAMap (lazy-read bb opts) opts)))
-   (writeValue [this lazyNode buffer opts]
-     (let [^AAMap v (.getT2 lazyNode opts)]
+   (writeValue [this node buffer opts]
+     (let [^AAMap v (.getT2 node opts)]
        (lazy-write (get-inode v) buffer (get-opts v))))))
 
 (register-factory
@@ -289,14 +289,14 @@
    (factoryId [this] (byte \s));;;;;;;;;;;;;;;;;;;;;;;;;;; s aaset in aavector
    (instanceClass [this] aatree.AASet)
    (qualified [this t2 opts] this)
-   (valueLength [this lazyNode opts]
-     (let [^AAMap m (.getT2 lazyNode opts)]
+   (valueLength [this node opts]
+     (let [^AAMap m (.getT2 node opts)]
        (lazy-byte-length (get-inode m) (get-opts m))))
-   (deserialize [this lazyNode bb opts]
+   (deserialize [this node bb opts]
      (let [opts (lazy-map-opts opts)]
        (new AASet (new AAMap (lazy-read bb opts) opts))))
-   (writeValue [this lazyNode buffer opts]
-     (let [^AASet s (.getT2 lazyNode opts)]
+   (writeValue [this node buffer opts]
+     (let [^AASet s (.getT2 node opts)]
        (lazy-write (get-inode s) buffer (get-opts s))))))
 
 (register-factory
@@ -308,14 +308,14 @@
    (qualified [this t2 opts] this)
    (sval [this inode opts]
      (default-sval this inode opts))
-   (valueLength [this lazyNode opts]
-     (default-valueLength this lazyNode opts))
-   (deserialize [this lazyNode bb opts]
-     (let [^PersistentVector v (deserialize-sval this lazyNode bb opts)
+   (valueLength [this node opts]
+     (default-valueLength this node opts))
+   (deserialize [this node bb opts]
+     (let [^PersistentVector v (deserialize-sval this node bb opts)
            t2 (MapEntry. (.get v 0) (.get v 1))]
        t2))
-   (writeValue [this lazyNode buffer opts]
-     (default-write-value this lazyNode buffer opts))))
+   (writeValue [this node buffer opts]
+     (default-write-value this node buffer opts))))
 
 (.setDefaultFactory
  lazy-map-context
@@ -332,19 +332,19 @@
    (qualified [this t2 opts] this)
    (sval [this inode opts]
      (key-sval this inode opts))
-   (valueLength [this lazyNode opts]
-     (let [^MapEntry map-entry (.getT2 lazyNode opts)
+   (valueLength [this node opts]
+     (let [^MapEntry map-entry (.getT2 node opts)
            ^AAVector v (.getValue map-entry)]
-       (+ (default-valueLength this lazyNode opts)
+       (+ (default-valueLength this node opts)
           (lazy-byte-length (get-inode v) (get-opts v)))))
-   (deserialize [this lazyNode bb opts]
-     (let [k (deserialize-sval this lazyNode bb opts)
+   (deserialize [this node bb opts]
+     (let [k (deserialize-sval this node bb opts)
            opts (lazy-vector-opts opts)
            v (new AAVector (lazy-read bb opts) opts)]
        (MapEntry. k v)))
-   (writeValue [this lazyNode buffer opts]
-     (default-write-value this lazyNode buffer opts)
-     (let [^MapEntry map-entry (.getT2 lazyNode opts)
+   (writeValue [this node buffer opts]
+     (default-write-value this node buffer opts)
+     (let [^MapEntry map-entry (.getT2 node opts)
            ^AAVector v (.getValue map-entry)]
        (lazy-write (get-inode v) buffer (get-opts v))))))
 
@@ -357,19 +357,19 @@
    (qualified [this t2 opts] this)
    (sval [this inode opts]
      (key-sval this inode opts))
-   (valueLength [this lazyNode opts]
-     (let [^MapEntry map-entry (.getT2 lazyNode opts)
+   (valueLength [this node opts]
+     (let [^MapEntry map-entry (.getT2 node opts)
            ^AAMap m (.getValue map-entry)]
-       (+ (default-valueLength this lazyNode opts)
+       (+ (default-valueLength this node opts)
           (lazy-byte-length (get-inode m) (get-opts m)))))
-   (deserialize [this lazyNode bb opts]
-     (let [k (deserialize-sval this lazyNode bb opts)
+   (deserialize [this node bb opts]
+     (let [k (deserialize-sval this node bb opts)
            opts (lazy-map-opts opts)
            v (new AAMap (lazy-read bb opts) opts)]
        (MapEntry. k v)))
-   (writeValue [this lazyNode buffer opts]
-     (default-write-value this lazyNode buffer opts)
-     (let [^MapEntry map-entry (.getT2 lazyNode opts)
+   (writeValue [this node buffer opts]
+     (default-write-value this node buffer opts)
+     (let [^MapEntry map-entry (.getT2 node opts)
            ^AAMap m (.getValue map-entry)]
        (lazy-write (get-inode m) buffer (get-opts m))))))
 
@@ -382,19 +382,19 @@
    (qualified [this t2 opts] this)
    (sval [this inode opts]
      (key-sval this inode opts))
-   (valueLength [this lazyNode opts]
-     (let [^MapEntry map-entry (.getT2 lazyNode opts)
+   (valueLength [this node opts]
+     (let [^MapEntry map-entry (.getT2 node opts)
            ^AASet s (.getValue map-entry)]
-       (+ (default-valueLength this lazyNode opts)
+       (+ (default-valueLength this node opts)
           (lazy-byte-length (get-inode s) (get-opts s)))))
-   (deserialize [this lazyNode bb opts]
-     (let [k (deserialize-sval this lazyNode bb opts)
+   (deserialize [this node bb opts]
+     (let [k (deserialize-sval this node bb opts)
            opts (lazy-set-opts opts)
            v (new AASet (new AAMap (lazy-read bb opts) opts))]
        (MapEntry. k v)))
-   (writeValue [this lazyNode buffer opts]
-     (default-write-value this lazyNode buffer opts)
-     (let [^MapEntry map-entry (.getT2 lazyNode opts)
+   (writeValue [this node buffer opts]
+     (default-write-value this node buffer opts)
+     (let [^MapEntry map-entry (.getT2 node opts)
            ^AASet s (.getValue map-entry)]
        (lazy-write (get-inode s) buffer (get-opts s))))))
 
@@ -407,13 +407,13 @@
    (qualified [this t2 opts] this)
    (sval [this inode opts]
      (key-sval this inode opts))
-   (valueLength [this lazyNode opts]
-     (default-valueLength this lazyNode opts))
-   (deserialize [this lazyNode bb opts]
-     (let [k (deserialize-sval this lazyNode bb opts)]
+   (valueLength [this node opts]
+     (default-valueLength this node opts))
+   (deserialize [this node bb opts]
+     (let [k (deserialize-sval this node bb opts)]
        (MapEntry. k k)))
-   (writeValue [this lazyNode buffer opts]
-     (default-write-value this lazyNode buffer opts))))
+   (writeValue [this node buffer opts]
+     (default-write-value this node buffer opts))))
 
 (.setDefaultFactory
  lazy-set-context
