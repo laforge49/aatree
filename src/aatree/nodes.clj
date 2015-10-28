@@ -498,3 +498,10 @@
                         ^IFactory factory]
   (swap! (.-by-id-atom fregistry) assoc (.factoryId factory) factory)
   (register-class aacontext factory))
+
+(definterface WrapperNode
+  (dataAtom [])
+  (svalAtom [])
+  (blenAtom [])
+  (bufferAtom [])
+  (factory []))

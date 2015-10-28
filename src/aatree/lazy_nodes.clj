@@ -1,7 +1,7 @@
 (ns aatree.lazy-nodes
   (:require [aatree.nodes :refer :all])
   (:import (java.nio ByteBuffer CharBuffer)
-           (aatree.nodes Node INode IFactory AAContext)
+           (aatree.nodes Node INode IFactory AAContext WrapperNode)
            (clojure.lang MapEntry PersistentVector RT)
            (aatree AAVector AAMap AASet)))
 
@@ -33,25 +33,37 @@
 
   (^Long getCnt [this opts] (.getCnt (get-data this opts) opts))
 
-  (getNada [this] (create-lazy-empty-node)))
+  (getNada [this] (create-lazy-empty-node))
 
-(defn- ^IFactory get-lazy-factory [^LazyNode lazy-node]
-  (.-factory lazy-node))
+  WrapperNode
 
-(defn- get-buffer-atom [^LazyNode lazy-node]
-  (.-buffer_atom lazy-node))
+  (dataAtom [this] (.-data-atom this))
 
-(defn- ^java.nio.ByteBuffer get-buffer [^LazyNode lazy-node]
-  @(.-buffer-atom lazy-node))
+  (svalAtom [this] (.-sval-atom this))
 
-(defn- get-data-atom [^LazyNode this] (.-data-atom this))
+  (blenAtom [this] (.-blen-atom this))
+
+  (bufferAtom [this] (.-buffer-atom this))
+
+  (factory [this] (.-factory this)))
+
+(defn- ^IFactory get-factory [^WrapperNode wrapper-node]
+  (.factory wrapper-node))
+
+(defn- get-buffer-atom [^WrapperNode wrapper-node]
+  (.bufferAtom wrapper-node))
+
+(defn- ^java.nio.ByteBuffer get-buffer [^WrapperNode wrapper-node]
+  @(.bufferAtom wrapper-node))
+
+(defn- get-data-atom [^WrapperNode this] (.dataAtom this))
 
 (def default-lazy-factory-registry (create-factory-registry))
 
-(defn- str-val [^IFactory factory ^LazyNode lazyNode opts]
-  (let [sval-atom (.-sval-atom lazyNode)]
+(defn- str-val [^IFactory factory ^WrapperNode wrapper-node opts]
+  (let [sval-atom (.svalAtom wrapper-node)]
     (if (nil? @sval-atom)
-      (compare-and-set! sval-atom nil (.sval factory lazyNode opts)))
+      (compare-and-set! sval-atom nil (.sval factory wrapper-node opts)))
     @sval-atom))
 
 (defn- default-sval [this ^INode inode opts]
@@ -61,23 +73,23 @@
   (let [^MapEntry map-entry (.getT2 inode opts)]
     (pr-str (.getKey map-entry))))
 
-(defn- deserialize-sval [this ^LazyNode lazyNode ^ByteBuffer bb opts]
+(defn- deserialize-sval [this ^WrapperNode wrapper-node ^ByteBuffer bb opts]
   (let [svl (.getInt bb)
         ^CharBuffer cb (.asCharBuffer bb)
         svc (char-array svl)
         _ (.get cb svc)
         sv (String. svc)
-        _ (reset! (.-sval_atom lazyNode) sv)
+        _ (reset! (.svalAtom wrapper-node) sv)
         _ (.position bb (+ (.position bb) (* 2 svl)))]
     (read-string opts sv)))
 
 (defn lazy-byte-length [^LazyNode lazy-node opts]
   (if (empty-node? lazy-node)
     1
-    (let [a (.-blen-atom lazy-node)
+    (let [a (.blenAtom lazy-node)
           blen @a]
       (if (nil? blen)
-        (let [^ByteBuffer bb @(.-buffer-atom lazy-node)
+        (let [^ByteBuffer bb @(.bufferAtom lazy-node)
               blen (if bb
                      (.limit bb)
                      (+ 1 ;node id
@@ -85,7 +97,7 @@
                         (lazy-byte-length (left-node lazy-node opts) opts) ;left node
                         4 ;level
                         4 ;cnt
-                        (.valueLength (get-lazy-factory lazy-node) lazy-node opts) ;t2
+                        (.valueLength (get-factory lazy-node) lazy-node opts) ;t2
                         (lazy-byte-length (right-node lazy-node opts) opts)))] ;right node
           (compare-and-set! a nil blen)))
       @a)))
@@ -95,7 +107,7 @@
      (* 2 (count (str-val this lazyNode opts))))) ;sval
 
 (defn lazy-write [^LazyNode lazy-node ^ByteBuffer buffer opts]
-  (let [^IFactory f (.-factory lazy-node)
+  (let [^IFactory f (.factory lazy-node)
         ^ByteBuffer old-bb (get-buffer lazy-node)]
     (if old-bb
       (let [new-bb (.duplicate old-bb)
@@ -159,7 +171,7 @@
               left (lazy-read bb opts)
               level (long (.getInt bb))
               cnt (long (.getInt bb))
-              t2 (.deserialize (get-lazy-factory this) this bb opts)
+              t2 (.deserialize (get-factory this) this bb opts)
               right (lazy-read bb opts)]
           (compare-and-set! a nil (Node. t2 level left right cnt))))
       @a)))
