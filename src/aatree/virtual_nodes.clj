@@ -1,4 +1,4 @@
-(ns aatree.lazy-nodes
+(ns aatree.virtual-nodes
   (:require [aatree.nodes :refer :all])
   (:import (java.nio ByteBuffer)
            (aatree.nodes Node IFactory WrapperNode)
@@ -7,32 +7,32 @@
 
 (set! *warn-on-reflection* true)
 
-(declare ->LazyNode
-         ^aatree.nodes.INode get-lazy-data
-         create-lazy-empty-node
-         lazy-byte-length
-         lazy-write)
+(declare ->VirtualNode
+         ^aatree.nodes.INode get-virtual-data
+         create-virtual-empty-node
+         virtual-byte-length
+         virtual-write)
 
-(deftype LazyNode [data-atom sval-atom blen-atom buffer-atom factory]
+(deftype VirtualNode [data-atom sval-atom blen-atom buffer-atom factory]
 
   aatree.nodes.INode
 
   (newNode [this t2 level left right cnt opts]
     (let [d (->Node t2 level left right cnt)
           f (factory-for-instance t2 opts)]
-      (->LazyNode (atom d) (atom nil) (atom nil) (atom nil) f)))
+      (->VirtualNode (atom d) (atom nil) (atom nil) (atom nil) f)))
 
-  (getT2 [this opts] (.getT2 (get-lazy-data this opts) opts))
+  (getT2 [this opts] (.getT2 (get-virtual-data this opts) opts))
 
-  (^Long getLevel [this opts] (.getLevel (get-lazy-data this opts) opts))
+  (^Long getLevel [this opts] (.getLevel (get-virtual-data this opts) opts))
 
-  (getLeft [this opts] (.getLeft (get-lazy-data this opts) opts))
+  (getLeft [this opts] (.getLeft (get-virtual-data this opts) opts))
 
-  (getRight [this opts] (.getRight (get-lazy-data this opts) opts))
+  (getRight [this opts] (.getRight (get-virtual-data this opts) opts))
 
-  (^Long getCnt [this opts] (.getCnt (get-lazy-data this opts) opts))
+  (^Long getCnt [this opts] (.getCnt (get-virtual-data this opts) opts))
 
-  (getNada [this] (create-lazy-empty-node))
+  (getNada [this] (create-virtual-empty-node))
 
   WrapperNode
 
@@ -46,32 +46,32 @@
 
   (factory [this] (.-factory this))
 
-  (nodeByteLength [this opts] (lazy-byte-length this opts))
+  (nodeByteLength [this opts] (virtual-byte-length this opts))
 
-  (nodeWrite [this buffer opts] (lazy-write this buffer opts)))
+  (nodeWrite [this buffer opts] (virtual-write this buffer opts)))
 
-(defn lazy-byte-length [^LazyNode lazy-node opts]
-  (if (empty-node? lazy-node)
+(defn virtual-byte-length [^VirtualNode virtual-node opts]
+  (if (empty-node? virtual-node)
     1
-    (let [a (.blenAtom lazy-node)
+    (let [a (.blenAtom virtual-node)
           blen @a]
       (if (nil? blen)
-        (let [^ByteBuffer bb @(.bufferAtom lazy-node)
+        (let [^ByteBuffer bb @(.bufferAtom virtual-node)
               blen (if bb
                      (.limit bb)
                      (+ 1 ;node id
                         4 ;byte length - 5
-                        (lazy-byte-length (left-node lazy-node opts) opts) ;left node
+                        (virtual-byte-length (left-node virtual-node opts) opts) ;left node
                         4 ;level
                         4 ;cnt
-                        (.valueLength (get-factory lazy-node) lazy-node opts) ;t2
-                        (lazy-byte-length (right-node lazy-node opts) opts)))] ;right node
+                        (.valueLength (get-factory virtual-node) virtual-node opts) ;t2
+                        (virtual-byte-length (right-node virtual-node opts) opts)))] ;right node
           (compare-and-set! a nil blen)))
       @a)))
 
-(defn lazy-write [^LazyNode lazy-node ^ByteBuffer buffer opts]
-  (let [^IFactory f (.factory lazy-node)
-        ^ByteBuffer old-bb (get-buffer lazy-node)]
+(defn virtual-write [^VirtualNode virtual-node ^ByteBuffer buffer opts]
+  (let [^IFactory f (.factory virtual-node)
+        ^ByteBuffer old-bb (get-buffer virtual-node)]
     (if old-bb
       (let [new-bb (.duplicate old-bb)
             lim (.limit new-bb)
@@ -83,22 +83,22 @@
           (.put buffer (byte (.factoryId f)))
           (do
             (.put buffer (byte (.factoryId f)))
-            (.putInt buffer (- (lazy-byte-length lazy-node opts) 5))
-            (lazy-write (left-node lazy-node opts) buffer opts)
-            (.putInt buffer (.getLevel lazy-node opts))
-            (.putInt buffer (.getCnt lazy-node opts))
-            (.writeValue f lazy-node buffer opts)
-            (lazy-write (right-node lazy-node opts) buffer opts)))
-        (.limit new-bb (lazy-byte-length lazy-node opts))
-        (compare-and-set! (get-buffer-atom lazy-node) nil new-bb)
-        (reset! (get-data-atom lazy-node) nil)))))
+            (.putInt buffer (- (virtual-byte-length virtual-node opts) 5))
+            (virtual-write (left-node virtual-node opts) buffer opts)
+            (.putInt buffer (.getLevel virtual-node opts))
+            (.putInt buffer (.getCnt virtual-node opts))
+            (.writeValue f virtual-node buffer opts)
+            (virtual-write (right-node virtual-node opts) buffer opts)))
+        (.limit new-bb (virtual-byte-length virtual-node opts))
+        (compare-and-set! (get-buffer-atom virtual-node) nil new-bb)
+        (reset! (get-data-atom virtual-node) nil)))))
 
-(defn lazy-read [^ByteBuffer buffer opts]
+(defn virtual-read [^ByteBuffer buffer opts]
   (let [^ByteBuffer bb (.slice buffer)
         id (.get bb)]
     (if (= id (byte \n))
       (do (.get buffer)
-          (create-lazy-empty-node))
+          (create-virtual-empty-node))
       (let [f (factory-for-id id opts)
             bb (.slice buffer)
             _ (.get buffer)
@@ -106,42 +106,42 @@
             _ (.position buffer (+ lm5 (.position buffer)))
             blen (+ 5 lm5)
             _ (.limit bb blen)]
-        (->LazyNode
-         (atom nil)
-         (atom nil)
-         (atom blen)
-         (atom bb)
-         f)))))
+        (->VirtualNode
+          (atom nil)
+          (atom nil)
+          (atom blen)
+          (atom bb)
+          f)))))
 
-(defn- get-lazy-data [^LazyNode this opts]
+(defn- get-virtual-data [^VirtualNode this opts]
   (if (empty-node? this)
     emptyNode
     (let [a (get-data-atom this)]
       (when (nil? @a)
         (let [bb (.slice (get-buffer this))
               _ (.position bb 5)
-              left (lazy-read bb opts)
+              left (virtual-read bb opts)
               level (long (.getInt bb))
               cnt (long (.getInt bb))
               t2 (.deserialize (get-factory this) this bb opts)
-              right (lazy-read bb opts)]
+              right (virtual-read bb opts)]
           (compare-and-set! a nil (Node. t2 level left right cnt))))
       @a)))
 
-(def ^LazyNode emptyLazyNode
-  (->LazyNode
-   (atom emptyNode)
-   (atom nil)
-   (atom 1)
-   (atom nil)
-   (factory-for-id
-     (byte \n)
-     {:factory-registry default-factory-registry})))
+(def ^VirtualNode emptyVirtualNode
+  (->VirtualNode
+    (atom emptyNode)
+    (atom nil)
+    (atom 1)
+    (atom nil)
+    (factory-for-id
+      (byte \n)
+      {:factory-registry default-factory-registry})))
 
-(defn create-lazy-empty-node
-  [] emptyLazyNode)
+(defn create-virtual-empty-node
+  [] emptyVirtualNode)
 
-(defn load-lazy-vector [buffer opts]
+(defn load-virtual-vector [buffer opts]
   (if (:factory-registry opts)
     (let [r (vector-opts opts)]
       (new AAVector (node-read buffer r) r))
@@ -149,7 +149,7 @@
           r (vector-opts r)]
       (new AAVector (node-read buffer r) r))))
 
-(defn load-lazy-sorted-map [buffer opts]
+(defn load-virtual-sorted-map [buffer opts]
   (let [r opts
         r (if (:comparator r)
             r
@@ -160,7 +160,7 @@
         r (map-opts r)]
     (new AAMap (node-read buffer r) r)))
 
-(defn load-lazy-sorted-set [buffer opts]
+(defn load-virtual-sorted-set [buffer opts]
   (let [r opts
         r (if (:comparator r)
             r
