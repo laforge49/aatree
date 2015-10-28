@@ -8,11 +8,8 @@
 (set! *warn-on-reflection* true)
 
 (declare ->LazyNode
-         ^aatree.nodes.INode get-data
-         create-lazy-empty-node
-         node-byte-length
-         node-write
-         node-read)
+         ^aatree.nodes.INode get-lazy-data
+         create-lazy-empty-node)
 
 (deftype LazyNode [data-atom sval-atom blen-atom buffer-atom factory]
 
@@ -23,15 +20,15 @@
           f (factory-for-instance t2 opts)]
       (->LazyNode (atom d) (atom nil) (atom nil) (atom nil) f)))
 
-  (getT2 [this opts] (.getT2 (get-data this opts) opts))
+  (getT2 [this opts] (.getT2 (get-lazy-data this opts) opts))
 
-  (^Long getLevel [this opts] (.getLevel (get-data this opts) opts))
+  (^Long getLevel [this opts] (.getLevel (get-lazy-data this opts) opts))
 
-  (getLeft [this opts] (.getLeft (get-data this opts) opts))
+  (getLeft [this opts] (.getLeft (get-lazy-data this opts) opts))
 
-  (getRight [this opts] (.getRight (get-data this opts) opts))
+  (getRight [this opts] (.getRight (get-lazy-data this opts) opts))
 
-  (^Long getCnt [this opts] (.getCnt (get-data this opts) opts))
+  (^Long getCnt [this opts] (.getCnt (get-lazy-data this opts) opts))
 
   (getNada [this] (create-lazy-empty-node))
 
@@ -47,41 +44,7 @@
 
   (factory [this] (.-factory this)))
 
-(defn- ^IFactory get-factory [^WrapperNode wrapper-node]
-  (.factory wrapper-node))
-
-(defn- get-buffer-atom [^WrapperNode wrapper-node]
-  (.bufferAtom wrapper-node))
-
-(defn- ^java.nio.ByteBuffer get-buffer [^WrapperNode wrapper-node]
-  @(.bufferAtom wrapper-node))
-
-(defn- get-data-atom [^WrapperNode this] (.dataAtom this))
-
 (def default-lazy-factory-registry (create-factory-registry))
-
-(defn- str-val [^IFactory factory ^WrapperNode wrapper-node opts]
-  (let [sval-atom (.svalAtom wrapper-node)]
-    (if (nil? @sval-atom)
-      (compare-and-set! sval-atom nil (.sval factory wrapper-node opts)))
-    @sval-atom))
-
-(defn- default-sval [this ^INode inode opts]
-  (pr-str (.getT2 inode opts)))
-
-(defn- key-sval [this ^INode inode opts]
-  (let [^MapEntry map-entry (.getT2 inode opts)]
-    (pr-str (.getKey map-entry))))
-
-(defn- deserialize-sval [this ^WrapperNode wrapper-node ^ByteBuffer bb opts]
-  (let [svl (.getInt bb)
-        ^CharBuffer cb (.asCharBuffer bb)
-        svc (char-array svl)
-        _ (.get cb svc)
-        sv (String. svc)
-        _ (reset! (.svalAtom wrapper-node) sv)
-        _ (.position bb (+ (.position bb) (* 2 svl)))]
-    (read-string opts sv)))
 
 (defn lazy-byte-length [^LazyNode lazy-node opts]
   (if (empty-node? lazy-node)
@@ -101,10 +64,6 @@
                         (lazy-byte-length (right-node lazy-node opts) opts)))] ;right node
           (compare-and-set! a nil blen)))
       @a)))
-
-(defn- default-valueLength [this ^LazyNode lazyNode opts]
-  (+ 4 ;sval length
-     (* 2 (count (str-val this lazyNode opts))))) ;sval
 
 (defn lazy-write [^LazyNode lazy-node ^ByteBuffer buffer opts]
   (let [^IFactory f (.factory lazy-node)
@@ -130,17 +89,6 @@
         (compare-and-set! (get-buffer-atom lazy-node) nil new-bb)
         (reset! (get-data-atom lazy-node) nil)))))
 
-(defn- default-write-value [^IFactory f
-                            ^LazyNode lazy-node
-                            ^ByteBuffer buffer
-                            opts]
-  (let [^String sv (str-val f lazy-node opts)
-        svl (count sv)
-        _ (.putInt buffer svl)
-        ^CharBuffer cb (.asCharBuffer buffer)]
-    (.put cb sv)
-    (.position buffer (+ (* 2 svl) (.position buffer)))))
-
 (defn lazy-read [^ByteBuffer buffer opts]
   (let [^ByteBuffer bb (.slice buffer)
         id (.get bb)]
@@ -161,7 +109,7 @@
          (atom bb)
          f)))))
 
-(defn- get-data [^LazyNode this opts]
+(defn- get-lazy-data [^LazyNode this opts]
   (if (empty-node? this)
     emptyNode
     (let [a (get-data-atom this)]

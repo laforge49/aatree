@@ -2,7 +2,8 @@
   (:import (clojure.lang Counted MapEntry IMapEntry)
            (java.util Iterator Comparator)
            (aatree CountedSequence)
-           (aatree.CountedSequence XIterator)))
+           (aatree.CountedSequence XIterator)
+           (java.nio CharBuffer ByteBuffer)))
 
 (set! *warn-on-reflection* true)
 
@@ -505,3 +506,52 @@
   (blenAtom [])
   (bufferAtom [])
   (factory []))
+
+(defn ^IFactory get-factory [^WrapperNode wrapper-node]
+  (.factory wrapper-node))
+
+(defn get-buffer-atom [^WrapperNode wrapper-node]
+  (.bufferAtom wrapper-node))
+
+(defn ^java.nio.ByteBuffer get-buffer [^WrapperNode wrapper-node]
+  @(.bufferAtom wrapper-node))
+
+(defn get-data-atom [^WrapperNode this] (.dataAtom this))
+
+(defn str-val [^IFactory factory ^WrapperNode wrapper-node opts]
+  (let [sval-atom (.svalAtom wrapper-node)]
+    (if (nil? @sval-atom)
+      (compare-and-set! sval-atom nil (.sval factory wrapper-node opts)))
+    @sval-atom))
+
+(defn default-sval [this ^INode inode opts]
+  (pr-str (.getT2 inode opts)))
+
+(defn key-sval [this ^INode inode opts]
+  (let [^MapEntry map-entry (.getT2 inode opts)]
+    (pr-str (.getKey map-entry))))
+
+(defn deserialize-sval [this ^WrapperNode wrapper-node ^ByteBuffer bb opts]
+  (let [svl (.getInt bb)
+        ^CharBuffer cb (.asCharBuffer bb)
+        svc (char-array svl)
+        _ (.get cb svc)
+        sv (String. svc)
+        _ (reset! (.svalAtom wrapper-node) sv)
+        _ (.position bb (+ (.position bb) (* 2 svl)))]
+    (read-string opts sv)))
+
+(defn default-valueLength [this ^WrapperNode wrapper-node opts]
+  (+ 4 ;sval length
+     (* 2 (count (str-val this wrapper-node opts))))) ;sval
+
+(defn default-write-value [^IFactory f
+                            ^WrapperNode wrapper-node
+                            ^ByteBuffer buffer
+                            opts]
+  (let [^String sv (str-val f wrapper-node opts)
+        svl (count sv)
+        _ (.putInt buffer svl)
+        ^CharBuffer cb (.asCharBuffer buffer)]
+    (.put cb sv)
+    (.position buffer (+ (* 2 svl) (.position buffer)))))
