@@ -224,7 +224,7 @@
            opts (assoc opts :db-file-channel file-channel)
            opts (if (has-aafactories opts)
                   opts
-                  (lazy-opts opts))
+                  (virtual-opts opts))
            opts (if (= 0 (.size file-channel))
                   (yearling-new opts)
                   (yearling-old opts))]
