@@ -19,13 +19,13 @@
   (reduce (fn [^FlexVector v i] (.dropNode v i)) vec args))
 
 (defn load-vector [buffer opts]
-  (load-vector- buffer opts))
+  ((:load-vector opts) buffer opts))
 
 (defn load-sorted-map [buffer opts]
-  (load-sorted-map- buffer opts))
+  ((:load-sorted-map opts) buffer opts))
 
 (defn load-sorted-set [buffer opts]
-  (load-sorted-set- buffer opts))
+  ((:load-sorted-set opts) buffer opts))
 
 (defn byte-length [noded]
   (node-byte-length (get-inode noded) (get-opts noded)))
@@ -83,6 +83,9 @@
   ([opts]
    (-> opts
        (assoc :node-read lazy-read)
+       (assoc :load-vector load-lazy-vector)
+       (assoc :load-sorted-map load-lazy-sorted-map)
+       (assoc :load-sorted-set load-lazy-sorted-set)
        (assoc :new-sorted-map
               (fn [r]
                 (let [r (if (:comparator r)

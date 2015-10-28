@@ -1,8 +1,8 @@
 (ns aatree.lazy-nodes
   (:require [aatree.nodes :refer :all])
-  (:import (java.nio ByteBuffer CharBuffer)
-           (aatree.nodes Node INode IFactory AAContext WrapperNode)
-           (clojure.lang MapEntry PersistentVector RT)
+  (:import (java.nio ByteBuffer)
+           (aatree.nodes Node INoded IFactory WrapperNode)
+           (clojure.lang MapEntry RT)
            (aatree AAVector AAMap AASet)))
 
 (set! *warn-on-reflection* true)
@@ -149,13 +149,12 @@
    (instanceClass [this] aatree.AAVector)
    (qualified [this t2 opts] this)
    (valueLength [this node opts]
-     (let [^AAVector v (.getT2 node opts)]
+     (let [^INoded v (.getT2 node opts)]
        (node-byte-length (get-inode v) (get-opts v))))
    (deserialize [this node bb opts]
-     (let [opts (vector-opts opts)]
-       (new AAVector (node-read bb opts) opts)))
+     ((:load-vector opts) bb opts))
    (writeValue [this node buffer opts]
-     (let [^AAVector v (.getT2 node opts)]
+     (let [^INoded v (.getT2 node opts)]
        (node-write (get-inode v) buffer (get-opts v))))))
 
 (register-factory
@@ -166,13 +165,12 @@
    (instanceClass [this] aatree.AAMap)
    (qualified [this t2 opts] this)
    (valueLength [this node opts]
-     (let [^AAMap m (.getT2 node opts)]
+     (let [^INoded m (.getT2 node opts)]
        (node-byte-length (get-inode m) (get-opts m))))
    (deserialize [this node bb opts]
-     (let [opts (map-opts opts)]
-       (new AAMap (node-read bb opts) opts)))
+     ((:load-sorted-map opts) bb opts))
    (writeValue [this node buffer opts]
-     (let [^AAMap v (.getT2 node opts)]
+     (let [^INoded v (.getT2 node opts)]
        (node-write (get-inode v) buffer (get-opts v))))))
 
 (register-factory
@@ -183,13 +181,12 @@
    (instanceClass [this] aatree.AASet)
    (qualified [this t2 opts] this)
    (valueLength [this node opts]
-     (let [^AAMap m (.getT2 node opts)]
+     (let [^INoded m (.getT2 node opts)]
        (node-byte-length (get-inode m) (get-opts m))))
    (deserialize [this node bb opts]
-     (let [opts (map-opts opts)]
-       (new AASet (new AAMap (node-read bb opts) opts))))
+     ((:load-sorted-set opts) bb opts))
    (writeValue [this node buffer opts]
-     (let [^AASet s (.getT2 node opts)]
+     (let [^INoded s (.getT2 node opts)]
        (node-write (get-inode s) buffer (get-opts s))))))
 
 (register-factory
@@ -203,18 +200,17 @@
      (key-sval this inode opts))
    (valueLength [this node opts]
      (let [^MapEntry map-entry (.getT2 node opts)
-           ^AAVector v (.getValue map-entry)]
+           ^INoded v (.getValue map-entry)]
        (+ (default-valueLength this node opts)
           (node-byte-length (get-inode v) (get-opts v)))))
    (deserialize [this node bb opts]
      (let [k (deserialize-sval this node bb opts)
-           opts (vector-opts opts)
-           v (new AAVector (node-read bb opts) opts)]
+           v ((:load-vector opts) bb opts)]
        (MapEntry. k v)))
    (writeValue [this node buffer opts]
      (default-write-value this node buffer opts)
      (let [^MapEntry map-entry (.getT2 node opts)
-           ^AAVector v (.getValue map-entry)]
+           ^INoded v (.getValue map-entry)]
        (node-write (get-inode v) buffer (get-opts v))))))
 
 (register-factory
@@ -228,18 +224,17 @@
      (key-sval this inode opts))
    (valueLength [this node opts]
      (let [^MapEntry map-entry (.getT2 node opts)
-           ^AAMap m (.getValue map-entry)]
+           ^INoded m (.getValue map-entry)]
        (+ (default-valueLength this node opts)
           (node-byte-length (get-inode m) (get-opts m)))))
    (deserialize [this node bb opts]
      (let [k (deserialize-sval this node bb opts)
-           opts (map-opts opts)
-           v (new AAMap (node-read bb opts) opts)]
+           v ((:load-sorted-map opts) bb opts)]
        (MapEntry. k v)))
    (writeValue [this node buffer opts]
      (default-write-value this node buffer opts)
      (let [^MapEntry map-entry (.getT2 node opts)
-           ^AAMap m (.getValue map-entry)]
+           ^INoded m (.getValue map-entry)]
        (node-write (get-inode m) buffer (get-opts m))))))
 
 (register-factory
@@ -253,21 +248,20 @@
      (key-sval this inode opts))
    (valueLength [this node opts]
      (let [^MapEntry map-entry (.getT2 node opts)
-           ^AASet s (.getValue map-entry)]
+           ^INoded s (.getValue map-entry)]
        (+ (default-valueLength this node opts)
           (node-byte-length (get-inode s) (get-opts s)))))
    (deserialize [this node bb opts]
      (let [k (deserialize-sval this node bb opts)
-           opts (set-opts opts)
-           v (new AASet (new AAMap (node-read bb opts) opts))]
+           v ((:load-sorted-set opts) bb opts)]
        (MapEntry. k v)))
    (writeValue [this node buffer opts]
      (default-write-value this node buffer opts)
      (let [^MapEntry map-entry (.getT2 node opts)
-           ^AASet s (.getValue map-entry)]
+           ^INoded s (.getValue map-entry)]
        (node-write (get-inode s) buffer (get-opts s))))))
 
-(defn load-vector- [buffer opts]
+(defn load-lazy-vector [buffer opts]
   (if (:factory-registry opts)
     (let [r (vector-opts opts)]
       (new AAVector (node-read buffer r) r))
@@ -275,7 +269,7 @@
           r (vector-opts r)]
       (new AAVector (node-read buffer r) r))))
 
-(defn load-sorted-map- [buffer opts]
+(defn load-lazy-sorted-map [buffer opts]
   (let [r opts
         r (if (:comparator r)
             r
@@ -286,7 +280,7 @@
         r (map-opts r)]
     (new AAMap (node-read buffer r) r)))
 
-(defn load-sorted-set- [buffer opts]
+(defn load-lazy-sorted-set [buffer opts]
   (let [r opts
         r (if (:comparator r)
             r
