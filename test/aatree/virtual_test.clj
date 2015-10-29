@@ -17,7 +17,6 @@
     (db-update (fn [aamap opts]
                  (assoc aamap :b 1))
                opts)
-    (println "All is well?")
     (db-close opts))
 
   (Thread/sleep 200))

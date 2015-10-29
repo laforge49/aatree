@@ -120,8 +120,8 @@
     (.putLong bb block-position)
     (put-cs256 bb (compute-cs256 (.flip (.duplicate bb))))
     (.flip bb)
-
-    (println "Ribbit!")))
+    (reset! (get-buffer-atom virtual-node) bb)
+    (reset! (.blenAtom virtual-node) blen)))
 
 (defn virtual-read [^ByteBuffer buffer opts]
   (let [^ByteBuffer bb (.slice buffer)
