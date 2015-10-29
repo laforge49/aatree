@@ -59,12 +59,12 @@
         (let [^ByteBuffer bb @(.bufferAtom virtual-node)
               blen (if bb
                      (.limit bb)
-                     (+ 1 ;node id
-                        4 ;byte length - 5
-                        1
+                     (+ 1                                   ;node id
+                        4                                   ;byte length - 5
+                        1                                   ;reference flag
                         (virtual-byte-length (left-node virtual-node opts) opts) ;left node
-                        4 ;level
-                        4 ;cnt
+                        4                                   ;level
+                        4                                   ;cnt
                         (.valueLength (get-factory virtual-node) virtual-node opts) ;t2
                         (virtual-byte-length (right-node virtual-node opts) opts)))] ;right node
           (compare-and-set! a nil blen)))
@@ -85,7 +85,7 @@
           (do
             (.put buffer (byte (.factoryId f)))
             (.putInt buffer (- (virtual-byte-length virtual-node opts) 5))
-            (.put buffer (byte \d))
+            (.put buffer (byte 0))
             (virtual-write (left-node virtual-node opts) buffer opts)
             (.putInt buffer (.getLevel virtual-node opts))
             (.putInt buffer (.getCnt virtual-node opts))
@@ -96,8 +96,15 @@
         (reset! (get-data-atom virtual-node) nil)))))
 
 (defn virtual-as-reference [^VirtualNode virtual-node opts]
-  (println "Ribbit!")
-  virtual-node)
+  (let [db-block-size (:db-block-size opts)
+        bl (virtual-byte-length virtual-node opts)
+        _ (if (< db-block-size bl)
+            (throw (Exception. (str "byte-length exceeds block size: " bl))))
+        ^ByteBuffer bb (ByteBuffer/allocate db-block-size)
+        _ (.flip bb)
+        _ (virtual-write virtual-node bb opts)]
+    (println "Ribbit!")
+    virtual-node))
 
 (defn virtual-read [^ByteBuffer buffer opts]
   (let [^ByteBuffer bb (.slice buffer)

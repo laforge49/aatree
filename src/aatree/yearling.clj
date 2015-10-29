@@ -1,5 +1,6 @@
 (ns aatree.yearling
-  (:require [aatree.core :refer :all])
+  (:require [aatree.core :refer :all]
+            [aatree.nodes :refer :all])
   (:import (java.nio ByteBuffer)
            (java.nio.channels FileChannel)
            (java.util BitSet)
@@ -41,8 +42,8 @@
                   (throw (Exception. (str "allocated size exceeded on write: " mx-allocated-longs ", " ala-len))))
               map-size (byte-length uber-map)
               uber-map (if (< db-block-size (+ 4 8 4 4 8 map-size (* mx-allocated-longs 8) 32))
-                  ((:as-reference opts) uber-map opts)
-                  uber-map)
+                         ((:as-reference opts) uber-map opts)
+                         uber-map)
               map-size (byte-length uber-map)
               _ (if (< db-block-size (+ 4 8 4 4 8 map-size (* mx-allocated-longs 8) 32))
                   (throw (Exception. (str "block-size exceeded on write: " map-size))))
