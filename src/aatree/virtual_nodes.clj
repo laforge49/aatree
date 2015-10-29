@@ -61,6 +61,7 @@
                      (.limit bb)
                      (+ 1 ;node id
                         4 ;byte length - 5
+                        1
                         (virtual-byte-length (left-node virtual-node opts) opts) ;left node
                         4 ;level
                         4 ;cnt
@@ -84,6 +85,7 @@
           (do
             (.put buffer (byte (.factoryId f)))
             (.putInt buffer (- (virtual-byte-length virtual-node opts) 5))
+            (.put buffer (byte \d))
             (virtual-write (left-node virtual-node opts) buffer opts)
             (.putInt buffer (.getLevel virtual-node opts))
             (.putInt buffer (.getCnt virtual-node opts))
@@ -119,7 +121,7 @@
     (let [a (get-data-atom this)]
       (when (nil? @a)
         (let [bb (.slice (get-buffer this))
-              _ (.position bb 5)
+              _ (.position bb 6)
               left (virtual-read bb opts)
               level (long (.getInt bb))
               cnt (long (.getInt bb))
