@@ -32,9 +32,9 @@
               uber-map (assoc uber-map :release-pending *release-pending*)
               db-block-size (:db-block-size opts)
               max-db-size (:max-db-size opts)
-              position (* db-block-size (mod (:transaction-count db-state) 2))
+              block-position (* db-block-size (mod (:transaction-count db-state) 2))
               ^ByteBuffer bb (ByteBuffer/allocate db-block-size)
-              ^FileChannel file-channel (:db-file-channel opts)
+              ^FileChannel db-file-channel (:db-file-channel opts)
               allocated-long-array (.toLongArray *allocated*)
               ala-len (alength allocated-long-array)
               mx-allocated-longs (max-allocated-longs opts)
@@ -42,7 +42,7 @@
                   (throw (Exception. (str "allocated size exceeded on write: " mx-allocated-longs ", " ala-len))))
               map-size (byte-length uber-map)
               uber-map (if (< db-block-size (+ 4 8 4 4 8 map-size (* mx-allocated-longs 8) 32))
-                         ((:as-reference opts) uber-map opts)
+                         ((:as-reference opts) (get-inode uber-map) opts)
                          uber-map)
               map-size (byte-length uber-map)
               _ (if (< db-block-size (+ 4 8 4 4 8 map-size (* mx-allocated-longs 8) 32))
@@ -60,11 +60,8 @@
           (.put (.asLongBuffer bb) allocated-long-array)
           (.position bb (+ (.position bb) (* ala-len 8)))
           (put-cs256 bb (compute-cs256 (.flip (.duplicate bb))))
-
-          ;(println map-size (+ 4 8 4 4 8 map-size (* mx-allocated-longs 8) 32))
-
           (.flip bb)
-          (.write file-channel bb (long position))
+          (.write db-file-channel bb (long block-position))
           db-state)
         (catch Exception e
           (.printStackTrace e)
@@ -101,13 +98,13 @@
     (yearling-update yearling-null-updater opts)
     opts))
 
-(defn- yearling-read [position opts]
-  (let [^FileChannel file-channel (:db-file-channel opts)
+(defn- yearling-read [block-position opts]
+  (let [^FileChannel db-file-channel (:db-file-channel opts)
         db-block-size (:db-block-size opts)
         max-db-size (:max-db-size opts)
         ^ByteBuffer bb (ByteBuffer/allocate db-block-size)
         _ (.limit bb (+ 4 8 4 4 8))
-        _ (.read file-channel bb (long position))
+        _ (.read db-file-channel bb (long block-position))
         _ (.flip bb)]
     (if (not= db-block-size (.getInt bb))
       nil
@@ -123,7 +120,7 @@
               transaction-count (.getLong bb)
               input-size (+ (.limit bb) map-size (* ala-len 8) 32)
               _ (.limit bb input-size)
-              _ (.read file-channel bb (long (+ position 4 8 4 4 8)))
+              _ (.read db-file-channel bb (long (+ block-position 4 8 4 4 8)))
               _ (.flip bb)
               csp (- input-size 32)
               _ (.limit bb csp)
@@ -223,18 +220,18 @@
            opts (assoc opts :db-release-pending yearling-release-pending)
            opts (assoc opts :db-release yearling-release)
            opts (assoc opts :db-process-pending yearling-process-pending)
-           file-channel
+           db-file-channel
            (FileChannel/open (.toPath file)
                              (into-array OpenOption
                                          [StandardOpenOption/CREATE
                                           StandardOpenOption/READ
                                           StandardOpenOption/WRITE
                                           StandardOpenOption/SYNC]))
-           opts (assoc opts :db-file-channel file-channel)
+           opts (assoc opts :db-file-channel db-file-channel)
            opts (if (has-aafactories opts)
                   opts
                   (virtual-opts opts))
-           opts (if (= 0 (.size file-channel))
+           opts (if (= 0 (.size db-file-channel))
                   (yearling-new opts)
                   (yearling-old opts))]
        opts))))

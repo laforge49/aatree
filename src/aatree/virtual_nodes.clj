@@ -3,7 +3,8 @@
   (:import (java.nio ByteBuffer)
            (aatree.nodes Node IFactory WrapperNode)
            (clojure.lang RT)
-           (aatree AAVector AAMap AASet)))
+           (aatree AAVector AAMap AASet)
+           (java.nio.channels FileChannel)))
 
 (set! *warn-on-reflection* true)
 
@@ -101,8 +102,11 @@
         _ (if (< db-block-size bl)
             (throw (Exception. (str "byte-length exceeds block size: " bl))))
         ^ByteBuffer bb (ByteBuffer/allocate db-block-size)
+        _ (virtual-write virtual-node bb opts)
         _ (.flip bb)
-        _ (virtual-write virtual-node bb opts)]
+        block-position ((:db-allocate opts) opts)
+        ^FileChannel db-file-channel (:db-file-channel opts)
+        _ (.write db-file-channel bb (long block-position))]
     (println "Ribbit!")
     virtual-node))
 
