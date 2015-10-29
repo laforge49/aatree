@@ -101,16 +101,18 @@
         bl (virtual-byte-length virtual-node opts)
         _ (if (< db-block-size bl)
             (throw (Exception. (str "byte-length exceeds block size: " bl))))
-        ^ByteBuffer bb (ByteBuffer/allocate db-block-size)
-        _ (virtual-write virtual-node bb opts)
-        _ (.flip bb)
+        ^ByteBuffer nbb (ByteBuffer/allocate bl)
+        _ (virtual-write virtual-node nbb opts)
+        _ (.flip nbb)
         block-position ((:db-allocate opts) opts)
         ^FileChannel db-file-channel (:db-file-channel opts)
-        _ (.write db-file-channel bb (long block-position))
+        _ (.write db-file-channel nbb (long block-position))
+        _ (.flip nbb)
         blen (+ 1                                           ;bode id
                 4                                           ;byte-length - 5
                 1                                           ;reference flag
                 8                                           ;block position
+                4                                           ;block length
                 32)                                         ;checksum
         ^ByteBuffer bb (ByteBuffer/allocate blen)
         ^IFactory f (.factory virtual-node)]
@@ -118,7 +120,8 @@
     (.putInt bb (- blen 5))
     (.put bb (byte 1))
     (.putLong bb block-position)
-    (put-cs256 bb (compute-cs256 (.flip (.duplicate bb))))
+    (.putInt bb bl)
+    (put-cs256 bb (compute-cs256 nbb))
     (.flip bb)
     (reset! (get-buffer-atom virtual-node) bb)
     (reset! (.blenAtom virtual-node) blen)))
@@ -143,13 +146,33 @@
           (atom bb)
           f)))))
 
+(defn fetch [^ByteBuffer bb opts]
+  (let [block-position (.getLong bb)
+        block-length (.getInt bb)
+        ocs (get-cs256 bb)
+        ^ByteBuffer nbb (ByteBuffer/allocate block-length)
+        ^FileChannel db-file-channel (:db-file-channel opts)
+        _ (.read db-file-channel nbb (long block-position))
+        _ (.flip nbb)
+        cs (compute-cs256 nbb)
+        _ (if (not= ocs cs)
+            (throw (Exception. "corrupted database")))
+        ]
+    (.flip nbb)
+    (.position nbb 6)
+    nbb))
+
 (defn- get-virtual-data [^VirtualNode this opts]
   (if (empty-node? this)
     emptyNode
     (let [a (get-data-atom this)]
       (when (nil? @a)
         (let [bb (.slice (get-buffer this))
-              _ (.position bb 6)
+              _ (.position bb 5)
+              reference-flag (.get bb)
+              ^ByteBuffer bb (if (= reference-flag 0)
+                   bb
+                   (fetch bb opts))
               left (virtual-read bb opts)
               level (long (.getInt bb))
               cnt (long (.getInt bb))

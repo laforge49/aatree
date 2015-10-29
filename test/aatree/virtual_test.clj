@@ -14,9 +14,13 @@
     (db-update (fn [aamap opts]
                  (assoc aamap :a 1))
                opts)
+    (let [aamap (db-get-sorted-map opts)]
+      (is (= aamap {:a 1})))
     (db-update (fn [aamap opts]
-                 (assoc aamap :b 1))
+                 (assoc aamap :b 2))
                opts)
+    (let [aamap (db-get-sorted-map opts)]
+      (is (= aamap {:a 1 :b 2})))
     (db-close opts))
 
   (Thread/sleep 200))
