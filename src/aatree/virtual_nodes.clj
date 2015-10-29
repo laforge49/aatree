@@ -106,9 +106,20 @@
         _ (.flip bb)
         block-position ((:db-allocate opts) opts)
         ^FileChannel db-file-channel (:db-file-channel opts)
-        _ (.write db-file-channel bb (long block-position))]
-    (println "Ribbit!")
-    virtual-node))
+        _ (.write db-file-channel bb (long block-position))
+        blen (+ 1                                           ;bode id
+                4                                           ;byte-length - 5
+                1                                           ;reference flag
+                8                                           ;block position
+                32)                                         ;checksum
+        ^ByteBuffer bb (ByteBuffer/allocate blen)
+        ^IFactory f (.factory virtual-node)]
+    (.put bb (byte (.factoryId f)))
+    (.putInt bb (- blen 5))
+    (.put bb (byte 1))
+    (.putLong bb block-position)
+
+    (println "Ribbit!")))
 
 (defn virtual-read [^ByteBuffer buffer opts]
   (let [^ByteBuffer bb (.slice buffer)
