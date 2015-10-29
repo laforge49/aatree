@@ -122,6 +122,7 @@
   ([opts]
    (-> opts
        (assoc :node-read virtual-read)
+       (assoc :as-reference virtual-as-reference)
        (assoc :load-vector load-virtual-vector)
        (assoc :load-sorted-map load-virtual-sorted-map)
        (assoc :load-sorted-set load-virtual-sorted-set)

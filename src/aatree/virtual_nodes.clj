@@ -95,6 +95,10 @@
         (compare-and-set! (get-buffer-atom virtual-node) nil new-bb)
         (reset! (get-data-atom virtual-node) nil)))))
 
+(defn virtual-as-reference [^VirtualNode virtual-node opts]
+  (println "Ribbit!")
+  virtual-node)
+
 (defn virtual-read [^ByteBuffer buffer opts]
   (let [^ByteBuffer bb (.slice buffer)
         id (.get bb)]
