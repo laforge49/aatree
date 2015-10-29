@@ -42,9 +42,9 @@
               ala-len (alength allocated-long-array)
               mx-allocated-longs (max-allocated-longs opts)]
           (if (< mx-allocated-longs ala-len)
-            (throw (Exception. "allocated size exceeded on write")))
+            (throw (Exception. (str "allocated size exceeded on write: " mx-allocated-longs ", " ala-len))))
           (if (< db-block-size (+ 4 8 4 4 8 map-size (* mx-allocated-longs 8) 32))
-            (throw (Exception. "block-size exceeded on write")))
+            (throw (Exception. (str "block-size exceeded on write: " map-size))))
           (.putInt bb db-block-size)
           (.putLong bb max-db-size)
           (.putInt bb map-size)
@@ -54,6 +54,9 @@
           (.put (.asLongBuffer bb) allocated-long-array)
           (.position bb (+ (.position bb) (* ala-len 8)))
           (put-cs256 bb (compute-cs256 (.flip (.duplicate bb))))
+
+          ;(println map-size (+ 4 8 4 4 8 map-size (* mx-allocated-longs 8) 32))
+
           (.flip bb)
           (.write file-channel bb (long position))
           db-state)
