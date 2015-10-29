@@ -76,7 +76,9 @@
         db-agent (:db-agent opts)]
     (if send-write-timeout
       (await-for send-write-timeout db-agent)
-      (await db-agent))))
+      (do
+        (await db-agent)
+        true))))
 
 (defn- create-db-agent [db-state opts]
   (assoc opts :db-agent (apply agent db-state (get opts :db-agent-options []))))
