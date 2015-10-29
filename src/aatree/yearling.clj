@@ -40,11 +40,11 @@
               map-size (byte-length uber-map)
               allocated-long-array (.toLongArray *allocated*)
               ala-len (alength allocated-long-array)
-              mx-allocated-longs (max-allocated-longs opts)]
-          (if (< mx-allocated-longs ala-len)
-            (throw (Exception. (str "allocated size exceeded on write: " mx-allocated-longs ", " ala-len))))
-          (if (< db-block-size (+ 4 8 4 4 8 map-size (* mx-allocated-longs 8) 32))
-            (throw (Exception. (str "block-size exceeded on write: " map-size))))
+              mx-allocated-longs (max-allocated-longs opts)
+              _ (if (< mx-allocated-longs ala-len)
+                  (throw (Exception. (str "allocated size exceeded on write: " mx-allocated-longs ", " ala-len))))
+              _ (if (< db-block-size (+ 4 8 4 4 8 map-size (* mx-allocated-longs 8) 32))
+                  (throw (Exception. (str "block-size exceeded on write: " map-size))))]
           (.putInt bb db-block-size)
           (.putLong bb max-db-size)
           (.putInt bb map-size)
