@@ -1,5 +1,6 @@
 (ns aatree.cs256-example
-  (:require [aatree.core :refer :all])
+  (:require [aatree.core :refer :all]
+            [aatree.nodes :refer :all])
   (:import (java.nio ByteBuffer)
            (java.io File)))
 

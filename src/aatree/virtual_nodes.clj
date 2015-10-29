@@ -118,6 +118,8 @@
     (.putInt bb (- blen 5))
     (.put bb (byte 1))
     (.putLong bb block-position)
+    (put-cs256 bb (compute-cs256 (.flip (.duplicate bb))))
+    (.flip bb)
 
     (println "Ribbit!")))
 

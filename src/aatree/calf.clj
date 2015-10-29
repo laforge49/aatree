@@ -1,5 +1,6 @@
 (ns aatree.calf
-  (:require [aatree.core :refer :all])
+  (:require [aatree.core :refer :all]
+            [aatree.nodes :refer :all])
   (:import (java.nio.channels FileChannel)
            (java.io File)
            (java.nio.file OpenOption StandardOpenOption)

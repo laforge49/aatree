@@ -192,34 +192,6 @@
       (finally
         (.close fc)))))
 
-(defn ^BitSet compute-cs256 [^ByteBuffer bb]
-  (let [^BitSet bs (BitSet. 256)
-        len (.remaining bb)]
-    (reduce (fn [^BitSet bitset i]
-              (let [bbv (- (.get bb) Byte/MIN_VALUE)
-                    j (mod (+ bbv (* i 7)) 256)]
-                (.flip bitset j))
-              bitset)
-              bs
-              (range len))
-    bs))
-
-(defn put-cs256 [^ByteBuffer bb ^BitSet cs256]
-  (let [la (.toLongArray cs256)
-        lal (alength la)
-        r (range (- 4 lal))
-        ^LongBuffer lb (.asLongBuffer bb)]
-    (.put lb la)
-    (reduce (fn [a b] (.put lb 0)) 0 r))
-  (.position bb (+ (.position bb) 32)))
-
-(defn ^BitSet get-cs256 [^ByteBuffer bb]
-  (let [la (long-array 4)
-        _ (.get (.asLongBuffer bb) (longs la))
-        bs (BitSet/valueOf (longs la))]
-    (.position bb (+ (.position bb) 32))
-    bs))
-
 (defn db-close [opts] ((:db-close opts) opts))
 
 (defn db-get-sorted-map [opts] ((:db-get-sorted-map opts) opts))
