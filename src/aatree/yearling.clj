@@ -16,26 +16,36 @@
 (def ^:dynamic *time-millis*)
 (def ^:dynamic *transaction-count*)
 
+(declare yearling-release)
+
 (defn- max-blocks [opts] (quot (:max-db-size opts) (:db-block-size opts)))
 
 (defn- max-allocated-longs [opts] (quot (+ (max-blocks opts) 7) 8))
 
+(defn- release-dropped-blocks [old-uber-map uber-map opts]
+  (let [dropped-blocks ((:find-dropped-blocks opts)
+                   (get-inode old-uber-map)
+                   (get-inode uber-map)
+                   opts)]
+    (if (empty? dropped-blocks)
+      uber-map
+      (do
+        (reduce (fn [_ block-position] (yearling-release block-position opts)) nil dropped-blocks)
+        (let [new-uber-map (assoc uber-map :release-pending *release-pending*)]
+          (recur uber-map new-uber-map opts))))))
+
 (defn- yearling-updater [db-state app-updater opts]
-  (let [uber-map (:uber-map db-state)]
+  (let [old-uber-map (:uber-map db-state)]
     (binding [*allocated* (:allocated db-state)
               *transaction-count* (+ (:transaction-count db-state) 1)
-              *release-pending* (:release-pending uber-map)
+              *release-pending* (:release-pending old-uber-map)
               *time-millis* (System/currentTimeMillis)]
       (try
-        (let [old-app-map (:app-map uber-map)
-              app-map (app-updater old-app-map opts)
-              dropped-blocks ((:find-dropped-blocks opts)
-                               (get-inode old-app-map)
-                               (get-inode app-map)
-                               opts)
-              _ (println dropped-blocks)
-              uber-map (assoc uber-map :app-map app-map)
+        (let [app-map (:app-map old-uber-map)
+              app-map (app-updater app-map opts)
+              uber-map (assoc old-uber-map :app-map app-map)
               uber-map (assoc uber-map :release-pending *release-pending*)
+              uber-map (release-dropped-blocks old-uber-map uber-map opts)
               db-block-size (:db-block-size opts)
               max-db-size (:max-db-size opts)
               block-position (* db-block-size (mod (:transaction-count db-state) 2))
