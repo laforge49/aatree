@@ -226,7 +226,10 @@
       ((:load-vector opts) bb opts))
     (writeValue [this node buffer opts]
       (let [^INoded v (.getT2 node opts)]
-        (node-write (get-inode v) buffer (get-opts v))))))
+        (node-write (get-inode v) buffer (get-opts v))))
+    (valueNode [this node opts]
+      (let [^INoded v (.getT2 node opts)]
+        (get-inode v)))))
 
 (register-factory
   default-factory-registry
@@ -242,7 +245,10 @@
       ((:load-sorted-map opts) bb opts))
     (writeValue [this node buffer opts]
       (let [^INoded v (.getT2 node opts)]
-        (node-write (get-inode v) buffer (get-opts v))))))
+        (node-write (get-inode v) buffer (get-opts v))))
+    (valueNode [this node opts]
+      (let [^INoded v (.getT2 node opts)]
+        (get-inode v)))))
 
 (register-factory
   default-factory-registry
@@ -258,7 +264,10 @@
       ((:load-sorted-set opts) bb opts))
     (writeValue [this node buffer opts]
       (let [^INoded s (.getT2 node opts)]
-        (node-write (get-inode s) buffer (get-opts s))))))
+        (node-write (get-inode s) buffer (get-opts s))))
+    (valueNode [this node opts]
+      (let [^INoded v (.getT2 node opts)]
+        (get-inode v)))))
 
 (register-factory
   default-factory-registry
@@ -282,7 +291,11 @@
       (default-write-value this node buffer opts)
       (let [^MapEntry map-entry (.getT2 node opts)
             ^INoded v (.getValue map-entry)]
-        (node-write (get-inode v) buffer (get-opts v))))))
+        (node-write (get-inode v) buffer (get-opts v))))
+    (valueNode [this node opts]
+      (let [^MapEntry map-entry (.getT2 node opts)
+            ^INoded v (.getValue map-entry)]
+        (get-inode v)))))
 
 (register-factory
   default-factory-registry
@@ -306,7 +319,11 @@
       (default-write-value this node buffer opts)
       (let [^MapEntry map-entry (.getT2 node opts)
             ^INoded m (.getValue map-entry)]
-        (node-write (get-inode m) buffer (get-opts m))))))
+        (node-write (get-inode m) buffer (get-opts m))))
+    (valueNode [this node opts]
+      (let [^MapEntry map-entry (.getT2 node opts)
+            ^INoded v (.getValue map-entry)]
+        (get-inode v)))))
 
 (register-factory
   default-factory-registry
@@ -330,4 +347,8 @@
       (default-write-value this node buffer opts)
       (let [^MapEntry map-entry (.getT2 node opts)
             ^INoded s (.getValue map-entry)]
-        (node-write (get-inode s) buffer (get-opts s))))))
+        (node-write (get-inode s) buffer (get-opts s))))
+    (valueNode [this node opts]
+      (let [^MapEntry map-entry (.getT2 node opts)
+            ^INoded v (.getValue map-entry)]
+        (get-inode v)))))

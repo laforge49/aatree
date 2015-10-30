@@ -444,7 +444,9 @@
                 opts])
   (writeValue [^aatree.nodes.INode node
                ^java.nio.ByteBuffer buffer
-               opts]))
+               opts])
+  (valueNode [^aatree.nodes.INode node
+              opts]))
 
 (deftype factory-registry [by-id-atom by-class-atom])
 
@@ -621,7 +623,8 @@
   (reify IFactory
     (factoryId [this] (byte \n));;;;;;;;;;;;;;;;;;;;;;;; n - nil content
     (instanceClass [this] nil)
-    (qualified [this t2 opts] this)))
+    (qualified [this t2 opts] this)
+    (valueNode [this node opts] nil)))
 
 (register-factory
   default-factory-registry
@@ -637,7 +640,8 @@
     (deserialize [this node bb opts]
       (deserialize-sval this node bb opts))
     (writeValue [this node buffer opts]
-      (default-write-value this node buffer opts))))
+      (default-write-value this node buffer opts))
+    (valueNode [this node opts] nil)))
 
 (.setDefaultFactory
   vector-context
@@ -661,7 +665,8 @@
             t2 (MapEntry. (.get v 0) (.get v 1))]
         t2))
     (writeValue [this node buffer opts]
-      (default-write-value this node buffer opts))))
+      (default-write-value this node buffer opts))
+    (valueNode [this node opts] nil)))
 
 (.setDefaultFactory
   map-context
@@ -684,7 +689,8 @@
       (let [k (deserialize-sval this node bb opts)]
         (MapEntry. k k)))
     (writeValue [this node buffer opts]
-      (default-write-value this node buffer opts))))
+      (default-write-value this node buffer opts))
+    (valueNode [this node opts] nil)))
 
 (.setDefaultFactory
   set-context
