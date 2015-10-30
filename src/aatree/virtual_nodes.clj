@@ -51,6 +51,22 @@
 
   (nodeWrite [this buffer opts] (virtual-write this buffer opts)))
 
+(defn unchanged? [^VirtualNode virtual-node]
+  @(.-buffer_atom virtual-node))
+
+(defn search-unchanged [^VirtualNode virtual-node unchanged opts]
+  (if (empty-node? virtual-node)
+    unchanged
+    (if (unchanged? virtual-node)
+      (conj unchanged virtual-node)
+      (search-unchanged
+        (left-node virtual-node opts)
+        (search-unchanged
+          (right-node virtual-node opts)
+          unchanged
+          opts)
+        opts))))
+
 (defn virtual-byte-length [^VirtualNode virtual-node opts]
   (if (empty-node? virtual-node)
     1
