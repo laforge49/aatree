@@ -51,21 +51,27 @@
 
   (nodeWrite [this buffer opts] (virtual-write this buffer opts)))
 
+(defn ^VirtualNode value-node [^VirtualNode virtual-node opts]
+  (if (empty-node? virtual-node)
+    virtual-node)
+  (let [^IFactory f (.factory virtual-node)
+        vn (.valueNode f virtual-node opts)]
+    (if vn
+      vn
+      (.getNada virtual-node))))
+
 (defn unchanged? [^VirtualNode virtual-node]
   @(.-buffer_atom virtual-node))
 
-(defn search-unchanged [^VirtualNode virtual-node unchanged opts]
+(defn search-unchanged [unchanged ^VirtualNode virtual-node opts]
   (if (empty-node? virtual-node)
     unchanged
     (if (unchanged? virtual-node)
       (conj unchanged virtual-node)
-      (search-unchanged
-        (left-node virtual-node opts)
-        (search-unchanged
-          (right-node virtual-node opts)
-          unchanged
-          opts)
-        opts))))
+      (-> unchanged
+          (search-unchanged (value-node virtual-node opts) opts)
+          (search-unchanged (left-node virtual-node opts) opts)
+          (search-unchanged (right-node virtual-node opts) opts)))))
 
 (defn virtual-byte-length [^VirtualNode virtual-node opts]
   (if (empty-node? virtual-node)
