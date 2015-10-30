@@ -60,7 +60,7 @@
       vn
       (.getNada virtual-node))))
 
-(defn unchanged? [^VirtualNode virtual-node]
+(defn- unchanged? [^VirtualNode virtual-node]
   @(.-buffer_atom virtual-node))
 
 (defn- search-unchanged [unchanged ^VirtualNode virtual-node opts]
@@ -79,6 +79,7 @@
     (if (contains? unchanged virtual-node)
       unused
       (let [^ByteBuffer bb @(.-buffer_atom virtual-node)
+            _ (if bb (println (.get bb 5)))
             unused (if (and bb (= 1 (.get bb 5)))
                         (conj unused (.getLong bb 6))
                         unused)

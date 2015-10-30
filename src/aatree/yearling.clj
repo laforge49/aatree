@@ -27,7 +27,13 @@
               *release-pending* (:release-pending uber-map)
               *time-millis* (System/currentTimeMillis)]
       (try
-        (let [app-map (app-updater (:app-map uber-map) opts)
+        (let [old-app-map (:app-map uber-map)
+              app-map (app-updater old-app-map opts)
+              dropped-blocks ((:find-dropped-blocks opts)
+                               (get-inode old-app-map)
+                               (get-inode app-map)
+                               opts)
+              _ (println dropped-blocks)
               uber-map (assoc uber-map :app-map app-map)
               uber-map (assoc uber-map :release-pending *release-pending*)
               db-block-size (:db-block-size opts)

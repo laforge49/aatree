@@ -121,6 +121,7 @@
   ([] (virtual-opts {}))
   ([opts]
    (-> opts
+       (assoc :find-dropped-blocks find-dropped-blocks)
        (assoc :node-read virtual-read)
        (assoc :as-reference virtual-as-reference)
        (assoc :load-vector load-virtual-vector)
