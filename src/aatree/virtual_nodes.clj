@@ -73,6 +73,13 @@
           (search-unchanged (left-node virtual-node opts) opts)
           (search-unchanged (right-node virtual-node opts) opts)))))
 
+(defn unused-blocks [unused ^VirtualNode virtual-node unchanged opts]
+  (if (empty-node? virtual-node)
+    unused
+    (if (contains? unchanged virtual-node)
+      unused
+      (   ))))
+
 (defn virtual-byte-length [^VirtualNode virtual-node opts]
   (if (empty-node? virtual-node)
     1
