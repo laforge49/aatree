@@ -63,7 +63,7 @@
 (defn unchanged? [^VirtualNode virtual-node]
   @(.-buffer_atom virtual-node))
 
-(defn search-unchanged [unchanged ^VirtualNode virtual-node opts]
+(defn- search-unchanged [unchanged ^VirtualNode virtual-node opts]
   (if (empty-node? virtual-node)
     unchanged
     (if (unchanged? virtual-node)
@@ -73,12 +73,22 @@
           (search-unchanged (left-node virtual-node opts) opts)
           (search-unchanged (right-node virtual-node opts) opts)))))
 
-(defn unused-blocks [unused ^VirtualNode virtual-node unchanged opts]
+(defn- dropped-blocks [unused ^VirtualNode virtual-node unchanged opts]
   (if (empty-node? virtual-node)
     unused
     (if (contains? unchanged virtual-node)
       unused
-      (   ))))
+      (let [^ByteBuffer bb @(.-buffer_atom virtual-node)
+            unused (if (and bb (= 1 (.get bb 5)))
+                        (conj unused (.getLong bb 6))
+                        unused)
+            unused (dropped-blocks unused (value-node virtual-node opts) unchanged opts)
+            unused (dropped-blocks unused (left-node virtual-node opts) unchanged opts)
+            unused (dropped-blocks unused (right-node virtual-node opts) unchanged opts)]
+        unused))))
+
+(defn find-dropped-blocks [old-node new-node opts]
+  (dropped-blocks [] old-node (search-unchanged #{} new-node opts) opts))
 
 (defn virtual-byte-length [^VirtualNode virtual-node opts]
   (if (empty-node? virtual-node)
