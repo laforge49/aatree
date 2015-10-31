@@ -12,7 +12,8 @@
          ^aatree.nodes.INode get-virtual-data
          create-virtual-empty-node
          virtual-byte-length
-         virtual-write)
+         virtual-write
+         virtual-as-reference)
 
 (deftype VirtualNode [data-atom sval-atom blen-atom buffer-atom factory]
 
@@ -90,6 +91,33 @@
 (defn find-dropped-blocks [old-node new-node opts]
   (dropped-blocks [] old-node (search-unchanged #{} new-node opts) opts))
 
+(defn- new-byte-length [^VirtualNode virtual-node opts]
+  (+ 1                                   ;node id
+     4                                   ;byte length - 5
+     1                                   ;reference flag
+     (virtual-byte-length (left-node virtual-node opts) opts) ;left node
+     4                                   ;level
+     4                                   ;cnt
+     (.valueLength (get-factory virtual-node) virtual-node opts) ;t2
+     (virtual-byte-length (right-node virtual-node opts) opts)))
+
+(defn shrinker [^VirtualNode virtual-node opts]
+  (let [blen (new-byte-length virtual-node opts)]
+;    (println "---------------" (:db-block-size opts) blen )
+    (if (>= (:db-block-size opts) blen)
+      blen
+      (let [largest-node (left-node virtual-node opts)
+            nlen (virtual-byte-length largest-node opts)
+            nx-node (right-node virtual-node opts)
+            largest-node (if (< nlen (virtual-byte-length nx-node opts))
+                           nx-node)
+            nlen (virtual-byte-length largest-node opts)
+            nx-node (value-node virtual-node opts)
+            largest-node (if (< nlen (virtual-byte-length nx-node opts))
+                           nx-node)]
+        (virtual-as-reference largest-node opts)
+        (recur value-node opts)))))
+
 (defn virtual-byte-length [^VirtualNode virtual-node opts]
   (if (empty-node? virtual-node)
     1
@@ -99,14 +127,7 @@
         (let [^ByteBuffer bb @(.bufferAtom virtual-node)
               blen (if bb
                      (.limit bb)
-                     (+ 1                                   ;node id
-                        4                                   ;byte length - 5
-                        1                                   ;reference flag
-                        (virtual-byte-length (left-node virtual-node opts) opts) ;left node
-                        4                                   ;level
-                        4                                   ;cnt
-                        (.valueLength (get-factory virtual-node) virtual-node opts) ;t2
-                        (virtual-byte-length (right-node virtual-node opts) opts)))] ;right node
+                     (shrinker virtual-node opts))] ;right node
           (compare-and-set! a nil blen)))
       @a)))
 
