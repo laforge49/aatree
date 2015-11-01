@@ -30,6 +30,8 @@ use of warn-on-reflection.
 
 ## Wiki
 
+[Virtual Structures, easy to use but almost too simple to explain](https://github.com/laforge49/aatree/wiki/Virtual-Structures,-easy-to-use-but-almost-too-simple-to-explain)
+
 [API](https://github.com/laforge49/aatree/wiki/API)
 
 [Benchmarks](https://github.com/laforge49/aatree/wiki/Benchmarks)
