@@ -18,25 +18,39 @@
     (db-update (fn [aamap opts]
                  (assoc aamap :b 2))
                opts)
-    (println 2)
+    (println 2 (db-allocated opts) (count (db-release-pending opts)))
     (db-update (fn [aamap opts]
                  (assoc aamap :c 3))
                opts)
-    (println 3)
+    (println 3 (db-allocated opts) (count (db-release-pending opts)))
     (db-update (fn [aamap opts]
                  (assoc aamap :d 4))
                opts)
-    (println 4)
+    (println 4 (db-allocated opts) (count (db-release-pending opts)))
     (db-update (fn [aamap opts]
                  (assoc aamap :e 5))
                opts)
-    (println 5)
+    (println 5 (db-allocated opts) (count (db-release-pending opts)))
     (db-update (fn [aamap opts]
                  (assoc aamap :f 6))
                opts)
-    (println 6)
-;    (println (db-allocated opts))
-;    (println (count (db-release-pending opts)))
+    (println 6 (db-allocated opts) (count (db-release-pending opts)))
+    (db-update (fn [aamap opts]
+                 (assoc aamap :f 6))
+               opts)
+    (println 7 (db-allocated opts) (count (db-release-pending opts)))
+    (db-update (fn [aamap opts]
+                 (assoc aamap :f 6))
+               opts)
+    (println 8 (db-allocated opts) (count (db-release-pending opts)))
+    (db-update (fn [aamap opts]
+                 (assoc aamap :f 6))
+               opts)
+    (println 9 (db-allocated opts) (count (db-release-pending opts)))
+    (db-update (fn [aamap opts]
+                 (assoc aamap :f 6))
+               opts)
+    (println 10 (db-allocated opts) (count (db-release-pending opts)))
     (db-close opts))
 
   (Thread/sleep 200))
