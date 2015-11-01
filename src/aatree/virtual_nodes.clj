@@ -103,20 +103,21 @@
 
 (defn shrinker [^VirtualNode virtual-node opts]
   (let [blen (new-byte-length virtual-node opts)]
-;    (println "---------------" (:db-block-size opts) blen )
     (if (>= (:db-block-size opts) blen)
       blen
       (let [largest-node (left-node virtual-node opts)
             nlen (virtual-byte-length largest-node opts)
             nx-node (right-node virtual-node opts)
             largest-node (if (< nlen (virtual-byte-length nx-node opts))
-                           nx-node)
+                           nx-node
+                           largest-node)
             nlen (virtual-byte-length largest-node opts)
             nx-node (value-node virtual-node opts)
             largest-node (if (< nlen (virtual-byte-length nx-node opts))
-                           nx-node)]
+                           nx-node
+                           largest-node)]
         (virtual-as-reference largest-node opts)
-        (recur value-node opts)))))
+        (recur virtual-node opts)))))
 
 (defn virtual-byte-length [^VirtualNode virtual-node opts]
   (if (empty-node? virtual-node)

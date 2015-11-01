@@ -56,6 +56,7 @@
               mx-allocated-longs (max-allocated-longs opts)
               _ (if (< mx-allocated-longs ala-len)
                   (throw (Exception. (str "allocated size exceeded on write: " mx-allocated-longs ", " ala-len))))
+              _ (println "yearling uber-map" uber-map)
               map-size (byte-length uber-map)
               _ (if (< db-block-size (+ 4 8 4 4 8 map-size (* mx-allocated-longs 8) 32))
                          ((:as-reference opts) (get-inode uber-map) opts))
