@@ -9,7 +9,7 @@
 (deftest virtual
   (.delete (File. "virtual-test.yearling"))
 
-  (let [opts (yearling-open (File. "virtual-test.yearling") 200 (* 4 700)
+  (let [opts (yearling-open (File. "virtual-test.yearling") 400 100000
                             {:send-update-timeout 300})]
     (db-update (fn [aamap opts]
                  (assoc aamap :a 1))

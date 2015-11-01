@@ -27,7 +27,6 @@
                    (get-inode old-uber-map)
                    (get-inode uber-map)
                    opts)]
-    (println "release dropped blocks" (count dropped-blocks))
     (if (empty? dropped-blocks)
       uber-map
       (do
@@ -46,7 +45,6 @@
               app-map (app-updater app-map opts)
               uber-map (assoc old-uber-map :app-map app-map)
               uber-map (assoc uber-map :release-pending *release-pending*)
-              _ (println "cleanup")
               uber-map (release-dropped-blocks old-uber-map uber-map opts)
               db-block-size (:db-block-size opts)
               max-db-size (:max-db-size opts)
@@ -58,7 +56,6 @@
               mx-allocated-longs (max-allocated-longs opts)
               _ (if (< mx-allocated-longs ala-len)
                   (throw (Exception. (str "allocated size exceeded on write: " mx-allocated-longs ", " ala-len))))
-;              _ (println "yearling uber-map" uber-map)
               map-size (byte-length uber-map)
               _ (if (< db-block-size (+ 4 8 4 4 8 map-size (* mx-allocated-longs 8) 32))
                          ((:as-reference opts) (get-inode uber-map) opts))
