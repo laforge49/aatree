@@ -9,7 +9,8 @@
 (deftest yearling
   (.delete (File. "yearling-test.yearling"))
 
-  (let [opts (yearling-open (File. "yearling-test.yearling") 10000 100000)
+  (let [opts (yearling-open (File. "yearling-test.yearling") 10000 100000
+                            {:db-pending-age 99})
         _ (is (= (db-transaction-count opts) 2))
         aamap (db-get-sorted-map opts)
         _ (is (= aamap {}))
