@@ -1,4 +1,4 @@
-(ns aatree.virtual-test
+(ns aatree.virtual-benchmark
   (:require [clojure.test :refer :all]
             [aatree.core :refer :all]
             [aatree.yearling :refer :all])
@@ -11,7 +11,7 @@
 
   (let [opts (yearling-open (File. "virtual-test.yearling")
                             {:send-update-timeout 300})]
-    (reduce (fn [_ j]
+    (time (reduce (fn [_ j]
               (db-update (fn [aamap opts]
                            (reduce (fn [m i]
                                      (assoc m (+ i (* j 100000)) 1))
@@ -20,7 +20,7 @@
                          opts)
               )
             0
-            (range 100))
+            (range 100))); -> Elapsed time: 14297.332943 msecs
     (db-close opts))
 
   (Thread/sleep 200))
