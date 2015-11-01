@@ -16,7 +16,8 @@
 (def ^:dynamic *time-millis*)
 (def ^:dynamic *transaction-count*)
 
-(declare yearling-release)
+(declare yearling-release
+         yearling-process-pending)
 
 (defn- max-blocks [opts] (quot (:max-db-size opts) (:db-block-size opts)))
 
@@ -42,6 +43,7 @@
               *time-millis* (System/currentTimeMillis)]
       (try
         (let [app-map (:app-map old-uber-map)
+              _ (yearling-process-pending (:db-pending-age opts) (:db-pending-count opts) opts)
               app-map (app-updater app-map opts)
               uber-map (assoc old-uber-map :app-map app-map)
               uber-map (assoc uber-map :release-pending *release-pending*)
@@ -237,6 +239,12 @@
            opts (assoc opts :db-release-pending yearling-release-pending)
            opts (assoc opts :db-release yearling-release)
            opts (assoc opts :db-process-pending yearling-process-pending)
+           opts (if (:db-pending-age opts)
+                  opts
+                  (assoc opts :db-pending-age 0))
+           opts (if (:db-pending-count opts)
+                  opts
+                  (assoc opts :db-pending-count 2))
            db-file-channel
            (FileChannel/open (.toPath file)
                              (into-array OpenOption
