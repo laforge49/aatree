@@ -222,8 +222,8 @@
       opts)))
 
 (defn yearling-open
-  ([file db-block-size max-db-size] (yearling-open file db-block-size max-db-size {}))
-  ([^File file db-block-size max-db-size opts]
+  ([file] (yearling-open file {}))
+  ([^File file opts]
    (if (:db-file-channel opts)
      opts
      (let [opts (assoc opts :db-close yearling-close)
@@ -232,8 +232,12 @@
            opts (assoc opts :db-send yearling-send)
            opts (assoc opts :db-update yearling-update)
            opts (assoc opts :db-file file)
-           opts (assoc opts :db-block-size db-block-size)
-           opts (assoc opts :max-db-size max-db-size)
+           opts (if (:db-block-size opts)
+                  opts
+                  (assoc opts :db-block-size 500000))
+           opts (if (:max-db-size opts)
+                  opts
+                  (assoc opts :max-db-size 100000000000))
            opts (assoc opts :db-allocated yearling-allocated)
            opts (assoc opts :db-allocate yearling-allocate)
            opts (assoc opts :db-release-pending yearling-release-pending)
