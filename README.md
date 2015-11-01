@@ -32,7 +32,7 @@ use of warn-on-reflection.
 
 [API](https://github.com/laforge49/aatree/wiki/API)
 
-[Lazy Benchmarks](https://github.com/laforge49/aatree/wiki/Lazy-Benchmarks)
+[Benchmarks](https://github.com/laforge49/aatree/wiki/Benchmarks)
 
 [Immutable Value, Mutable Form](https://github.com/laforge49/aatree/wiki/Immutable-Value,-Mutable-Form)
 
