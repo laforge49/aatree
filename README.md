@@ -50,8 +50,8 @@ structures of aatree.
 
 ### Write Me a Database
 
-It is easy enough to code up 
-[A Small Database](https://github.com/laforge49/aatree/wiki/A-Small-Database)
+It is easy enough to code up a small database, like
+[Calf](https://github.com/laforge49/aatree/wiki/Calf),
 using lazy aatree structures.
 The catch is that the contents of the database must fit in memory.
 
