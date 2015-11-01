@@ -16,6 +16,10 @@ needs to be processed, processing is ridiculously fast when compared to
 the processing time needed if the entire data block is deserialized / reserialized,
 as is typical of applications requiring significant durable data.
 
+Another extension is provided to support virtual data structures.
+Structures no longer need to fit in memory, as only the parts of interest need to be
+loaded.
+
 Validation has been done using 
 [collection-check](https://github.com/ztellman/collection-check).
 Compiled AOT with Clojure 1.7.0. Reflection has been avoided through the
@@ -51,13 +55,15 @@ It is easy enough to code up
 using lazy aatree structures.
 The catch is that the contents of the database must fit in memory.
 
-### Adding Disk Space Management
+### Virtual Data Structures
 
-[Yearling](https://github.com/laforge49/aatree/wiki/Yearling)
-takes the next step in providing
-[Disk Space Management](https://github.com/laforge49/aatree/wiki/Disk-Space-Management).
-But like Calf, Yearling remains a small Copy-On-Write \[COW\] database where
-everything must fit in memory.
+The [Yearling](https://github.com/laforge49/aatree/wiki/Yearling) database
+supports virtual data structures, which allows for structures 
+that are larger than will fit in memory.
+[Disk Space Management](https://github.com/laforge49/aatree/wiki/Disk-Space-Management)
+is also part of Yearling.
 
-Later we will look at how to implement larger databases. But there will be a lot more code involved.
-So it is best to take things one step at a time.
+Later we will look at things like journaling. 
+But right now Yearling is still in Alpha as there are some serious 
+[issues](https://github.com/laforge49/aatree/issues)
+that need to be addressed.
