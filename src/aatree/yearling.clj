@@ -17,9 +17,16 @@
 (def ^:dynamic *time-millis*)
 (def ^:dynamic *transaction-count*)
 (def ^:dynamic *last-node-id*)
+(def ^:dynamic *node-cache*)
 
 (declare yearling-release
          yearling-process-pending)
+
+(defn- new-node-cache [] {}) ; fake
+
+(defn- node-cache-hit [id])
+(defn- node-cache-miss [id node]
+  (set! *node-cache* (assoc *node-cache* id node)))
 
 (defn- max-blocks [opts] (quot (:max-db-size opts) (:db-block-size opts)))
 
@@ -46,7 +53,8 @@
               *transaction-count* (+ (:transaction-count db-state) 1)
               *last-node-id* (:last-node-id old-uber-map)
               *release-pending* (:release-pending old-uber-map)
-              *time-millis* (System/currentTimeMillis)]
+              *time-millis* (System/currentTimeMillis)
+              *node-cache* (new-node-cache)]
       (try
         (let [app-map (:app-map old-uber-map)
               _ (yearling-process-pending (:db-pending-age opts) (:db-pending-count opts) opts)
@@ -113,7 +121,8 @@
   aamap)
 
 (defn- create-uber-map [opts]
-  (binding [*last-node-id* 0]
+  (binding [*last-node-id* 0
+            *node-cache* (new-node-cache)]
     (let [uber-map (new-sorted-map opts)
           uber-map (assoc uber-map :release-pending (new-vector opts))
           uber-map (assoc uber-map :app-map (new-sorted-map opts))
@@ -243,7 +252,9 @@
   ([^File file opts]
    (if (:db-file-channel opts)
      opts
-     (let [opts (assoc opts :db-close yearling-close)
+     (let [opts (assoc opts :db-node-cache-hit node-cache-hit)
+           opts (assoc opts :db-node-cache-miss node-cache-miss)
+           opts (assoc opts :db-close yearling-close)
            opts (assoc opts :db-get-sorted-map yearling-get-sorted-map)
            opts (assoc opts :db-transaction-count yearling-transaction-count)
            opts (assoc opts :db-new-node-id yearling-new-node-id)
