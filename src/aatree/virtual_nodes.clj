@@ -15,14 +15,18 @@
          virtual-write
          virtual-as-reference)
 
-(deftype VirtualNode [data-atom sval-atom blen-atom buffer-atom factory]
+(deftype VirtualNode [node-id data-atom sval-atom blen-atom buffer-atom factory]
 
   aatree.nodes.INode
 
   (newNode [this t2 level left right cnt opts]
     (let [d (->Node t2 level left right cnt)
-          f (factory-for-instance t2 opts)]
-      (->VirtualNode (atom d) (atom nil) (atom nil) (atom nil) f)))
+          f (factory-for-instance t2 opts)
+          node-id (.-node-id this)
+          node-id (if (= 0 node-id)
+                    ((:db-new-node-id opts))
+                    node-id)]
+      (->VirtualNode node-id (atom d) (atom nil) (atom nil) (atom nil) f)))
 
   (getT2 [this opts] (.getT2 (get-virtual-data this opts) opts))
 
@@ -203,6 +207,7 @@
             blen (+ 5 lm5)
             _ (.limit bb blen)]
         (->VirtualNode
+          0
           (atom nil)
           (atom nil)
           (atom blen)
@@ -246,6 +251,7 @@
 
 (def ^VirtualNode emptyVirtualNode
   (->VirtualNode
+    0
     (atom emptyNode)
     (atom nil)
     (atom 1)

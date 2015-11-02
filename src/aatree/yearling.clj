@@ -111,11 +111,17 @@
 (defn yearling-null-updater [aamap opts]
   aamap)
 
+(defn- create-uber-map [opts]
+  (binding [*last-node-id* 0]
+    (let [uber-map (new-sorted-map opts)
+          uber-map (assoc uber-map :release-pending (new-vector opts))
+          uber-map (assoc uber-map :app-map (new-sorted-map opts))
+          uber-map (assoc uber-map :last-node-id *last-node-id*)]
+    uber-map)))
+
+
 (defn- yearling-new [opts]
-  (let [uber-map (new-sorted-map opts)
-        uber-map (assoc uber-map :last-node-id 0)
-        uber-map (assoc uber-map :release-pending (new-vector opts))
-        uber-map (assoc uber-map :app-map (new-sorted-map opts))
+  (let [uber-map (create-uber-map opts)
         ^BitSet allocated (BitSet.)
         _ (.set allocated 0)
         _ (.set allocated 1)
