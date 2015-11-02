@@ -1,26 +1,53 @@
 (ns aatree.virtual-nodes
   (:require [aatree.nodes :refer :all])
   (:import (java.nio ByteBuffer)
-           (aatree.nodes Node IFactory WrapperNode)
+           (aatree.nodes Node IFactory WrapperNode INode)
            (clojure.lang RT)
            (aatree AAVector AAMap AASet)
            (java.nio.channels FileChannel)))
 
 (set! *warn-on-reflection* true)
 
-(declare ->VirtualNode
+(declare ->WeakNode
+         create-weak-empty-node
+         ->VirtualNode
          ^aatree.nodes.INode get-virtual-data
          create-virtual-empty-node
          virtual-byte-length
          virtual-write
          virtual-as-reference)
 
+(deftype WeakNode [t2 ^Long level left right ^Long cnt]
+
+  INode
+
+  (newNode [this t2 level left right cnt opts]
+    (->Node t2 level left right cnt))
+
+  (getT2 [this opts] t2)
+
+  (getLevel [this opts] level)
+
+  (getLeft [this opts] left)
+
+  (getRight [this opts] right)
+
+  (getCnt [this opts] cnt)
+
+  (getNada [this] (create-empty-node)))
+
+(def emptyWeakNode
+  (->WeakNode nil 0 nil nil 0))
+
+(defn create-weak-empty-node []
+  emptyWeakNode)
+
 (deftype VirtualNode [data-atom sval-atom blen-atom buffer-atom factory]
 
   aatree.nodes.INode
 
   (newNode [this t2 level left right cnt opts]
-    (let [d (->Node t2 level left right cnt)
+    (let [d (->WeakNode t2 level left right cnt)
           f (factory-for-instance t2 opts)]
       (->VirtualNode (atom d) (atom nil) (atom nil) (atom nil) f)))
 
@@ -225,7 +252,7 @@
 
 (defn- get-virtual-data [^VirtualNode this opts]
   (if (empty-node? this)
-    emptyNode
+    emptyWeakNode
     (let [a (get-data-atom this)]
       (when (nil? @a)
         (let [bb (.slice (get-buffer this))
@@ -239,12 +266,12 @@
               cnt (long (.getInt bb))
               t2 (.deserialize (get-factory this) this bb opts)
               right (virtual-read bb opts)]
-          (compare-and-set! a nil (Node. t2 level left right cnt))))
+          (compare-and-set! a nil (WeakNode. t2 level left right cnt))))
       @a)))
 
 (def ^VirtualNode emptyVirtualNode
   (->VirtualNode
-    (atom emptyNode)
+    (atom emptyWeakNode)
     (atom nil)
     (atom 1)
     (atom nil)
