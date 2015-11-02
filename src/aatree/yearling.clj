@@ -22,11 +22,13 @@
 (declare yearling-release
          yearling-process-pending)
 
-(defn- new-node-cache [] {}) ; fake
+(defn- new-node-cache [opts] {} (cache/lru-cache-factory {} :threshold (:db-node-cache-size opts)))
 
-(defn- node-cache-hit [id])
+(defn- node-cache-hit [id]
+  (set! *node-cache* (cache/hit *node-cache* id)))
+
 (defn- node-cache-miss [id node]
-  (set! *node-cache* (assoc *node-cache* id node)))
+  (set! *node-cache* (cache/miss *node-cache* id node)))
 
 (defn- max-blocks [opts] (quot (:max-db-size opts) (:db-block-size opts)))
 
@@ -54,7 +56,7 @@
               *last-node-id* (:last-node-id old-uber-map)
               *release-pending* (:release-pending old-uber-map)
               *time-millis* (System/currentTimeMillis)
-              *node-cache* (new-node-cache)]
+              *node-cache* (new-node-cache opts)]
       (try
         (let [app-map (:app-map old-uber-map)
               _ (yearling-process-pending (:db-pending-age opts) (:db-pending-count opts) opts)
@@ -122,7 +124,7 @@
 
 (defn- create-uber-map [opts]
   (binding [*last-node-id* 0
-            *node-cache* (new-node-cache)]
+            *node-cache* (new-node-cache opts)]
     (let [uber-map (new-sorted-map opts)
           uber-map (assoc uber-map :release-pending (new-vector opts))
           uber-map (assoc uber-map :app-map (new-sorted-map opts))
@@ -254,6 +256,9 @@
      opts
      (let [opts (assoc opts :db-node-cache-hit node-cache-hit)
            opts (assoc opts :db-node-cache-miss node-cache-miss)
+           opts (if (:db-node-cache-size opts)
+                  opts
+                  (assoc opts :db-node-cache-size 10000))
            opts (assoc opts :db-close yearling-close)
            opts (assoc opts :db-get-sorted-map yearling-get-sorted-map)
            opts (assoc opts :db-transaction-count yearling-transaction-count)
