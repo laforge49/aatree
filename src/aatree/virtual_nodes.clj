@@ -1,53 +1,26 @@
 (ns aatree.virtual-nodes
   (:require [aatree.nodes :refer :all])
   (:import (java.nio ByteBuffer)
-           (aatree.nodes Node IFactory WrapperNode INode)
+           (aatree.nodes Node IFactory WrapperNode)
            (clojure.lang RT)
            (aatree AAVector AAMap AASet)
            (java.nio.channels FileChannel)))
 
 (set! *warn-on-reflection* true)
 
-(declare ->WeakNode
-         create-weak-empty-node
-         ->VirtualNode
+(declare ->VirtualNode
          ^aatree.nodes.INode get-virtual-data
          create-virtual-empty-node
          virtual-byte-length
          virtual-write
          virtual-as-reference)
 
-(deftype WeakNode [t2 ^Long level left right ^Long cnt]
-
-  INode
-
-  (newNode [this t2 level left right cnt opts]
-    (->Node t2 level left right cnt))
-
-  (getT2 [this opts] t2)
-
-  (getLevel [this opts] level)
-
-  (getLeft [this opts] left)
-
-  (getRight [this opts] right)
-
-  (getCnt [this opts] cnt)
-
-  (getNada [this] (create-empty-node)))
-
-(def emptyWeakNode
-  (->WeakNode nil 0 nil nil 0))
-
-(defn create-weak-empty-node []
-  emptyWeakNode)
-
 (deftype VirtualNode [data-atom sval-atom blen-atom buffer-atom factory]
 
   aatree.nodes.INode
 
   (newNode [this t2 level left right cnt opts]
-    (let [d (->WeakNode t2 level left right cnt)
+    (let [d (->Node t2 level left right cnt)
           f (factory-for-instance t2 opts)]
       (->VirtualNode (atom d) (atom nil) (atom nil) (atom nil) f)))
 
@@ -185,8 +158,10 @@
         (reset! (get-data-atom virtual-node) nil)))))
 
 (defn virtual-as-reference [^VirtualNode virtual-node opts]
+  (println "virtual-as-reference!")
   (let [db-block-size (:db-block-size opts)
         bl (virtual-byte-length virtual-node opts)
+        _ (println "bl" bl)
         _ (if (< db-block-size bl)
             (throw (Exception. (str "byte-length exceeds block size: " bl))))
         ^ByteBuffer nbb (ByteBuffer/allocate bl)
@@ -252,7 +227,7 @@
 
 (defn- get-virtual-data [^VirtualNode this opts]
   (if (empty-node? this)
-    emptyWeakNode
+    emptyNode
     (let [a (get-data-atom this)]
       (when (nil? @a)
         (let [bb (.slice (get-buffer this))
@@ -266,12 +241,12 @@
               cnt (long (.getInt bb))
               t2 (.deserialize (get-factory this) this bb opts)
               right (virtual-read bb opts)]
-          (compare-and-set! a nil (->WeakNode t2 level left right cnt))))
+          (compare-and-set! a nil (->Node t2 level left right cnt))))
       @a)))
 
 (def ^VirtualNode emptyVirtualNode
   (->VirtualNode
-    (atom emptyWeakNode)
+    (atom emptyNode)
     (atom nil)
     (atom 1)
     (atom nil)
