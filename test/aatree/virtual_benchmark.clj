@@ -16,7 +16,9 @@
                            (reduce (fn [m i]
                                      (assoc m (+ i (* j 100000)) 1))
                                    aamap
-                                   (range 1000)))
+;                                   (range 1000)
+                                   (range 1); fake it
+                                   ))
                          opts)
               )
             0

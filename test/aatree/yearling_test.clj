@@ -25,6 +25,7 @@
         _ (is (= (db-allocated opts) 3))
         _ (is (= (count (db-release-pending opts)) 0))
         _ (db-update (fn [aamap opts]
+                       (println "new node id" ((:db-new-node-id opts)))
                        (db-release (:block aamap) opts)
                        (dissoc aamap :block))
                      opts)
@@ -45,6 +46,7 @@
         _ (is (= (db-allocated opts) 3))
         _ (is (= (count (db-release-pending opts)) 1))
         _ (db-update (fn [aamap opts]
+                       (println "new node id" ((:db-new-node-id opts)))
                        (db-process-pending 0 1 opts)
                        aamap)
                      opts)

@@ -15,6 +15,7 @@
 (def ^:dynamic *release-pending*)
 (def ^:dynamic *time-millis*)
 (def ^:dynamic *transaction-count*)
+(def ^:dynamic *last-node-id*)
 
 (declare yearling-release
          yearling-process-pending)
@@ -35,10 +36,14 @@
         (let [new-uber-map (assoc uber-map :release-pending *release-pending*)]
           (recur uber-map new-uber-map opts))))))
 
+(defn- yearling-new-node-id []
+  (set! *last-node-id* (+ 1 *last-node-id*)))
+
 (defn- yearling-updater [db-state app-updater opts]
   (let [old-uber-map (:uber-map db-state)]
     (binding [*allocated* (:allocated db-state)
               *transaction-count* (+ (:transaction-count db-state) 1)
+              *last-node-id* (:last-node-id old-uber-map)
               *release-pending* (:release-pending old-uber-map)
               *time-millis* (System/currentTimeMillis)]
       (try
@@ -46,6 +51,7 @@
               _ (yearling-process-pending (:db-pending-age opts) (:db-pending-count opts) opts)
               app-map (app-updater app-map opts)
               uber-map (assoc old-uber-map :app-map app-map)
+              uber-map (assoc uber-map :last-node-id *last-node-id*)
               uber-map (assoc uber-map :release-pending *release-pending*)
               uber-map (release-dropped-blocks old-uber-map uber-map opts)
               db-block-size (:db-block-size opts)
@@ -65,6 +71,7 @@
               _ (if (< db-block-size (+ 4 8 4 4 8 map-size (* mx-allocated-longs 8) 32))
                   (throw (Exception. (str "block-size exceeded on write: " map-size))))
               db-state (assoc db-state :transaction-count *transaction-count*)
+              db-state (assoc db-state :uber-map *last-node-id*)
               db-state (assoc db-state :uber-map uber-map)
               db-state (assoc db-state :allocated *allocated*)
               ]
@@ -106,12 +113,15 @@
 
 (defn- yearling-new [opts]
   (let [uber-map (new-sorted-map opts)
+        uber-map (assoc uber-map :last-node-id 0)
         uber-map (assoc uber-map :release-pending (new-vector opts))
         uber-map (assoc uber-map :app-map (new-sorted-map opts))
         ^BitSet allocated (BitSet.)
         _ (.set allocated 0)
         _ (.set allocated 1)
-        db-state {:transaction-count 0 :uber-map uber-map :allocated allocated}
+        db-state {:transaction-count 0
+                  :uber-map uber-map
+                  :allocated allocated}
         opts (create-db-agent db-state opts)]
     (yearling-update yearling-null-updater opts)
     (yearling-update yearling-null-updater opts)
@@ -229,6 +239,7 @@
      (let [opts (assoc opts :db-close yearling-close)
            opts (assoc opts :db-get-sorted-map yearling-get-sorted-map)
            opts (assoc opts :db-transaction-count yearling-transaction-count)
+           opts (assoc opts :db-new-node-id yearling-new-node-id)
            opts (assoc opts :db-send yearling-send)
            opts (assoc opts :db-update yearling-update)
            opts (assoc opts :db-file file)
