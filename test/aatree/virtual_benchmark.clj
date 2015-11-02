@@ -17,7 +17,7 @@
                                      (assoc m (+ i (* j 100000)) 1))
                                    aamap
 ;                                   (range 1000)
-                                   (range 1); fake it
+                                   (range 100); fake it
                                    ))
                          opts)
               )

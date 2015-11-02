@@ -96,14 +96,15 @@
   (dropped-blocks [] old-node (search-unchanged #{} new-node opts) opts))
 
 (defn- new-byte-length [^VirtualNode virtual-node opts]
-  (+ 1                                   ;node id
-     4                                   ;byte length - 5
+  (+ 1                                   ;factory id
+     8                                   ;node id
+     4                                   ;byte length - 13
      1                                   ;reference flag
      (virtual-byte-length (left-node virtual-node opts) opts) ;left node
      4                                   ;level
      4                                   ;cnt
      (.valueLength (get-factory virtual-node) virtual-node opts) ;t2
-     (virtual-byte-length (right-node virtual-node opts) opts)))
+     (virtual-byte-length (right-node virtual-node opts) opts))) ;right node
 
 (defn shrinker [^VirtualNode virtual-node opts]
   (let [blen (new-byte-length virtual-node opts)]
@@ -150,7 +151,8 @@
           (.put buffer (byte (.factoryId f)))
           (do
             (.put buffer (byte (.factoryId f)))
-            (.putInt buffer (- (virtual-byte-length virtual-node opts) 5))
+            (.putLong buffer (.-node_id virtual-node))
+            (.putInt buffer (- (virtual-byte-length virtual-node opts) 13))
             (.put buffer (byte 0))
             (virtual-write (left-node virtual-node opts) buffer opts)
             (.putInt buffer (.getLevel virtual-node opts))
@@ -162,10 +164,8 @@
         (reset! (get-data-atom virtual-node) nil)))))
 
 (defn virtual-as-reference [^VirtualNode virtual-node opts]
-  (println "virtual-as-reference!")
   (let [db-block-size (:db-block-size opts)
         bl (virtual-byte-length virtual-node opts)
-        _ (println "bl" bl)
         _ (if (< db-block-size bl)
             (throw (Exception. (str "byte-length exceeds block size: " bl))))
         ^ByteBuffer nbb (ByteBuffer/allocate bl)
@@ -176,7 +176,8 @@
         _ (.write db-file-channel nbb (long block-position))
         _ (.flip nbb)
         blen (+ 1                                           ;bode id
-                4                                           ;byte-length - 5
+                8                                           ;node-id
+                4                                           ;byte-length - 13
                 1                                           ;reference flag
                 8                                           ;block position
                 4                                           ;block length
@@ -184,7 +185,8 @@
         ^ByteBuffer bb (ByteBuffer/allocate blen)
         ^IFactory f (.factory virtual-node)]
     (.put bb (byte (.factoryId f)))
-    (.putInt bb (- blen 5))
+    (.putLong bb (.-node_id virtual-node))
+    (.putInt bb (- blen 13))
     (.put bb (byte 1))
     (.putLong bb block-position)
     (.putInt bb bl)
@@ -202,12 +204,13 @@
       (let [f (factory-for-id id opts)
             bb (.slice buffer)
             _ (.get buffer)
-            lm5 (.getInt buffer)
-            _ (.position buffer (+ lm5 (.position buffer)))
-            blen (+ 5 lm5)
+            node-id (.getLong buffer)
+            lm13 (.getInt buffer)
+            _ (.position buffer (+ lm13 (.position buffer)))
+            blen (+ 1 8 4 lm13)
             _ (.limit bb blen)]
         (->VirtualNode
-          0
+          node-id
           (atom nil)
           (atom nil)
           (atom blen)
@@ -227,7 +230,7 @@
             (throw (Exception. "corrupted database")))
         ]
     (.flip nbb)
-    (.position nbb 6)
+    (.position nbb 14)
     nbb))
 
 (defn- get-virtual-data [^VirtualNode this opts]
@@ -236,7 +239,7 @@
     (let [a (get-data-atom this)]
       (when (nil? @a)
         (let [bb (.slice (get-buffer this))
-              _ (.position bb 5)
+              _ (.position bb 13)
               reference-flag (.get bb)
               ^ByteBuffer bb (if (= reference-flag 0)
                    bb
