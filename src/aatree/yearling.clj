@@ -1,6 +1,7 @@
 (ns aatree.yearling
   (:require [aatree.core :refer :all]
-            [aatree.nodes :refer :all])
+            [aatree.nodes :refer :all]
+            [clojure.core.cache :as cache])
   (:import (java.nio ByteBuffer)
            (java.nio.channels FileChannel)
            (java.util BitSet)
