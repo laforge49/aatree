@@ -266,7 +266,7 @@
               cnt (long (.getInt bb))
               t2 (.deserialize (get-factory this) this bb opts)
               right (virtual-read bb opts)]
-          (compare-and-set! a nil (WeakNode. t2 level left right cnt))))
+          (compare-and-set! a nil (->WeakNode t2 level left right cnt))))
       @a)))
 
 (def ^VirtualNode emptyVirtualNode
