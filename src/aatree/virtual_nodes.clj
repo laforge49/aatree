@@ -1,7 +1,7 @@
 (ns aatree.virtual-nodes
   (:require [aatree.nodes :refer :all])
   (:import (java.nio ByteBuffer)
-           (aatree.nodes Node IFactory WrapperNode)
+           (aatree.nodes IFactory WrapperNode)
            (clojure.lang RT)
            (aatree AAVector AAMap AASet)
            (java.nio.channels FileChannel)))
@@ -15,7 +15,7 @@
          virtual-write
          virtual-as-reference)
 
-(deftype VirtualNode [node-id data-atom sval-atom blen-atom buffer-atom factory]
+(deftype VirtualNode [node-id data-atom hard-data sval-atom blen-atom buffer-atom factory]
 
   aatree.nodes.INode
 
@@ -26,7 +26,7 @@
           node-id (if (= 0 node-id)
                     ((:db-new-node-id opts))
                     node-id)]
-      (->VirtualNode node-id (atom d) (atom nil) (atom nil) (atom nil) f)))
+      (->VirtualNode node-id (atom d) (atom d) (atom nil) (atom nil) (atom nil) f)))
 
   (getT2 [this opts] (.getT2 (get-virtual-data this opts) opts))
 
@@ -161,6 +161,7 @@
             (virtual-write (right-node virtual-node opts) buffer opts)))
         (.limit new-bb (virtual-byte-length virtual-node opts))
         (compare-and-set! (get-buffer-atom virtual-node) nil new-bb)
+        (reset! (.-hard-data virtual-node) nil)
         (reset! (get-data-atom virtual-node) nil)))))
 
 (defn virtual-as-reference [^VirtualNode virtual-node opts]
@@ -213,6 +214,7 @@
           node-id
           (atom nil)
           (atom nil)
+          (atom nil)
           (atom blen)
           (atom bb)
           f)))))
@@ -256,6 +258,7 @@
   (->VirtualNode
     0
     (atom emptyNode)
+    (atom nil)
     (atom nil)
     (atom 1)
     (atom nil)
