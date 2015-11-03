@@ -4,7 +4,8 @@
            (aatree.nodes IFactory WrapperNode)
            (clojure.lang RT)
            (aatree AAVector AAMap AASet)
-           (java.nio.channels FileChannel)))
+           (java.nio.channels FileChannel)
+           (java.lang.ref WeakReference)))
 
 (set! *warn-on-reflection* true)
 
@@ -15,7 +16,7 @@
          virtual-write
          virtual-as-reference)
 
-(deftype VirtualNode [node-id data-atom hard-data sval-atom blen-atom buffer-atom factory]
+(deftype VirtualNode [node-id weak-data-atom hard-data-atom sval-atom blen-atom buffer-atom factory]
 
   aatree.nodes.INode
 
@@ -25,8 +26,11 @@
           node-id (.-node-id this)
           node-id (if (= 0 node-id)
                     ((:db-new-node-id opts))
-                    node-id)]
-      (->VirtualNode node-id (atom d) (atom d) (atom nil) (atom nil) (atom nil) f)))
+                    node-id)
+          vn (->VirtualNode node-id (atom (WeakReference. d)) (atom d) (atom nil) (atom nil) (atom nil) f)]
+      ((:db-node-cache-evict opts) node-id opts)
+      ((:db-node-cache-miss opts) node-id d opts)
+      vn))
 
   (getT2 [this opts] (.getT2 (get-virtual-data this opts) opts))
 
@@ -54,7 +58,7 @@
 
   (nodeWrite [this buffer opts] (virtual-write this buffer opts)))
 
-(defn- get-data-atom [^VirtualNode this] (.data-atom this))
+(defn- get-weak-data-atom [^VirtualNode this] (.weak-data-atom this))
 
 (defn ^VirtualNode value-node [^VirtualNode virtual-node opts]
   (if (empty-node? virtual-node)
@@ -161,8 +165,8 @@
             (virtual-write (right-node virtual-node opts) buffer opts)))
         (.limit new-bb (virtual-byte-length virtual-node opts))
         (compare-and-set! (get-buffer-atom virtual-node) nil new-bb)
-        (reset! (.-hard-data virtual-node) nil)
-        (reset! (get-data-atom virtual-node) nil)))))
+        (reset! (.-hard-data-atom virtual-node) nil)
+        ))))
 
 (defn virtual-as-reference [^VirtualNode virtual-node opts]
   (let [db-block-size (:db-block-size opts)
@@ -235,34 +239,52 @@
     (.position nbb 14)
     nbb))
 
+(defn- make-data [^VirtualNode this opts]
+  (let [bb (.slice (get-buffer this))
+        _ (.position bb 13)
+        reference-flag (.get bb)
+        ^ByteBuffer bb (if (= reference-flag 0)
+                         bb
+                         (fetch bb opts))
+        left (virtual-read bb opts)
+        level (long (.getInt bb))
+        cnt (long (.getInt bb))
+        t2 (.deserialize (get-factory this) this bb opts)
+        right (virtual-read bb opts)
+        data (->Node t2 level left right cnt)]
+    data))
+
+(defn- lookup-data [^VirtualNode this opts]
+  ((:db-node-cache-lookup opts) (.-node-id this) opts))
+
+(defn- get-weak-data [^VirtualNode this opts]
+  (let [wda (.-weak_data_atom this)
+        ^WeakReference wr @wda]
+    (if wr
+      (.get wr)
+      nil)))
+
 (defn- get-virtual-data [^VirtualNode this opts]
   (if (empty-node? this)
-    emptyNode
-    (let [a (get-data-atom this)
-          node-id (.-node-id this)]
-      (if (nil? @a)
-        (let [bb (.slice (get-buffer this))
-              _ (.position bb 13)
-              reference-flag (.get bb)
-              ^ByteBuffer bb (if (= reference-flag 0)
-                   bb
-                   (fetch bb opts))
-              left (virtual-read bb opts)
-              level (long (.getInt bb))
-              cnt (long (.getInt bb))
-              t2 (.deserialize (get-factory this) this bb opts)
-              right (virtual-read bb opts)
-              data (->Node t2 level left right cnt)]
-          ((:db-node-cache-miss opts) node-id data opts)
-          (compare-and-set! a nil data))
-        ((:db-node-cache-hit opts) node-id opts)
-        )
-      @a)))
+      emptyNode
+      (let [ld (lookup-data this opts)
+            wd (get-weak-data this opts)
+            data (if ld
+                   ld
+                   (if wd
+                     wd
+                     (make-data this opts)))]
+        (if ld
+          ((:db-node-cache-hit opts) (.-node-id this) opts)
+          ((:db-node-cache-miss opts) (.-node-id this) data opts))
+        (if (nil? wd)
+          (reset! (.-weak_data_atom this) (WeakReference. data)))
+        data)))
 
 (def ^VirtualNode emptyVirtualNode
   (->VirtualNode
     0
-    (atom emptyNode)
+    (atom (WeakReference. emptyNode))
     (atom nil)
     (atom nil)
     (atom 1)

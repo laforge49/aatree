@@ -17,12 +17,13 @@
                                      (assoc m (+ i (* j 100000)) 1))
                                    aamap
 ;                                   (range 1000)
-                                   (range 10); fake it
+                                   (range 1); fake it
                                    ))
                          opts)
-              )
-            0
-            (range 100))); -> Elapsed time: 16498.374705 msecs
+                    )
+                  0
+                  ;            (range 1))); -> Elapsed time: 16498.374705 msecs
+                  (range 100))); -> Elapsed time: 16498.374705 msecs
     (db-close opts))
 
   (Thread/sleep 200))
