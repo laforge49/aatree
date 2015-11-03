@@ -238,8 +238,9 @@
 (defn- get-virtual-data [^VirtualNode this opts]
   (if (empty-node? this)
     emptyNode
-    (let [a (get-data-atom this)]
-      (when (nil? @a)
+    (let [a (get-data-atom this)
+          node-id (.-node-id this)]
+      (if (nil? @a)
         (let [bb (.slice (get-buffer this))
               _ (.position bb 13)
               reference-flag (.get bb)
@@ -250,8 +251,11 @@
               level (long (.getInt bb))
               cnt (long (.getInt bb))
               t2 (.deserialize (get-factory this) this bb opts)
-              right (virtual-read bb opts)]
-          (compare-and-set! a nil (->Node t2 level left right cnt))))
+              right (virtual-read bb opts)
+              data (->Node t2 level left right cnt)]
+          ((:db-node-cache-miss opts) node-id data opts)
+          (compare-and-set! a nil data))
+        ((:db-node-cache-hit opts) node-id opts))
       @a)))
 
 (def ^VirtualNode emptyVirtualNode

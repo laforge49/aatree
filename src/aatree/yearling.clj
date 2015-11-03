@@ -17,18 +17,17 @@
 (def ^:dynamic *time-millis*)
 (def ^:dynamic *transaction-count*)
 (def ^:dynamic *last-node-id*)
-(def ^:dynamic *node-cache*)
 
 (declare yearling-release
          yearling-process-pending)
 
 (defn- new-node-cache [opts] {} (cache/lru-cache-factory {} :threshold (:db-node-cache-size opts)))
 
-(defn- node-cache-hit [id]
-  (set! *node-cache* (cache/hit *node-cache* id)))
+(defn- node-cache-hit [id opts]
+  (swap! (:db-node-cache-atom opts) cache/hit id))
 
-(defn- node-cache-miss [id node]
-  (set! *node-cache* (cache/miss *node-cache* id node)))
+(defn- node-cache-miss [id node opts]
+  (swap! (:db-node-cache-atom opts) cache/miss id node))
 
 (defn- max-blocks [opts] (quot (:max-db-size opts) (:db-block-size opts)))
 
@@ -51,12 +50,11 @@
 
 (defn- yearling-updater [db-state app-updater opts]
   (let [old-uber-map (:uber-map db-state)]
-    (binding [*allocated* (:allocated db-state)
+      (binding [*allocated* (:allocated db-state)
               *transaction-count* (+ (:transaction-count db-state) 1)
               *last-node-id* (:last-node-id old-uber-map)
               *release-pending* (:release-pending old-uber-map)
-              *time-millis* (System/currentTimeMillis)
-              *node-cache* (new-node-cache opts)]
+              *time-millis* (System/currentTimeMillis)]
       (try
         (let [app-map (:app-map old-uber-map)
               _ (yearling-process-pending (:db-pending-age opts) (:db-pending-count opts) opts)
@@ -123,8 +121,7 @@
   aamap)
 
 (defn- create-uber-map [opts]
-  (binding [*last-node-id* 0
-            *node-cache* (new-node-cache opts)]
+  (binding [*last-node-id* 0]
     (let [uber-map (new-sorted-map opts)
           uber-map (assoc uber-map :release-pending (new-vector opts))
           uber-map (assoc uber-map :app-map (new-sorted-map opts))
@@ -259,6 +256,7 @@
            opts (if (:db-node-cache-size opts)
                   opts
                   (assoc opts :db-node-cache-size 10000))
+           opts (assoc opts :db-node-cache-atom (atom (new-node-cache opts)))
            opts (assoc opts :db-close yearling-close)
            opts (assoc opts :db-get-sorted-map yearling-get-sorted-map)
            opts (assoc opts :db-transaction-count yearling-transaction-count)
