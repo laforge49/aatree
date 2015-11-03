@@ -505,7 +505,6 @@
   (register-class aacontext factory))
 
 (definterface WrapperNode
-  (dataAtom [])
   (svalAtom [])
   (blenAtom [])
   (bufferAtom [])
@@ -527,8 +526,6 @@
 
 (defn ^java.nio.ByteBuffer get-buffer [^WrapperNode wrapper-node]
   @(.bufferAtom wrapper-node))
-
-(defn get-data-atom [^WrapperNode this] (.dataAtom this))
 
 (defn str-val [^IFactory factory ^WrapperNode wrapper-node opts]
   (let [sval-atom (.svalAtom wrapper-node)]

@@ -42,8 +42,6 @@
 
   WrapperNode
 
-  (dataAtom [this] (.-data-atom this))
-
   (svalAtom [this] (.-sval-atom this))
 
   (blenAtom [this] (.-blen-atom this))
@@ -55,6 +53,8 @@
   (nodeByteLength [this opts] (virtual-byte-length this opts))
 
   (nodeWrite [this buffer opts] (virtual-write this buffer opts)))
+
+(defn- get-data-atom [^VirtualNode this] (.data-atom this))
 
 (defn ^VirtualNode value-node [^VirtualNode virtual-node opts]
   (if (empty-node? virtual-node)
@@ -255,7 +255,8 @@
               data (->Node t2 level left right cnt)]
           ((:db-node-cache-miss opts) node-id data opts)
           (compare-and-set! a nil data))
-        ((:db-node-cache-hit opts) node-id opts))
+        ((:db-node-cache-hit opts) node-id opts)
+        )
       @a)))
 
 (def ^VirtualNode emptyVirtualNode

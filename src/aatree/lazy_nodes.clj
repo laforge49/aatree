@@ -36,8 +36,6 @@
 
   WrapperNode
 
-  (dataAtom [this] (.-data-atom this))
-
   (svalAtom [this] (.-sval-atom this))
 
   (blenAtom [this] (.-blen-atom this))
@@ -49,6 +47,8 @@
   (nodeByteLength [this opts] (lazy-byte-length this opts))
 
   (nodeWrite [this buffer opts] (lazy-write this buffer opts)))
+
+(defn- get-data-atom [^LazyNode this] (.-data-atom this))
 
 (defn lazy-byte-length [^LazyNode lazy-node opts]
   (if (empty-node? lazy-node)
