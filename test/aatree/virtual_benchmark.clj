@@ -22,8 +22,7 @@
                          opts)
                     )
                   0
-                  ;            (range 1))); -> Elapsed time: 16498.374705 msecs
-                  (range 100))); -> Elapsed time: 16498.374705 msecs
+                  (range 100))); -> Elapsed time: 30040.375564 msecs
     (db-close opts))
 
   (Thread/sleep 200))

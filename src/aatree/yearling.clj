@@ -58,7 +58,7 @@
   (let [old-uber-map (:uber-map db-state)]
     (binding [*allocated* (:allocated db-state)
               *transaction-count* (+ (:transaction-count db-state) 1)
-              *last-node-id* (:last-node-id old-uber-map)
+              *last-node-id* (:last-node-id db-state)
               *release-pending* (:release-pending old-uber-map)
               *time-millis* (System/currentTimeMillis)]
       (try
@@ -66,7 +66,6 @@
               _ (yearling-process-pending (:db-pending-age opts) (:db-pending-count opts) opts)
               app-map (app-updater app-map opts)
               uber-map (assoc old-uber-map :app-map app-map)
-              uber-map (assoc uber-map :last-node-id *last-node-id*)
               uber-map (assoc uber-map :release-pending *release-pending*)
               uber-map (release-dropped-blocks old-uber-map uber-map opts)
               db-block-size (:db-block-size opts)
@@ -80,13 +79,13 @@
               _ (if (< mx-allocated-longs ala-len)
                   (throw (Exception. (str "allocated size exceeded on write: " mx-allocated-longs ", " ala-len))))
               map-size (byte-length uber-map)
-              _ (if (< db-block-size (+ 4 8 4 4 8 map-size (* mx-allocated-longs 8) 32))
+              _ (if (< db-block-size (+ 4 8 4 4 8 8 map-size (* mx-allocated-longs 8) 32))
                   ((:as-reference opts) (get-inode uber-map) opts))
               map-size (byte-length uber-map)
-              _ (if (< db-block-size (+ 4 8 4 4 8 map-size (* mx-allocated-longs 8) 32))
+              _ (if (< db-block-size (+ 4 8 4 4 8 8 map-size (* mx-allocated-longs 8) 32))
                   (throw (Exception. (str "block-size exceeded on write: " map-size))))
               db-state (assoc db-state :transaction-count *transaction-count*)
-              db-state (assoc db-state :uber-map *last-node-id*)
+              db-state (assoc db-state :last-node-id *last-node-id*)
               db-state (assoc db-state :uber-map uber-map)
               db-state (assoc db-state :allocated *allocated*)
               ]
@@ -95,6 +94,7 @@
           (.putInt bb map-size)
           (.putInt bb ala-len)
           (.putLong bb *transaction-count*)
+          (.putLong bb *last-node-id*)
           (put-aa bb uber-map)
           (.put (.asLongBuffer bb) allocated-long-array)
           (.position bb (+ (.position bb) (* ala-len 8)))
@@ -126,30 +126,24 @@
 (defn yearling-null-updater [aamap opts]
   aamap)
 
-(defn- create-uber-map [opts]
+(defn- create-db-state [opts]
   (binding [*last-node-id* 0]
     (let [uber-map (new-sorted-map opts)
-          _ (println uber-map)
           uber-map (assoc uber-map :release-pending (new-vector opts))
-          _ (println uber-map)
           uber-map (assoc uber-map :app-map (new-sorted-map opts))
-          _ (println uber-map)
-          _ (println "aaaaaaaaaaaa" *last-node-id*)
-          uber-map (assoc uber-map :last-node-id (+ 10 *last-node-id*))]
-      (println "bbbbbbbbbbbbbbbb" *last-node-id*)
-      (println "ddddddddddd" (:last-node-id uber-map))
-      uber-map)))
+          ^BitSet allocated (BitSet.)
+          _ (.set allocated 0)
+          _ (.set allocated 1)
+          db-state {:transaction-count 0
+                    :last-node-id      *last-node-id*
+                    :uber-map          uber-map
+                    :allocated         allocated}
+          ]
+      db-state)))
 
 
 (defn- yearling-new [opts]
-  (let [uber-map (create-uber-map opts)
-        ^BitSet allocated (BitSet.)
-        _ (.set allocated 0)
-        _ (.set allocated 1)
-        _ (println "cccccccccccccccc" (:last-node-id uber-map))
-        db-state {:transaction-count 0
-                  :uber-map          uber-map
-                  :allocated         allocated}
+  (let [db-state (create-db-state opts)
         opts (create-db-agent db-state opts)]
     (yearling-update yearling-null-updater opts)
     (yearling-update yearling-null-updater opts)
@@ -160,7 +154,7 @@
         db-block-size (:db-block-size opts)
         max-db-size (:max-db-size opts)
         ^ByteBuffer bb (ByteBuffer/allocate db-block-size)
-        _ (.limit bb (+ 4 8 4 4 8))
+        _ (.limit bb (+ 4 8 4 4 8 8))
         _ (.read db-file-channel bb (long block-position))
         _ (.flip bb)]
     (if (not= db-block-size (.getInt bb))
@@ -172,19 +166,20 @@
               mx-allocated-longs (max-allocated-longs opts)
               _ (if (< mx-allocated-longs ala-len)
                   (throw (Exception. "allocated size exceeded on read")))
-              _ (if (< db-block-size (+ 4 8 4 4 8 map-size (* mx-allocated-longs 8) 32))
+              _ (if (< db-block-size (+ 4 8 4 4 8 8 map-size (* mx-allocated-longs 8) 32))
                   (throw (Exception. "block-size exceeded on read")))
               transaction-count (.getLong bb)
+              last-node-id (.getLong bb)
               input-size (+ (.limit bb) map-size (* ala-len 8) 32)
               _ (.limit bb input-size)
-              _ (.read db-file-channel bb (long (+ block-position 4 8 4 4 8)))
+              _ (.read db-file-channel bb (long (+ block-position 4 8 4 4 8 8)))
               _ (.flip bb)
               csp (- input-size 32)
               _ (.limit bb csp)
               cs (compute-cs256 bb)
               _ (.limit bb input-size)
               ocs (get-cs256 bb)
-              _ (.position bb (+ 4 8 4 4 8))
+              _ (.position bb (+ 4 8 4 4 8 8))
               uber-map (load-sorted-map bb opts)
               la (long-array ala-len)
               _ (.get (.asLongBuffer bb) (longs la))
@@ -193,7 +188,8 @@
             nil
             {:transaction-count transaction-count
              :uber-map          uber-map
-             :allocated         allocated}))))))
+             :allocated         allocated
+             :last-node-id      last-node-id}))))))
 
 (defn- choose [state0 state1]
   (if state0
