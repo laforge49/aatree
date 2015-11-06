@@ -9,10 +9,10 @@
 (deftest yearling
   (.delete (File. "yearling-test.yearling"))
 
-  (let [opts (yearling-open (File. "yearling-test.yearling")
-                            {:db-pending-count 99
-                             :max-db-size 100000
-                             :db-block-size 10000})
+  (let [opts {:db-pending-count 99
+              :max-db-size 100000
+              :db-block-size 10000}
+        opts (yearling-open (File. "yearling-test.yearling") opts)
         _ (is (= (db-transaction-count opts) 2))
         aamap (db-get-sorted-map opts)
         _ (is (= aamap {}))
@@ -36,10 +36,10 @@
         _ (is (= (count (db-release-pending opts)) 1))
         _ (db-close opts)])
 
-  (let [opts (yearling-open (File. "yearling-test.yearling")
-                            {:db-pending-count 99
-                             :max-db-size 100000
-                             :db-block-size 10000})
+  (let [opts {:db-pending-count 99
+              :max-db-size 100000
+              :db-block-size 10000}
+        opts (yearling-open (File. "yearling-test.yearling") opts)
         _ (is (= (db-transaction-count opts) 4))
         aamap (db-get-sorted-map opts)
         _ (is (= aamap {}))

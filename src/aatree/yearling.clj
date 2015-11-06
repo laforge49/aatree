@@ -1,10 +1,9 @@
 (ns aatree.yearling
   (:require [aatree.core :refer :all]
-            [aatree.nodes :refer :all]
-            [clojure.core.cache :as cache])
+            [aatree.nodes :refer :all])
   (:import (java.nio ByteBuffer)
            (java.nio.channels FileChannel)
-           (java.util BitSet)
+           (java.util BitSet HashMap)
            (clojure.lang Agent)
            (java.io File)
            (java.nio.file OpenOption StandardOpenOption)))
@@ -21,19 +20,22 @@
 (declare yearling-release
          yearling-process-pending)
 
-(defn- new-node-cache [opts] {} (cache/lru-cache-factory {} :threshold (:db-node-cache-size opts)))
+(defn- new-node-cache [opts]
+  (HashMap.))
 
-(defn- node-cache-hit [id opts]
-  (swap! (:db-node-cache-atom opts) cache/hit id))
+(defn- node-cache-hit [id opts])
 
 (defn- node-cache-miss [id node opts]
-  (swap! (:db-node-cache-atom opts) cache/miss id node))
+  (let [^HashMap node-cache (:db-node-cache opts)]
+    (.put node-cache id node)))
 
 (defn- node-cache-lookup [id opts]
-  (cache/lookup @(:db-node-cache-atom opts) id))
+  (let [^HashMap node-cache (:db-node-cache opts)]
+    (.get node-cache id)))
 
 (defn- node-cache-evict [id opts]
-  (swap! (:db-node-cache-atom opts) cache/evict id))
+  (let [^HashMap node-cache (:db-node-cache opts)]
+    (.remove node-cache id)))
 
 (defn- max-blocks [opts] (quot (:max-db-size opts) (:db-block-size opts)))
 
@@ -248,6 +250,8 @@
         (recur age trans opts)))))
 
 (defn- yearling-close [opts]
+;  (println "closing db <---------------------") (Thread/sleep 100)
+;  (.printStackTrace (Exception. "close"))
   (let [^FileChannel fc (:db-file-channel opts)]
     (if fc
       (do
@@ -267,7 +271,7 @@
            opts (if (:db-node-cache-size opts)
                   opts
                   (assoc opts :db-node-cache-size 10000))
-           opts (assoc opts :db-node-cache-atom (atom (new-node-cache opts)))
+           opts (assoc opts :db-node-cache (new-node-cache opts))
            opts (assoc opts :db-close yearling-close)
            opts (assoc opts :db-get-sorted-map yearling-get-sorted-map)
            opts (assoc opts :db-transaction-count yearling-transaction-count)

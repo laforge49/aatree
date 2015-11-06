@@ -16,7 +16,13 @@
          virtual-write
          virtual-as-reference)
 
-(deftype VirtualNode [node-id weak-data-atom hard-data-atom sval-atom blen-atom buffer-atom factory]
+(deftype VirtualNode [node-id
+                      weak-data-atom
+                      hard-data-atom
+                      sval-atom
+                      blen-atom
+                      buffer-atom
+                      factory]
 
   aatree.nodes.INode
 
@@ -27,7 +33,13 @@
           node-id (if (= 0 node-id)
                     ((:db-new-node-id opts))
                     node-id)
-          vn (->VirtualNode node-id (atom (WeakReference. d)) (atom d) (atom nil) (atom nil) (atom nil) f)]
+          vn (->VirtualNode node-id
+                            (atom (WeakReference. d))
+                            (atom d)
+                            (atom nil)
+                            (atom nil)
+                            (atom nil)
+                            f)]
       ((:db-node-cache-evict opts) node-id opts)
       ((:db-node-cache-miss opts) node-id d opts)
       vn))
@@ -236,7 +248,7 @@
             (throw (Exception. "corrupted database")))
         ]
     (.flip nbb)
-    (.position nbb 14)
+    (.position nbb (+ 1 8 4 1))
     nbb))
 
 (defn- make-data [^VirtualNode this opts]

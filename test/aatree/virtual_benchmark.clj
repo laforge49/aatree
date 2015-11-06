@@ -7,22 +7,39 @@
 (set! *warn-on-reflection* true)
 
 (deftest virtual
-  (.delete (File. "virtual-test.yearling"))
+  (.delete (File. "virtual-benchmark.yearling"))
 
-  (let [opts (yearling-open (File. "virtual-test.yearling")
-                            {:send-update-timeout 300})]
-    (time (reduce (fn [_ j]
-              (db-update (fn [aamap opts]
-                           (reduce (fn [m i]
-                                     (assoc m (+ i (* j 100000)) 1))
-                                   aamap
-;                                   (range 1000)
-                                   (range 1); fake it
-                                   ))
-                         opts)
-                    )
-                  0
-                  (range 100))); -> Elapsed time: 30040.375564 msecs
+  (let [opts {:send-update-timeout 300}
+        opts (yearling-open (File. "virtual-benchmark.yearling") opts)]
+    (time
+      (db-update (fn [aamap opts]
+                   (let [bbmap (reduce (fn [m i]
+                                         (assoc m i 1))
+                                       aamap
+                                       (range 100)
+                                       )]
+                     (println bbmap)
+                     (Thread/sleep 200)
+                     bbmap))
+                 opts)
+      )
+    (println "dump:" (db-get-sorted-map opts))
+    (comment
+      (time
+        (db-update (fn [aamap opts]
+                     (println 111111)
+                     (let [bbmap (reduce (fn [m i]
+                                           (assoc m i 1))
+                                         aamap
+                                         (range 3 6)
+                                         )]
+                       (println bbmap)
+                       (Thread/sleep 200)
+                       bbmap))
+                   opts)
+        )
+      )
+    (Thread/sleep 200)
     (db-close opts))
 
   (Thread/sleep 200))
