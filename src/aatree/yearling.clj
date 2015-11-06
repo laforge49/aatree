@@ -1,9 +1,10 @@
 (ns aatree.yearling
   (:require [aatree.core :refer :all]
-            [aatree.nodes :refer :all])
+            [aatree.nodes :refer :all]
+            [clojure.core.cache :as cache])
   (:import (java.nio ByteBuffer)
            (java.nio.channels FileChannel)
-           (java.util BitSet HashMap)
+           (java.util BitSet)
            (clojure.lang Agent)
            (java.io File)
            (java.nio.file OpenOption StandardOpenOption)))
@@ -21,21 +22,18 @@
          yearling-process-pending)
 
 (defn- new-node-cache [opts]
-  (HashMap.))
+  (cache/lru-cache-factory
+    {}
+    :threshold (:db-node-cache-size opts)))
 
-(defn- node-cache-hit [id opts])
+(defn- node-cache-hit [id opts]
+  (swap! (:db-node-cache-atom opts) cache/hit id))
 
 (defn- node-cache-miss [id node opts]
-  (let [^HashMap node-cache (:db-node-cache opts)]
-    (.put node-cache id node)))
+  (swap! (:db-node-cache-atom opts) cache/miss id node))
 
 (defn- node-cache-lookup [id opts]
-  (let [^HashMap node-cache (:db-node-cache opts)]
-    (.get node-cache id)))
-
-(defn- node-cache-evict [id opts]
-  (let [^HashMap node-cache (:db-node-cache opts)]
-    (.remove node-cache id)))
+  (cache/lookup @(:db-node-cache-atom opts) id))
 
 (defn- max-blocks [opts] (quot (:max-db-size opts) (:db-block-size opts)))
 
@@ -117,10 +115,9 @@
   (let [send-write-timeout (:send-update-timeout opts)
         db-agent (:db-agent opts)]
     (if send-write-timeout
-      (await-for send-write-timeout db-agent)
-      (do
-        (await db-agent)
-        true))))
+      (if (not (await-for send-write-timeout db-agent))
+        (throw (Exception. "timeout")))
+      (await db-agent))))
 
 (defn- create-db-agent [db-state opts]
   (assoc opts :db-agent (apply agent db-state (get opts :db-agent-options []))))
@@ -250,7 +247,7 @@
         (recur age trans opts)))))
 
 (defn- yearling-close [opts]
-;  (println "closing db <---------------------") (Thread/sleep 100)
+  (println "closing db <---------------------") (Thread/sleep 100)
 ;  (.printStackTrace (Exception. "close"))
   (let [^FileChannel fc (:db-file-channel opts)]
     (if fc
@@ -265,13 +262,12 @@
    (if (:db-file-channel opts)
      opts
      (let [opts (assoc opts :db-node-cache-lookup node-cache-lookup)
-           opts (assoc opts :db-node-cache-evict node-cache-evict)
            opts (assoc opts :db-node-cache-hit node-cache-hit)
            opts (assoc opts :db-node-cache-miss node-cache-miss)
            opts (if (:db-node-cache-size opts)
                   opts
-                  (assoc opts :db-node-cache-size 10000))
-           opts (assoc opts :db-node-cache (new-node-cache opts))
+                  (assoc opts :db-node-cache-size 100000))
+           opts (assoc opts :db-node-cache-atom (atom (new-node-cache opts)))
            opts (assoc opts :db-close yearling-close)
            opts (assoc opts :db-get-sorted-map yearling-get-sorted-map)
            opts (assoc opts :db-transaction-count yearling-transaction-count)

@@ -29,10 +29,7 @@
   (newNode [this t2 level left right cnt opts]
     (let [d (->Node t2 level left right cnt)
           f (factory-for-instance t2 opts)
-          node-id (.-node-id this)
-          node-id (if (= 0 node-id)
-                    ((:db-new-node-id opts))
-                    node-id)
+          node-id ((:db-new-node-id opts))
           vn (->VirtualNode node-id
                             (atom (WeakReference. d))
                             (atom d)
@@ -40,7 +37,6 @@
                             (atom nil)
                             (atom nil)
                             f)]
-      ((:db-node-cache-evict opts) node-id opts)
       ((:db-node-cache-miss opts) node-id d opts)
       vn))
 
@@ -252,6 +248,7 @@
     nbb))
 
 (defn- make-data [^VirtualNode this opts]
+  (println "make")
   (let [bb (.slice (get-buffer this))
         _ (.position bb 13)
         reference-flag (.get bb)
@@ -280,7 +277,10 @@
   (if (empty-node? this)
       emptyNode
       (let [ld (lookup-data this opts)
+            _ (if (nil? ld) (println "miss"))
             wd (get-weak-data this opts)
+            _ (if (not= ld wd)
+                println "oops")
             data (if ld
                    ld
                    (if wd

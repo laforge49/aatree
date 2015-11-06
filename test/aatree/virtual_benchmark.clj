@@ -9,14 +9,13 @@
 (deftest virtual
   (.delete (File. "virtual-benchmark.yearling"))
 
-  (let [opts {:send-update-timeout 300}
-        opts (yearling-open (File. "virtual-benchmark.yearling") opts)]
+  (let [opts (yearling-open (File. "virtual-benchmark.yearling"))]
     (time
       (db-update (fn [aamap opts]
                    (let [bbmap (reduce (fn [m i]
                                          (assoc m i 1))
                                        aamap
-                                       (range 100)
+                                       (range 60)
                                        )]
                      (println bbmap)
                      (Thread/sleep 200)
