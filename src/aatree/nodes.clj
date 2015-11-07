@@ -468,6 +468,7 @@
 
 (defn ^IFactory factory-for-id [id opts]
   (let [^factory-registry r (:factory-registry opts)
+        _ (if (nil? r) (println "oh!"))
         f (@(.-by_id_atom r) id)]
     (if (nil? f)
       (let [^AAContext context (:aacontext opts)]

@@ -120,42 +120,26 @@
 (defn virtual-opts
   ([] (virtual-opts {}))
   ([opts]
-   (-> opts
-       (assoc :find-dropped-blocks find-dropped-blocks)
-       (assoc :node-read virtual-read)
-       (assoc :as-reference virtual-as-reference)
-       (assoc :load-vector load-virtual-vector)
-       (assoc :load-sorted-map load-virtual-sorted-map)
-       (assoc :load-sorted-set load-virtual-sorted-set)
-       (assoc :new-sorted-map
-              (fn [r]
-                (let [r (if (:comparator r)
-                          r
-                          (assoc r :comparator RT/DEFAULT_COMPARATOR))
-                      r (if (:factory-registry r)
-                          r
-                          (assoc r :factory-registry default-factory-registry))
-                      r (map-opts r)]
-                  (new AAMap emptyVirtualNode r))))
-       (assoc :new-vector
-              (fn [o]
-                (if (:factory-registry o)
-                  (new AAVector emptyVirtualNode (vector-opts o))
-                  (new AAVector
-                       emptyVirtualNode
-                       (vector-opts (assoc o :factory-registry default-factory-registry))))))
-       (assoc :new-sorted-set
-              (fn [o]
-                (let [r o
-                      r (if (:comparator r)
-                          r
-                          (assoc r :comparator RT/DEFAULT_COMPARATOR))
-                      r (if (:factory-registry r)
-                          r
-                          (assoc r :factory-registry default-factory-registry))
-                      r (set-opts r)]
-                  (new AASet
-                       (new AAMap emptyVirtualNode r))))))))
+   (let [opts (if (:comparator opts)
+                opts
+                (assoc opts :comparator RT/DEFAULT_COMPARATOR))
+         opts (if (:factory-registry opts)
+                opts
+                (assoc opts :factory-registry default-factory-registry))
+         opts (-> opts
+                  (assoc :find-dropped-blocks find-dropped-blocks)
+                  (assoc :node-read virtual-read)
+                  (assoc :as-reference virtual-as-reference)
+                  (assoc :load-vector load-virtual-vector)
+                  (assoc :load-sorted-map load-virtual-sorted-map)
+                  (assoc :load-sorted-set load-virtual-sorted-set)
+                  (assoc :new-sorted-map
+                         (fn [o] (new AAMap emptyVirtualNode (map-opts o))))
+                  (assoc :new-vector
+                         (fn [o] (new AAVector emptyVirtualNode (vector-opts o))))
+                  (assoc :new-sorted-set
+                         (fn [o] (new AASet (new AAMap emptyVirtualNode (set-opts o))))))]
+   opts)))
 
 (defn new-sorted-map [opts]
   ((:new-sorted-map opts) opts))
@@ -217,7 +201,7 @@
   default-factory-registry
   vector-context
   (reify IFactory
-    (factoryId [this] (byte \v));;;;;;;;;;;;;;;;;;;;;;;;;;; v aavector in aavector
+    (factoryId [this] (byte \v))                            ;;;;;;;;;;;;;;;;;;;;;;;;;;; v aavector in aavector
     (instanceClass [this] aatree.AAVector)
     (qualified [this t2 opts] this)
     (valueLength [this node opts]
@@ -236,7 +220,7 @@
   default-factory-registry
   vector-context
   (reify IFactory
-    (factoryId [this] (byte \m));;;;;;;;;;;;;;;;;;;;;;;;;;; m aamap in aavector
+    (factoryId [this] (byte \m))                            ;;;;;;;;;;;;;;;;;;;;;;;;;;; m aamap in aavector
     (instanceClass [this] aatree.AAMap)
     (qualified [this t2 opts] this)
     (valueLength [this node opts]
@@ -255,7 +239,7 @@
   default-factory-registry
   vector-context
   (reify IFactory
-    (factoryId [this] (byte \s));;;;;;;;;;;;;;;;;;;;;;;;;;; s aaset in aavector
+    (factoryId [this] (byte \s))                            ;;;;;;;;;;;;;;;;;;;;;;;;;;; s aaset in aavector
     (instanceClass [this] aatree.AASet)
     (qualified [this t2 opts] this)
     (valueLength [this node opts]
@@ -274,7 +258,7 @@
   default-factory-registry
   map-context
   (reify IFactory
-    (factoryId [this] (byte \V));;;;;;;;;;;;;;;;;;;;;;;;;;; V aavector in aamap
+    (factoryId [this] (byte \V))                            ;;;;;;;;;;;;;;;;;;;;;;;;;;; V aavector in aamap
     (instanceClass [this] aatree.AAVector)
     (qualified [this t2 opts] this)
     (sval [this inode opts]
@@ -302,7 +286,7 @@
   default-factory-registry
   map-context
   (reify IFactory
-    (factoryId [this] (byte \M));;;;;;;;;;;;;;;;;;;;;;;;;;; M aamap in aamap
+    (factoryId [this] (byte \M))                            ;;;;;;;;;;;;;;;;;;;;;;;;;;; M aamap in aamap
     (instanceClass [this] aatree.AAMap)
     (qualified [this t2 opts] this)
     (sval [this inode opts]
@@ -330,7 +314,7 @@
   default-factory-registry
   map-context
   (reify IFactory
-    (factoryId [this] (byte \S));;;;;;;;;;;;;;;;;;;;;;;;;;; S aaset in aamap
+    (factoryId [this] (byte \S))                            ;;;;;;;;;;;;;;;;;;;;;;;;;;; S aaset in aamap
     (instanceClass [this] aatree.AASet)
     (qualified [this t2 opts] this)
     (sval [this inode opts]
