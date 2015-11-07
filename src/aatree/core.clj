@@ -82,40 +82,24 @@
 (defn lazy-opts
   ([] (lazy-opts {}))
   ([opts]
-   (-> opts
-       (assoc :node-read lazy-read)
-       (assoc :load-vector load-lazy-vector)
-       (assoc :load-sorted-map load-lazy-sorted-map)
-       (assoc :load-sorted-set load-lazy-sorted-set)
-       (assoc :new-sorted-map
-              (fn [r]
-                (let [r (if (:comparator r)
-                          r
-                          (assoc r :comparator RT/DEFAULT_COMPARATOR))
-                      r (if (:factory-registry r)
-                          r
-                          (assoc r :factory-registry default-factory-registry))
-                      r (map-opts r)]
-                  (new AAMap emptyLazyNode r))))
-       (assoc :new-vector
-              (fn [o]
-                (if (:factory-registry o)
-                  (new AAVector emptyLazyNode (vector-opts o))
-                  (new AAVector
-                       emptyLazyNode
-                       (vector-opts (assoc o :factory-registry default-factory-registry))))))
-       (assoc :new-sorted-set
-              (fn [o]
-                (let [r o
-                      r (if (:comparator r)
-                          r
-                          (assoc r :comparator RT/DEFAULT_COMPARATOR))
-                      r (if (:factory-registry r)
-                          r
-                          (assoc r :factory-registry default-factory-registry))
-                      r (set-opts r)]
-                  (new AASet
-                       (new AAMap emptyLazyNode r))))))))
+   (let [opts (if (:comparator opts)
+                opts
+                (assoc opts :comparator RT/DEFAULT_COMPARATOR))
+         opts (if (:factory-registry opts)
+                opts
+                (assoc opts :factory-registry default-factory-registry))
+         opts (-> opts
+                  (assoc :node-read lazy-read)
+                  (assoc :load-vector load-lazy-vector)
+                  (assoc :load-sorted-map load-lazy-sorted-map)
+                  (assoc :load-sorted-set load-lazy-sorted-set)
+                  (assoc :new-sorted-map
+                         (fn [o] (new AAMap emptyLazyNode (map-opts o))))
+                  (assoc :new-vector
+                         (fn [o] (new AAVector emptyLazyNode (vector-opts o))))
+                  (assoc :new-sorted-set
+                         (fn [o] (new AASet (new AAMap emptyLazyNode (set-opts o))))))]
+     opts)))
 
 (defn virtual-opts
   ([] (virtual-opts {}))
@@ -139,7 +123,7 @@
                          (fn [o] (new AAVector emptyVirtualNode (vector-opts o))))
                   (assoc :new-sorted-set
                          (fn [o] (new AASet (new AAMap emptyVirtualNode (set-opts o))))))]
-   opts)))
+     opts)))
 
 (defn new-sorted-map [opts]
   ((:new-sorted-map opts) opts))
