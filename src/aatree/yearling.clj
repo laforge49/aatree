@@ -265,7 +265,7 @@
            opts (assoc opts :db-node-cache-miss node-cache-miss)
            opts (if (:db-node-cache-size opts)
                   opts
-                  (assoc opts :db-node-cache-size 100))
+                  (assoc opts :db-node-cache-size 100000))
            opts (assoc opts :db-node-cache-atom (atom (new-node-cache opts)))
            opts (assoc opts :db-close yearling-close)
            opts (assoc opts :db-get-sorted-map yearling-get-sorted-map)
