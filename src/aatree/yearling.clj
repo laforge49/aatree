@@ -248,7 +248,6 @@
 
 (defn- yearling-close [opts]
   (println "closing db <---------------------") (Thread/sleep 100)
-;  (.printStackTrace (Exception. "close"))
   (let [^FileChannel fc (:db-file-channel opts)]
     (if fc
       (do
@@ -266,7 +265,7 @@
            opts (assoc opts :db-node-cache-miss node-cache-miss)
            opts (if (:db-node-cache-size opts)
                   opts
-                  (assoc opts :db-node-cache-size 100000))
+                  (assoc opts :db-node-cache-size 100))
            opts (assoc opts :db-node-cache-atom (atom (new-node-cache opts)))
            opts (assoc opts :db-close yearling-close)
            opts (assoc opts :db-get-sorted-map yearling-get-sorted-map)

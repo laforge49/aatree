@@ -248,7 +248,6 @@
     nbb))
 
 (defn- make-data [^VirtualNode this opts]
-  (println "make")
   (let [bb (.slice (get-buffer this))
         _ (.position bb 13)
         reference-flag (.get bb)
@@ -277,10 +276,7 @@
   (if (empty-node? this)
       emptyNode
       (let [ld (lookup-data this opts)
-            _ (if (nil? ld) (println "miss"))
             wd (get-weak-data this opts)
-            _ (if (not= ld wd)
-                println "oops")
             data (if ld
                    ld
                    (if wd

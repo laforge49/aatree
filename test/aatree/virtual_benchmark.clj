@@ -9,36 +9,25 @@
 (deftest virtual
   (.delete (File. "virtual-benchmark.yearling"))
 
-  (let [opts (yearling-open (File. "virtual-benchmark.yearling"))]
+  (let [opts (yearling-open (File. "virtual-benchmark.yearling"))
+        mxi 100
+        mxj 10]
     (time
-      (db-update (fn [aamap opts]
-                   (let [bbmap (reduce (fn [m i]
-                                         (assoc m i 1))
-                                       aamap
-                                       (range 60)
-                                       )]
-                     (println bbmap)
-                     (Thread/sleep 200)
-                     bbmap))
-                 opts)
-      )
-    (println "dump:" (db-get-sorted-map opts))
-    (comment
-      (time
-        (db-update (fn [aamap opts]
-                     (println 111111)
-                     (let [bbmap (reduce (fn [m i]
-                                           (assoc m i 1))
-                                         aamap
-                                         (range 3 6)
-                                         )]
-                       (println bbmap)
-                       (Thread/sleep 200)
-                       bbmap))
-                   opts)
-        )
-      )
-    (Thread/sleep 200)
+      (reduce
+        (fn [_ j]
+          (println j)
+          (db-update (fn [aamap opts]
+                       (let [bbmap (reduce (fn [m i]
+                                             (assoc m (+ i (* mxi j)) 1))
+                                           aamap
+                                           (range mxi)
+                                           )]
+                         bbmap))
+                     opts)
+          )
+        nil
+        (range mxj)))
+    (println (count (db-get-sorted-map opts)))
     (db-close opts))
 
   (Thread/sleep 200))
