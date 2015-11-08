@@ -30,16 +30,14 @@
   (newNode [this t2 level left right cnt opts]
     (let [d (->Node t2 level left right cnt)
           f (factory-for-instance t2 opts)
-          cache (:db-node-cache opts)
           node-id ((:db-new-node-id opts))
           vn (->VirtualNode node-id
-                            (atom (WeakReference. d))
+                            (atom nil)
                             (atom d)
                             (atom nil)
                             (atom nil)
                             (atom nil)
                             f)]
-      (.put cache node-id d)
       vn))
 
   (getT2 [this opts] (.getT2 (get-virtual-data this opts) opts))
@@ -99,8 +97,8 @@
       unused
       (let [^ByteBuffer bb @(.-buffer_atom virtual-node)
             unused (if (and bb (= 1 (.get bb 5)))
-                        (conj unused (.getLong bb 6))
-                        unused)
+                     (conj unused (.getLong bb 6))
+                     unused)
             unused (dropped-blocks unused (value-node virtual-node opts) unchanged opts)
             unused (dropped-blocks unused (left-node virtual-node opts) unchanged opts)
             unused (dropped-blocks unused (right-node virtual-node opts) unchanged opts)]
@@ -110,13 +108,13 @@
   (dropped-blocks [] old-node (search-unchanged #{} new-node opts) opts))
 
 (defn- new-byte-length [^VirtualNode virtual-node opts]
-  (+ 1                                   ;factory id
-     8                                   ;node id
-     4                                   ;byte length - 13
-     1                                   ;reference flag
+  (+ 1                                                      ;factory id
+     8                                                      ;node id
+     4                                                      ;byte length - 13
+     1                                                      ;reference flag
      (virtual-byte-length (left-node virtual-node opts) opts) ;left node
-     4                                   ;level
-     4                                   ;cnt
+     4                                                      ;level
+     4                                                      ;cnt
      (.valueLength (get-factory virtual-node) virtual-node opts) ;t2
      (virtual-byte-length (right-node virtual-node opts) opts))) ;right node
 
@@ -147,7 +145,7 @@
         (let [^ByteBuffer bb @(.bufferAtom virtual-node)
               blen (if bb
                      (.limit bb)
-                     (shrinker virtual-node opts))] ;right node
+                     (shrinker virtual-node opts))]         ;right node
           (compare-and-set! a nil blen)))
       @a)))
 
@@ -273,7 +271,10 @@
 
 (defn- get-virtual-data [^VirtualNode this opts]
   (if (empty-node? this)
-      emptyNode
+    emptyNode
+    (let [d @(.-hard_data_atom this)]
+    (if d
+      d
       (let [cache (:db-node-cache opts)
             node-id (.-node-id this)
             ld (.getIfPresent cache node-id)
@@ -287,7 +288,7 @@
           (.put cache node-id data))
         (if (nil? wd)
           (reset! (.-weak_data_atom this) (WeakReference. data)))
-        data)))
+        data)))))
 
 (def ^VirtualNode emptyVirtualNode
   (->VirtualNode

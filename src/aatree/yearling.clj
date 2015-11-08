@@ -238,7 +238,6 @@
         (recur age trans opts)))))
 
 (defn- yearling-close [opts]
-  (println "closing db <---------------------") (Thread/sleep 100)
   (let [^FileChannel fc (:db-file-channel opts)]
     (if fc
       (do
