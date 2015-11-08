@@ -70,6 +70,5 @@ that are larger than will fit in memory.
 is also part of Yearling.
 
 Later we will look at things like journaling. 
-But right now Yearling is still in Alpha as there are some serious 
-[issues](https://github.com/laforge49/aatree/issues)
-that need to be addressed.
+But right now we want to make it easier to update the database by implementing
+[Transparent Conversions](https://github.com/laforge49/aatree/issues/23).
