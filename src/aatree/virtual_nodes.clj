@@ -5,7 +5,8 @@
            (clojure.lang RT)
            (aatree AAVector AAMap AASet)
            (java.nio.channels FileChannel)
-           (java.lang.ref WeakReference)))
+           (java.lang.ref WeakReference)
+           (com.google.common.cache Cache)))
 
 (set! *warn-on-reflection* true)
 
@@ -29,6 +30,7 @@
   (newNode [this t2 level left right cnt opts]
     (let [d (->Node t2 level left right cnt)
           f (factory-for-instance t2 opts)
+          cache (:db-node-cache opts)
           node-id ((:db-new-node-id opts))
           vn (->VirtualNode node-id
                             (atom (WeakReference. d))
@@ -37,7 +39,7 @@
                             (atom nil)
                             (atom nil)
                             f)]
-      ((:db-node-cache-miss opts) node-id d opts)
+      (.put cache node-id d)
       vn))
 
   (getT2 [this opts] (.getT2 (get-virtual-data this opts) opts))
@@ -262,9 +264,6 @@
         data (->Node t2 level left right cnt)]
     data))
 
-(defn- lookup-data [^VirtualNode this opts]
-  ((:db-node-cache-lookup opts) (.-node-id this) opts))
-
 (defn- get-weak-data [^VirtualNode this opts]
   (let [wda (.-weak_data_atom this)
         ^WeakReference wr @wda]
@@ -275,16 +274,17 @@
 (defn- get-virtual-data [^VirtualNode this opts]
   (if (empty-node? this)
       emptyNode
-      (let [ld (lookup-data this opts)
+      (let [cache (:db-node-cache opts)
+            node-id (.-node-id this)
+            ld (.getIfPresent cache node-id)
             wd (get-weak-data this opts)
             data (if ld
                    ld
                    (if wd
                      wd
                      (make-data this opts)))]
-        (if ld
-          ((:db-node-cache-hit opts) (.-node-id this) opts)
-          ((:db-node-cache-miss opts) (.-node-id this) data opts))
+        (if (nil? ld)
+          (.put cache node-id data))
         (if (nil? wd)
           (reset! (.-weak_data_atom this) (WeakReference. data)))
         data)))

@@ -1,13 +1,13 @@
 (ns aatree.yearling
   (:require [aatree.core :refer :all]
-            [aatree.nodes :refer :all]
-            [clojure.core.cache :as cache])
+            [aatree.nodes :refer :all])
   (:import (java.nio ByteBuffer)
            (java.nio.channels FileChannel)
            (java.util BitSet)
            (clojure.lang Agent)
            (java.io File)
-           (java.nio.file OpenOption StandardOpenOption)))
+           (java.nio.file OpenOption StandardOpenOption)
+           (com.google.common.cache CacheBuilder)))
 
 
 (set! *warn-on-reflection* true)
@@ -22,18 +22,9 @@
          yearling-process-pending)
 
 (defn- new-node-cache [opts]
-  (cache/lru-cache-factory
-    {}
-    :threshold (:db-node-cache-size opts)))
-
-(defn- node-cache-hit [id opts]
-  (swap! (:db-node-cache-atom opts) cache/hit id))
-
-(defn- node-cache-miss [id node opts]
-  (swap! (:db-node-cache-atom opts) cache/miss id node))
-
-(defn- node-cache-lookup [id opts]
-  (cache/lookup @(:db-node-cache-atom opts) id))
+  (-> (CacheBuilder/newBuilder)
+      (.maximumSize (:db-node-cache-size opts))
+      (.build)))
 
 (defn- max-blocks [opts] (quot (:max-db-size opts) (:db-block-size opts)))
 
@@ -260,13 +251,10 @@
   ([^File file opts]
    (if (:db-file-channel opts)
      opts
-     (let [opts (assoc opts :db-node-cache-lookup node-cache-lookup)
-           opts (assoc opts :db-node-cache-hit node-cache-hit)
-           opts (assoc opts :db-node-cache-miss node-cache-miss)
-           opts (if (:db-node-cache-size opts)
+     (let [opts (if (:db-node-cache-size opts)
                   opts
-                  (assoc opts :db-node-cache-size 100000))
-           opts (assoc opts :db-node-cache-atom (atom (new-node-cache opts)))
+                  (assoc opts :db-node-cache-size 1000))
+           opts (assoc opts :db-node-cache (new-node-cache opts))
            opts (assoc opts :db-close yearling-close)
            opts (assoc opts :db-get-sorted-map yearling-get-sorted-map)
            opts (assoc opts :db-transaction-count yearling-transaction-count)
