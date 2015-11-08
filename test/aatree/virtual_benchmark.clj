@@ -10,7 +10,7 @@
   (.delete (File. "virtual-benchmark.yearling"))
 
   (let [opts (yearling-open (File. "virtual-benchmark.yearling"))
-        mxi 100000
+        mxi 1000000
 ;        mxi 1
         mxj 1]
     (time
@@ -27,12 +27,12 @@
                      opts)
           )
         nil
-        (range mxj))); -> "Elapsed time: 3500.149251 msecs"
+        (range mxj))); -> "Elapsed time: 38830.891007 msecs"
     (println (count (db-get-sorted-map opts)))
     (time (reduce
       (fn [_ i] (get (db-get-sorted-map opts) i))
       nil
-      (range (count (db-get-sorted-map opts))))); -> "Elapsed time: 934.938999 msecs"
+      (range (count (db-get-sorted-map opts))))); -> "Elapsed time: 9329.289874 msecs"
     (db-close opts))
 
   (Thread/sleep 200))
