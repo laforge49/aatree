@@ -6,8 +6,7 @@
            (java.util BitSet)
            (clojure.lang Agent)
            (java.io File)
-           (java.nio.file OpenOption StandardOpenOption)
-           (com.google.common.cache CacheBuilder)))
+           (java.nio.file OpenOption StandardOpenOption)))
 
 
 (set! *warn-on-reflection* true)
@@ -20,11 +19,6 @@
 
 (declare yearling-release
          yearling-process-pending)
-
-(defn- new-node-cache [opts]
-  (-> (CacheBuilder/newBuilder)
-      (.maximumSize (:db-node-cache-size opts))
-      (.build)))
 
 (defn- max-blocks [opts] (quot (:max-db-size opts) (:db-block-size opts)))
 
@@ -250,11 +244,7 @@
   ([^File file opts]
    (if (:db-file-channel opts)
      opts
-     (let [opts (if (:db-node-cache-size opts)
-                  opts
-                  (assoc opts :db-node-cache-size 1000))
-           opts (assoc opts :db-node-cache (new-node-cache opts))
-           opts (assoc opts :db-close yearling-close)
+     (let [opts (assoc opts :db-close yearling-close)
            opts (assoc opts :db-get-sorted-map yearling-get-sorted-map)
            opts (assoc opts :db-transaction-count yearling-transaction-count)
            opts (assoc opts :db-new-node-id yearling-new-node-id)

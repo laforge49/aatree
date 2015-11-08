@@ -5,8 +5,7 @@
            (clojure.lang RT)
            (aatree AAVector AAMap AASet)
            (java.nio.channels FileChannel)
-           (java.lang.ref WeakReference)
-           (com.google.common.cache Cache)))
+           (java.lang.ref WeakReference)))
 
 (set! *warn-on-reflection* true)
 
@@ -275,17 +274,11 @@
     (let [d @(.-hard_data_atom this)]
     (if d
       d
-      (let [cache (:db-node-cache opts)
-            node-id (.-node-id this)
-            ld (.getIfPresent cache node-id)
+      (let [node-id (.-node-id this)
             wd (get-weak-data this opts)
-            data (if ld
-                   ld
-                   (if wd
+            data (if wd
                      wd
-                     (make-data this opts)))]
-        (if (nil? ld)
-          (.put cache node-id data))
+                     (make-data this opts))]
         (if (nil? wd)
           (reset! (.-weak_data_atom this) (WeakReference. data)))
         data)))))

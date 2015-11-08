@@ -27,12 +27,12 @@
                      opts)
           )
         nil
-        (range mxj))); -> "Elapsed time: 95214.072865 msecs"
+        (range mxj))); -> "Elapsed time: 3500.149251 msecs"
     (println (count (db-get-sorted-map opts)))
     (time (reduce
       (fn [_ i] (get (db-get-sorted-map opts) i))
       nil
-      (range (count (db-get-sorted-map opts))))); -> "Elapsed time: 5876.093509 msecs"
+      (range (count (db-get-sorted-map opts))))); -> "Elapsed time: 934.938999 msecs"
     (db-close opts))
 
   (Thread/sleep 200))
