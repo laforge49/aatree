@@ -88,7 +88,7 @@
           (.flip bb)
           (.write db-file-channel bb (long block-position))
           db-state)
-        (catch Exception e
+        (catch Throwable e
           (yearling-close opts)
           (.printStackTrace e)
           (throw e))))))
@@ -219,7 +219,7 @@
         vec (new-vector opts)
         vec (conj vec *time-millis* *transaction-count* block)]
     (if (not= 0 (mod block-position db-block-size))
-      (throw (Exception. "block-position is not at start of block")))
+      (throw (Exception. (str "block-position is not at start of block: " block-position))))
     (if (not (.get *allocated* block))
       (throw (Exception. "block has not been allocated")))
     (set! *release-pending* (conj *release-pending* vec))))
