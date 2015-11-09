@@ -18,7 +18,8 @@
 (def ^:dynamic *last-node-id*)
 
 (declare yearling-release
-         yearling-process-pending)
+         yearling-process-pending
+         yearling-close)
 
 (defn- max-blocks [opts] (quot (:max-db-size opts) (:db-block-size opts)))
 
@@ -88,6 +89,7 @@
           (.write db-file-channel bb (long block-position))
           db-state)
         (catch Exception e
+          (yearling-close opts)
           (.printStackTrace e)
           (throw e))))))
 

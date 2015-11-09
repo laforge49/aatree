@@ -10,9 +10,9 @@
   (.delete (File. "virtual-benchmark.yearling"))
 
   (let [opts (yearling-open (File. "virtual-benchmark.yearling"))
-        mxi 1000000
+        mxi 100000
 ;        mxi 1
-        mxj 1]
+        mxj 100]
     (time
       (reduce
         (fn [_ j]
