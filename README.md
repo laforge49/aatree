@@ -25,10 +25,6 @@ Validation has been done using
 Compiled AOT with Clojure 1.7.0. Reflection has been avoided through the
 use of warn-on-reflection.
 
-##Dependencies
-
-[Clojure core.cache](https://github.com/clojure/core.cache#readme) 0.6.4
-
 ##[Releases](https://github.com/laforge49/aatree/releases)
 [![Clojars Project](http://clojars.org/aatree/latest-version.svg)](http://clojars.org/aatree)
 
