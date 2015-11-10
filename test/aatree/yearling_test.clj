@@ -9,8 +9,7 @@
 (deftest yearling
   (.delete (File. "yearling-test.yearling"))
 
-  (let [opts {:db-pending-count 99
-              :max-db-size 100000
+  (let [opts {:max-db-size 100000
               :db-block-size 10000}
         opts (yearling-open (File. "yearling-test.yearling") opts)
         _ (is (= (db-transaction-count opts) 2))

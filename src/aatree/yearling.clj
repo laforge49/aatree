@@ -26,16 +26,18 @@
 (defn- max-allocated-longs [opts] (quot (+ (max-blocks opts) 7) 8))
 
 (defn- release-dropped-blocks [old-uber-map uber-map opts]
-  (let [dropped-blocks ((:find-dropped-blocks opts)
+  (let [uber-map (assoc uber-map :release-pending *release-pending*)
+        dropped-blocks ((:find-dropped-blocks opts)
                          (get-inode old-uber-map)
                          (get-inode uber-map)
                          opts)]
     (if (empty? dropped-blocks)
       uber-map
       (do
-        (reduce (fn [_ block-position] (yearling-release block-position opts)) nil dropped-blocks)
-        (let [new-uber-map (assoc uber-map :release-pending *release-pending*)]
-          (recur uber-map new-uber-map opts))))))
+        (reduce (fn [_ block-position] (yearling-release block-position opts))
+                nil
+                dropped-blocks)
+        (recur uber-map uber-map opts)))))
 
 (defn- yearling-new-node-id []
   (set! *last-node-id* (+ 1 *last-node-id*)))
@@ -52,7 +54,6 @@
               _ (yearling-process-pending (:db-pending-age opts) (:db-pending-count opts) opts)
               app-map (app-updater app-map opts)
               uber-map (assoc old-uber-map :app-map app-map)
-              uber-map (assoc uber-map :release-pending *release-pending*)
               uber-map (release-dropped-blocks old-uber-map uber-map opts)
               db-block-size (:db-block-size opts)
               max-db-size (:max-db-size opts)
@@ -221,14 +222,17 @@
     (if (not= 0 (mod block-position db-block-size))
       (throw (Exception. (str "block-position is not at start of block: " block-position))))
     (if (not (.get *allocated* block))
-      (throw (Exception. "block has not been allocated")))
-    (set! *release-pending* (conj *release-pending* vec))))
+      (throw (Exception. (str "block has not been allocated: " block " " (:db-block-size opts)))))
+    (set! *release-pending* (conj *release-pending* vec))
+    ))
 
 (defn- yearling-process-pending [age trans opts]
-  (if (not (empty? *release-pending*))
+  (when (not (empty? *release-pending*))
     (let [oldest (*release-pending* 0)]
       (when (and (<= (+ (oldest 0) age) *time-millis*)
                  (<= (+ (oldest 1) trans) *transaction-count*))
+        (if (not (.get *allocated* (oldest 2)))
+          (throw (Exception. (str "already available: " (oldest 2)))))
         (.clear *allocated* (oldest 2))
         (set! *release-pending* (dropn *release-pending* 0))
         (recur age trans opts)))))

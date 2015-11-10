@@ -95,8 +95,8 @@
     (if (contains? unchanged virtual-node)
       unused
       (let [^ByteBuffer bb @(.-buffer_atom virtual-node)
-            unused (if (and bb (= 1 (.get bb 5)))
-                     (conj unused (.getLong bb 6))
+            unused (if (and bb (= 1 (.get bb (+ 1 8 4))))
+                     (conj unused (.getLong bb (int (+ 1 8 4 1))))
                      unused)
             unused (dropped-blocks unused (value-node virtual-node opts) unchanged opts)
             unused (dropped-blocks unused (left-node virtual-node opts) unchanged opts)
