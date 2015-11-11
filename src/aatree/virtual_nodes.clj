@@ -240,7 +240,7 @@
         _ (.flip nbb)
         cs (compute-cs256 nbb)
         _ (if (not= ocs cs)
-            (throw (Exception. "corrupted database")))
+            (throw (Exception. (str "corrupted database, fetching block-position " block-position))))
         ]
     (.flip nbb)
     (.position nbb (+ 1 8 4 1))

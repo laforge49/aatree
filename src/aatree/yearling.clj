@@ -37,6 +37,7 @@
     (if (empty? dropped-blocks)
       uber-map
       (do
+        (println (count dropped-blocks) "dropped blocks:" dropped-blocks)
         (reduce (fn [_ block-position] (yearling-release block-position opts))
                 nil
                 dropped-blocks)
@@ -46,10 +47,11 @@
   (let [old-uber-map (:uber-map db-state)
         transaction-count (:transaction-count db-state)
         db-block-size (:db-block-size opts)
+        mx-allocated-longs (max-allocated-longs opts)
         block-position (* db-block-size (mod transaction-count 2))
         max-db-size (:max-db-size opts)
         ^FileChannel db-file-channel (:db-file-channel opts)
-        mx-allocated-longs (max-allocated-longs opts)]
+        ]
     (binding [*allocated* (:allocated db-state)
               *transaction-count* (+ transaction-count 1)
               *last-node-id* (:last-node-id db-state)
@@ -69,6 +71,7 @@
               _ (if (< db-block-size (+ 4 8 4 4 8 8 map-size (* mx-allocated-longs 8) 32))
                   (throw (Exception. (str "block-size exceeded on write: " map-size))))
 
+              map-size (byte-length uber-map)
               allocated-long-array (.toLongArray *allocated*)
               ala-len (alength allocated-long-array)
               _ (if (< mx-allocated-longs ala-len)
