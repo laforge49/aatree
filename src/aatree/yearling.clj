@@ -25,6 +25,9 @@
 
 (defn- max-allocated-longs [opts] (quot (+ (max-blocks opts) 7) 8))
 
+(defn- yearling-new-node-id []
+  (set! *last-node-id* (+ 1 *last-node-id*)))
+
 (defn- release-dropped-blocks [old-uber-map uber-map opts]
   (let [uber-map (assoc uber-map :release-pending *release-pending*)
         dropped-blocks ((:find-dropped-blocks opts)
@@ -39,16 +42,14 @@
                 dropped-blocks)
         (recur uber-map uber-map opts)))))
 
-(defn- yearling-new-node-id []
-  (set! *last-node-id* (+ 1 *last-node-id*)))
-
 (defn- yearling-updater [db-state app-updater opts]
   (let [old-uber-map (:uber-map db-state)
         transaction-count (:transaction-count db-state)
         db-block-size (:db-block-size opts)
         block-position (* db-block-size (mod transaction-count 2))
         max-db-size (:max-db-size opts)
-        ^FileChannel db-file-channel (:db-file-channel opts)]
+        ^FileChannel db-file-channel (:db-file-channel opts)
+        mx-allocated-longs (max-allocated-longs opts)]
     (binding [*allocated* (:allocated db-state)
               *transaction-count* (+ transaction-count 1)
               *last-node-id* (:last-node-id db-state)
@@ -59,19 +60,20 @@
         (let [app-map (:app-map old-uber-map)
               app-map (app-updater app-map opts)
               uber-map (assoc old-uber-map :app-map app-map)
+
               uber-map (release-dropped-blocks old-uber-map uber-map opts)
-              ^ByteBuffer bb (ByteBuffer/allocate db-block-size)
-              allocated-long-array (.toLongArray *allocated*)
-              ala-len (alength allocated-long-array)
-              mx-allocated-longs (max-allocated-longs opts)
-              _ (if (< mx-allocated-longs ala-len)
-                  (throw (Exception. (str "allocated size exceeded on write: " mx-allocated-longs ", " ala-len))))
               map-size (byte-length uber-map)
               _ (if (< db-block-size (+ 4 8 4 4 8 8 map-size (* mx-allocated-longs 8) 32))
                   ((:as-reference opts) (get-inode uber-map) opts))
               map-size (byte-length uber-map)
               _ (if (< db-block-size (+ 4 8 4 4 8 8 map-size (* mx-allocated-longs 8) 32))
                   (throw (Exception. (str "block-size exceeded on write: " map-size))))
+
+              allocated-long-array (.toLongArray *allocated*)
+              ala-len (alength allocated-long-array)
+              _ (if (< mx-allocated-longs ala-len)
+                  (throw (Exception. (str "allocated size exceeded on write: " mx-allocated-longs ", " ala-len))))
+              ^ByteBuffer bb (ByteBuffer/allocate db-block-size)
               db-state (assoc db-state :transaction-count *transaction-count*)
               db-state (assoc db-state :last-node-id *last-node-id*)
               db-state (assoc db-state :uber-map uber-map)
