@@ -43,23 +43,24 @@
   (set! *last-node-id* (+ 1 *last-node-id*)))
 
 (defn- yearling-updater [db-state app-updater opts]
-  (let [old-uber-map (:uber-map db-state)]
+  (let [old-uber-map (:uber-map db-state)
+        transaction-count (:transaction-count db-state)
+        db-block-size (:db-block-size opts)
+        block-position (* db-block-size (mod transaction-count 2))
+        max-db-size (:max-db-size opts)
+        ^FileChannel db-file-channel (:db-file-channel opts)]
     (binding [*allocated* (:allocated db-state)
-              *transaction-count* (+ (:transaction-count db-state) 1)
+              *transaction-count* (+ transaction-count 1)
               *last-node-id* (:last-node-id db-state)
               *release-pending* (:release-pending old-uber-map)
               *time-millis* (System/currentTimeMillis)]
       (try
+        (yearling-process-pending (:db-pending-age opts) (:db-pending-count opts) opts)
         (let [app-map (:app-map old-uber-map)
-              _ (yearling-process-pending (:db-pending-age opts) (:db-pending-count opts) opts)
               app-map (app-updater app-map opts)
               uber-map (assoc old-uber-map :app-map app-map)
               uber-map (release-dropped-blocks old-uber-map uber-map opts)
-              db-block-size (:db-block-size opts)
-              max-db-size (:max-db-size opts)
-              block-position (* db-block-size (mod (:transaction-count db-state) 2))
               ^ByteBuffer bb (ByteBuffer/allocate db-block-size)
-              ^FileChannel db-file-channel (:db-file-channel opts)
               allocated-long-array (.toLongArray *allocated*)
               ala-len (alength allocated-long-array)
               mx-allocated-longs (max-allocated-longs opts)
@@ -208,6 +209,7 @@
 
 (defn- yearling-allocate [opts]
   (let [avail (.nextClearBit *allocated* 0)]
+    (if (= 2 avail) (println "allocated!"))
     (.set *allocated* avail)
     (* avail (:db-block-size opts))))
 
@@ -219,6 +221,7 @@
         block (quot block-position db-block-size)
         vec (new-vector opts)
         vec (conj vec *time-millis* *transaction-count* block)]
+    (if (= 2 block) (println "release!"))
     (if (not= 0 (mod block-position db-block-size))
       (throw (Exception. (str "block-position is not at start of block: " block-position))))
     (if (not (.get *allocated* block))
@@ -234,6 +237,7 @@
         (if (not (.get *allocated* (oldest 2)))
           (throw (Exception. (str "already available: " (oldest 2)))))
         (.clear *allocated* (oldest 2))
+        (if (= 2 (oldest 2)) (println "processed!"))
         (set! *release-pending* (dropn *release-pending* 0))
         (recur age trans opts)))))
 
