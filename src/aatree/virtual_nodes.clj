@@ -83,7 +83,7 @@
   (if (empty-node? virtual-node)
     unchanged
     (if (unchanged? virtual-node)
-      (conj unchanged virtual-node)
+      (conj unchanged (.-node-id virtual-node))
       (-> unchanged
           (search-unchanged (value-node virtual-node opts) opts)
           (search-unchanged (left-node virtual-node opts) opts)
@@ -92,7 +92,7 @@
 (defn- dropped-blocks [unused ^VirtualNode virtual-node unchanged opts]
   (if (empty-node? virtual-node)
     unused
-    (if (contains? unchanged virtual-node)
+    (if (contains? unchanged (.-node-id virtual-node))
       unused
       (let [^ByteBuffer bb @(.-buffer_atom virtual-node)
             unused (if (and bb (= 1 (.get bb (+ 1 8 4))))
@@ -104,7 +104,8 @@
         unused))))
 
 (defn find-dropped-blocks [old-node new-node opts]
-  (dropped-blocks [] old-node (search-unchanged #{} new-node opts) opts))
+  (let [unchanged (search-unchanged #{} new-node opts)]
+    (dropped-blocks [] old-node unchanged opts)))
 
 (defn- new-byte-length [^VirtualNode virtual-node opts]
   (+ 1                                                      ;factory id
@@ -173,6 +174,7 @@
         (.limit new-bb (virtual-byte-length virtual-node opts))
         (compare-and-set! (get-buffer-atom virtual-node) nil new-bb)
         (reset! (.-hard-data-atom virtual-node) nil)
+        (reset! (.-weak-data-atom virtual-node) nil)
         ))))
 
 (defn virtual-as-reference [^VirtualNode virtual-node opts]
@@ -205,7 +207,9 @@
     (put-cs256 bb (compute-cs256 nbb))
     (.flip bb)
     (reset! (get-buffer-atom virtual-node) bb)
-    (reset! (.blenAtom virtual-node) blen)))
+    (reset! (.blenAtom virtual-node) blen)
+    (reset! (.-hard-data-atom virtual-node) nil)
+    (reset! (.-weak-data-atom virtual-node) nil)))
 
 (defn virtual-read [^ByteBuffer buffer opts]
   (let [^ByteBuffer bb (.slice buffer)
@@ -272,16 +276,16 @@
   (if (empty-node? this)
     emptyNode
     (let [d @(.-hard_data_atom this)]
-    (if d
-      d
-      (let [node-id (.-node-id this)
-            wd (get-weak-data this opts)
-            data (if wd
+      (if d
+        d
+        (let [node-id (.-node-id this)
+              wd (get-weak-data this opts)
+              data (if wd
                      wd
                      (make-data this opts))]
-        (if (nil? wd)
-          (reset! (.-weak_data_atom this) (WeakReference. data)))
-        data)))))
+          (if (nil? wd)
+            (reset! (.-weak_data_atom this) (WeakReference. data)))
+          data)))))
 
 (def ^VirtualNode emptyVirtualNode
   (->VirtualNode

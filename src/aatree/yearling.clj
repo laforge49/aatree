@@ -37,7 +37,6 @@
     (if (empty? dropped-blocks)
       uber-map
       (do
-        (println (count dropped-blocks) "dropped blocks:" dropped-blocks)
         (reduce (fn [_ block-position] (yearling-release block-position opts))
                 nil
                 dropped-blocks)
@@ -65,7 +64,7 @@
 
               uber-map (release-dropped-blocks old-uber-map uber-map opts)
               map-size (byte-length uber-map)
-              _ (if (< db-block-size (+ 4 8 4 4 8 8 map-size (* mx-allocated-longs 8) 32))
+              _ (when (< db-block-size (+ 4 8 4 4 8 8 map-size (* mx-allocated-longs 8) 32))
                   ((:as-reference opts) (get-inode uber-map) opts))
               map-size (byte-length uber-map)
               _ (if (< db-block-size (+ 4 8 4 4 8 8 map-size (* mx-allocated-longs 8) 32))
@@ -214,7 +213,6 @@
 
 (defn- yearling-allocate [opts]
   (let [avail (.nextClearBit *allocated* 0)]
-    (if (= 2 avail) (println "allocated!"))
     (.set *allocated* avail)
     (* avail (:db-block-size opts))))
 
@@ -226,7 +224,6 @@
         block (quot block-position db-block-size)
         vec (new-vector opts)
         vec (conj vec *time-millis* *transaction-count* block)]
-    (if (= 2 block) (println "release!"))
     (if (not= 0 (mod block-position db-block-size))
       (throw (Exception. (str "block-position is not at start of block: " block-position))))
     (if (not (.get *allocated* block))
@@ -242,7 +239,6 @@
         (if (not (.get *allocated* (oldest 2)))
           (throw (Exception. (str "already available: " (oldest 2)))))
         (.clear *allocated* (oldest 2))
-        (if (= 2 (oldest 2)) (println "processed!"))
         (set! *release-pending* (dropn *release-pending* 0))
         (recur age trans opts)))))
 
