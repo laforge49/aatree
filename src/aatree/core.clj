@@ -58,32 +58,24 @@
        (assoc :new-sorted-set new-standard-sorted-set))))
 
 (defn new-basic-sorted-map [opts]
-  (if (:coparator opts)
-    (new AAMap emptyNode opts)
-    (new AAMap
-         emptyNode
-         (assoc opts :comparator RT/DEFAULT_COMPARATOR))))
+  (new AAMap emptyNode opts))
 
 (defn new-basic-vector [opts]
   (new AAVector emptyNode opts))
 
 (defn new-basic-sorted-set [opts]
-  (let [mpl
-        (if (:coparator opts)
-          (new AAMap emptyNode opts)
-          (new AAMap emptyNode (assoc
-                                 opts
-                                 :comparator
-                                 RT/DEFAULT_COMPARATOR)))]
-    (new AASet mpl)))
+  (new AASet (new AAMap emptyNode opts)))
 
 (defn basic-opts
   ([] (basic-opts {}))
   ([opts]
-   (-> opts
-       (assoc :new-sorted-map new-basic-sorted-map)
-       (assoc :new-vector new-basic-vector)
-       (assoc :new-sorted-set new-basic-sorted-set))))
+   (let [opts (if (:comparator opts)
+                opts
+                (assoc opts :comparator RT/DEFAULT_COMPARATOR))]
+     (-> opts
+         (assoc :new-sorted-map new-basic-sorted-map)
+         (assoc :new-vector new-basic-vector)
+         (assoc :new-sorted-set new-basic-sorted-set)))))
 
 (defn new-lazy-sorted-map [opts]
   (new AAMap emptyLazyNode (map-opts opts)))
