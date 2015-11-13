@@ -733,21 +733,32 @@
         false))
     false))
 
+(defn transcribe-vector [val opts]
+  val)
+
+(defn transcribe-sorted-map [val opts]
+  val)
+
+(defn transcribe-sorted-set [val opts]
+  val)
+
 (defn transcribe [val opts]
   (if (instance? java.util.List val)
-    (if (same? val opts)
-      val
+    (if (instance? clojure.lang.IPersistentVector val)
+      (if (same? val opts)
+        val
+        (transcribe-vector val opts))
       val)
     (if (instance? java.util.Map val)
       (if (instance? clojure.lang.Sorted val)
         (if (same? val opts)
           val
-          val)
+          (transcribe-sorted-map val opts))
         val)
       (if (instance? java.util.Set val)
         (if (instance? clojure.lang.Sorted val)
           (if (same? val opts)
             val
-            val)
+            (transcribe-sorted-set val opts))
           val)
         val))))
