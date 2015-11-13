@@ -724,5 +724,29 @@
     (.position bb (+ (.position bb) 32))
     bs))
 
-(defn transcribe [^INoded aa opts]
-  aa)
+(defn same? [val opts]
+  (if (instance? INoded val)
+    (let [vopts (get-opts val)]
+      (if (= (:db-file opts) (:db-file vopts))
+        true
+        false))
+    false))
+
+(defn transcribe [val opts]
+  (if (instance? java.util.List val)
+    (if (same? val opts)
+      val
+      val)
+    (if (instance? java.util.Map val)
+      (if (instance? clojure.lang.Sorted val)
+        (if (same? val opts)
+          val
+          val)
+        val)
+      (if (instance? java.util.Set val)
+        (if (instance? clojure.lang.Sorted val)
+          (if (same? val opts)
+            val
+            val)
+          val)
+        val))))
