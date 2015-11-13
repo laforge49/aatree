@@ -723,3 +723,6 @@
         bs (BitSet/valueOf (longs la))]
     (.position bb (+ (.position bb) 32))
     bs))
+
+(defn transcribe [^INoded aa opts]
+  aa)
