@@ -8,8 +8,7 @@
            (java.io File)
            (java.nio ByteBuffer LongBuffer)
            (java.nio.file StandardOpenOption OpenOption)
-           (java.nio.channels FileChannel)
-           (java.util BitSet)))
+           (java.nio.channels FileChannel)))
 
 (set! *warn-on-reflection* true)
 
@@ -36,48 +35,64 @@
 
 (defn has-aafactories [opts] (:new-sorted-map opts))
 
+(defn new-standard-sorted-map [opts]
+  (let [c (:comparator opts)]
+    (if c
+      (sorted-map-by c)
+      (sorted-map))))
+
+(defn new-standard-vector [opts] [])
+
+(defn new-standard-sorted-set [opts]
+  (let [c (:comparator opts)]
+    (if c
+      (sorted-set-by c)
+      (sorted-set))))
+
 (defn standard-opts
   ([] (standard-opts {}))
   ([opts]
    (-> opts
-       (assoc :new-sorted-map
-              (fn [o]
-                (let [c (:comparator o)]
-                  (if c
-                    (sorted-map-by c)
-                    (sorted-map)))))
-       (assoc :new-vector
-              (fn [o] []))
-       (assoc :new-sorted-set
-              (fn [o]
-                (let [c (:comparator o)]
-                  (if c
-                    (sorted-set-by c)
-                    (sorted-set))))))))
+       (assoc :new-sorted-map new-standard-sorted-map)
+       (assoc :new-vector new-standard-vector)
+       (assoc :new-sorted-set new-standard-sorted-set))))
+
+(defn new-basic-sorted-map [opts]
+  (if (:coparator opts)
+    (new AAMap emptyNode opts)
+    (new AAMap
+         emptyNode
+         (assoc opts :comparator RT/DEFAULT_COMPARATOR))))
+
+(defn new-basic-vector [opts]
+  (new AAVector emptyNode opts))
+
+(defn new-basic-sorted-set [opts]
+  (let [mpl
+        (if (:coparator opts)
+          (new AAMap emptyNode opts)
+          (new AAMap emptyNode (assoc
+                                 opts
+                                 :comparator
+                                 RT/DEFAULT_COMPARATOR)))]
+    (new AASet mpl)))
 
 (defn basic-opts
   ([] (basic-opts {}))
   ([opts]
    (-> opts
-       (assoc :new-sorted-map
-              (fn [o]
-                (if (:coparator opts)
-                  (new AAMap emptyNode o)
-                  (new AAMap
-                       emptyNode
-                       (assoc o :comparator RT/DEFAULT_COMPARATOR)))))
-       (assoc :new-vector
-              (fn [o] (new AAVector emptyNode o)))
-       (assoc :new-sorted-set
-              (fn [o]
-                (let [mpl
-                      (if (:coparator o)
-                        (new AAMap emptyNode o)
-                        (new AAMap emptyNode (assoc
-                                               o
-                                               :comparator
-                                               RT/DEFAULT_COMPARATOR)))]
-                  (new AASet mpl)))))))
+       (assoc :new-sorted-map new-basic-sorted-map)
+       (assoc :new-vector new-basic-vector)
+       (assoc :new-sorted-set new-basic-sorted-set))))
+
+(defn new-lazy-sorted-map [opts]
+  (new AAMap emptyLazyNode (map-opts opts)))
+
+(defn new-lazy-vector [opts]
+  (new AAVector emptyLazyNode (vector-opts opts)))
+
+(defn new-lazy-sorted-set [opts]
+  (new AASet (new AAMap emptyLazyNode (set-opts opts))))
 
 (defn lazy-opts
   ([] (lazy-opts {}))
@@ -93,13 +108,19 @@
                   (assoc :load-vector load-lazy-vector)
                   (assoc :load-sorted-map load-lazy-sorted-map)
                   (assoc :load-sorted-set load-lazy-sorted-set)
-                  (assoc :new-sorted-map
-                         (fn [o] (new AAMap emptyLazyNode (map-opts o))))
-                  (assoc :new-vector
-                         (fn [o] (new AAVector emptyLazyNode (vector-opts o))))
-                  (assoc :new-sorted-set
-                         (fn [o] (new AASet (new AAMap emptyLazyNode (set-opts o))))))]
+                  (assoc :new-sorted-map new-lazy-sorted-map)
+                  (assoc :new-vector new-lazy-vector)
+                  (assoc :new-sorted-set new-lazy-sorted-set))]
      opts)))
+
+(defn new-virtual-sorted-map [opts]
+  (new AAMap emptyVirtualNode (map-opts opts)))
+
+(defn new-virtual-vector [opts]
+  (new AAVector emptyVirtualNode (vector-opts opts)))
+
+(defn new-virtual-sorted-set [opts]
+  (new AASet (new AAMap emptyVirtualNode (set-opts opts))))
 
 (defn virtual-opts
   ([] (virtual-opts {}))
@@ -117,12 +138,9 @@
                   (assoc :load-vector load-virtual-vector)
                   (assoc :load-sorted-map load-virtual-sorted-map)
                   (assoc :load-sorted-set load-virtual-sorted-set)
-                  (assoc :new-sorted-map
-                         (fn [o] (new AAMap emptyVirtualNode (map-opts o))))
-                  (assoc :new-vector
-                         (fn [o] (new AAVector emptyVirtualNode (vector-opts o))))
-                  (assoc :new-sorted-set
-                         (fn [o] (new AASet (new AAMap emptyVirtualNode (set-opts o))))))]
+                  (assoc :new-sorted-map new-virtual-sorted-map)
+                  (assoc :new-vector new-virtual-vector)
+                  (assoc :new-sorted-set new-virtual-sorted-set))]
      opts)))
 
 (defn new-sorted-map [opts]
