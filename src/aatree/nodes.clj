@@ -727,7 +727,8 @@
 (defn same? [val opts]
   (if (instance? INoded val)
     (let [vopts (get-opts val)]
-      (if (= (:db-file opts) (:db-file vopts))
+      (if (and (= (:new-vector opts) (:new-vector vopts))
+               (= (:db-file opts) (:db-file vopts)))
         true
         false))
     false))
