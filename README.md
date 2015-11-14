@@ -64,7 +64,3 @@ supports virtual data structures, which allows for structures
 that are larger than will fit in memory.
 [Disk Space Management](https://github.com/laforge49/aatree/wiki/Disk-Space-Management)
 is also part of Yearling.
-
-Later we will look at things like journaling. 
-But right now we want to make it easier to update the database by implementing
-[Transparent Conversions](https://github.com/laforge49/aatree/issues/23).
