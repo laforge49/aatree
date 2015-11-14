@@ -7,9 +7,6 @@
 (set! *warn-on-reflection* true)
 
 (deftest transparent-transcription
-  (.delete (File. "transcription-a.yearling"))
-  (.delete (File. "transcription-b.yearling"))
-
   (let [file-a (File. "transcription-a.yearling")
         file-b (File. "transcription-b.yearling")
         _ (.delete file-a)
