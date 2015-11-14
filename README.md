@@ -64,3 +64,8 @@ supports virtual data structures, which allows for structures
 that are larger than will fit in memory.
 [Disk Space Management](https://github.com/laforge49/aatree/wiki/Disk-Space-Management)
 is also part of Yearling.
+
+### The Heifer Database
+
+Next up will be a database with a transaction log: 
+[Heifer](https://github.com/laforge49/aatree/issues/28).
