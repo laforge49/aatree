@@ -333,3 +333,5 @@
         (get-inode v)))))
 
 (defn transcribe [val opts] (transcriber val opts))
+
+(defn aa-opts [aa] (get-opts aa))

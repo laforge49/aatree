@@ -1,6 +1,8 @@
 (ns aatree.transcribe-examples
   (:require [aatree.core :refer :all]))
 
+(set! *warn-on-reflection* true)
+
 ; The recognized classes
 (println (class []))
 ; -> clojure.lang.PersistentVector
