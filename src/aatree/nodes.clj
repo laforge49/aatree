@@ -734,13 +734,13 @@
     false))
 
 (defn transcribe-vector [val opts]
-  val)
+  (reduce conj ((:new-vector opts) opts) (seq val)))
 
 (defn transcribe-sorted-map [val opts]
-  val)
+  (reduce conj ((:new-vector opts) opts) (seq val)))
 
 (defn transcribe-sorted-set [val opts]
-  val)
+  (reduce conj ((:new-vector opts) opts) (seq val)))
 
 (defn transcribe [val opts]
   (if (instance? java.util.List val)
