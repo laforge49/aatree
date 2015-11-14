@@ -742,7 +742,7 @@
 (defn transcribe-sorted-set [val opts]
   (reduce conj ((:new-sorted-set opts) opts) (seq val)))
 
-(defn transcribe [val opts]
+(defn transcriber [val opts]
   (if (instance? java.util.List val)
     (if (instance? clojure.lang.IPersistentVector val)
       (if (same? val opts)

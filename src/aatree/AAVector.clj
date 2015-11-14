@@ -44,17 +44,17 @@
 
 (defn -cons [^AAVector this val]
   (let [n0 (get-inode this)
-        n1 (vector-add n0 (transcribe val (get-opts this)) (-count this) (get-opts this))]
+        n1 (vector-add n0 (transcriber val (get-opts this)) (-count this) (get-opts this))]
     (new AAVector n1 (get-opts this) (get-meta this))))
 
 (defn -addNode [^AAVector this i val]
   (let [c (-count this)]
     (cond
       (= i c)
-      (-cons this (transcribe val (get-opts this)))
+      (-cons this (transcriber val (get-opts this)))
       (and (>= i 0) (< i c))
       (let [n0 (get-inode this)
-            n1 (vector-add n0 (transcribe val (get-opts this)) i (get-opts this))]
+            n1 (vector-add n0 (transcriber val (get-opts this)) i (get-opts this))]
         (new AAVector n1 (get-opts this) (get-meta this)))
       :else
       (throw (IndexOutOfBoundsException.)))))
@@ -63,10 +63,10 @@
   (let [c (-count this)]
     (cond
       (= i c)
-      (-cons this (transcribe val (get-opts this)))
+      (-cons this (transcriber val (get-opts this)))
       (and (>= i 0) (< i c))
       (let [n0 (get-inode this)
-            n1 (vector-set n0 (transcribe val (get-opts this)) i (get-opts this))]
+            n1 (vector-set n0 (transcriber val (get-opts this)) i (get-opts this))]
         (new AAVector n1 (get-opts this) (get-meta this)))
       :else
       (throw (IndexOutOfBoundsException.)))))

@@ -331,3 +331,5 @@
       (let [^MapEntry map-entry (.getT2 node opts)
             ^INoded v (.getValue map-entry)]
         (get-inode v)))))
+
+(defn transcribe [val opts] (transcriber val opts))

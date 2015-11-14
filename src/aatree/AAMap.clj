@@ -49,7 +49,8 @@
 
 (defn -assoc [^AAMap this key val]
   (let [n0 (get-inode this)
-        n1 (map-insert n0 (new MapEntry key (transcribe val (get-opts this))) (get-opts this))]
+        val (transcriber val (get-opts this))
+        n1 (map-insert n0 (new MapEntry key val) (get-opts this))]
     (if (identical? n0 n1)
       this
       (new AAMap n1 (get-opts this) (get-meta this)))))
@@ -59,7 +60,7 @@
     (if (-containsKey this key)
       this
       (new AAMap
-           (map-insert n0 (new MapEntry key (transcribe val (get-opts this))) (get-opts this))
+           (map-insert n0 (new MapEntry key (transcriber val (get-opts this))) (get-opts this))
            (get-opts this)
            (get-meta this)))))
 
