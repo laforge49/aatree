@@ -27,15 +27,18 @@
 ; Top-level conversion
 (println (class (transcribe [] (basic-opts))))
 ; -> aatree.AAVector
-(println (class (transcribe (transcribe [] (basic-opts)) (standard-opts))))
+(println (class (transcribe (transcribe [] (basic-opts))
+                            (standard-opts))))
 ; -> clojure.lang.PersistentVector
 (println (class (transcribe (sorted-map) (basic-opts))))
 ; -> clojure.lang.aatree.AAMap
-(println (class (transcribe (transcribe (sorted-map) (basic-opts)) (standard-opts))))
+(println (class (transcribe (transcribe (sorted-map) (basic-opts))
+                            (standard-opts))))
 ; -> clojure.lang.PersistentTreeMap
 (println (class (transcribe (sorted-set) (basic-opts))))
 ; -> clojure.lang.aatree.AASet
-(println (class (transcribe (transcribe (sorted-set) (basic-opts)) (standard-opts))))
+(println (class (transcribe (transcribe (sorted-set) (basic-opts))
+                            (standard-opts))))
 ; -> clojure.lang.PersistentTreeSet
 (println)
 
