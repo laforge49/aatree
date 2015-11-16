@@ -1,5 +1,7 @@
 # aatree
 
+[![Join the chat at https://gitter.im/laforge49/aatree](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/laforge49/aatree?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 A Clojure library for AA Trees.
 
 [AA Trees](https://en.wikipedia.org/wiki/AA_tree) 
