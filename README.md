@@ -28,6 +28,8 @@ use of warn-on-reflection.
 ##[Releases](https://github.com/laforge49/aatree/releases)
 [![Clojars Project](http://clojars.org/aatree/latest-version.svg)](http://clojars.org/aatree)
 
+##Resources: [gitter.im](https://gitter.im/laforge49/aatree), [google group](https://groups.google.com/forum/?hl=en#!forum/agilewikidevelopers)
+
 ## Wiki
 
 [Virtual Structures, easy to use but almost too simple to explain](https://github.com/laforge49/aatree/wiki/Virtual-Structures,-easy-to-use-but-almost-too-simple-to-explain)
