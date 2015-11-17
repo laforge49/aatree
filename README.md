@@ -33,7 +33,6 @@ use of warn-on-reflection.
 ## Log4J
 
 Logging dependencies:
-
 ```
  [org.clojure/tools.logging "0.3.1"]
                  [org.slf4j/slf4j-log4j12 "1.7.1"]
@@ -41,6 +40,14 @@ Logging dependencies:
                                                     javax.jms/jms
                                                     com.sun.jmdk/jmxtools
                                                     com.sun.jmx/jmxri]]
+```
+
+Sample log4j.properties file:
+```
+log4j.rootLogger=INFO, console
+log4j.appender.console=org.apache.log4j.ConsoleAppender
+log4j.appender.console.layout=org.apache.log4j.PatternLayout
+log4j.appender.console.layout.ConversionPattern=%-5p %c: %m%n
 ```
 
 ## Wiki
