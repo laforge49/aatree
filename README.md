@@ -25,10 +25,23 @@ Validation has been done using
 Compiled AOT with Clojure 1.7.0. Reflection has been avoided through the
 use of warn-on-reflection.
 
-##[Releases](https://github.com/laforge49/aatree/releases)
+## [Releases](https://github.com/laforge49/aatree/releases)
 [![Clojars Project](http://clojars.org/aatree/latest-version.svg)](http://clojars.org/aatree)
 
-##Resources: [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/laforge49/aatree?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge), [google group](https://groups.google.com/forum/?hl=en#!forum/agilewikidevelopers)
+## Resources: [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/laforge49/aatree?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge), [google group](https://groups.google.com/forum/?hl=en#!forum/agilewikidevelopers)
+
+## Log4J
+
+Logging dependencies:
+
+```
+ [org.clojure/tools.logging "0.3.1"]
+                 [org.slf4j/slf4j-log4j12 "1.7.1"]
+                 [log4j/log4j "1.2.17" :exclusions [javax.mail/mail
+                                                    javax.jms/jms
+                                                    com.sun.jmdk/jmxtools
+                                                    com.sun.jmx/jmxri]]
+```
 
 ## Wiki
 
