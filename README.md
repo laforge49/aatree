@@ -35,14 +35,14 @@ use of warn-on-reflection.
 Logging dependencies:
 ```
  [org.clojure/tools.logging "0.3.1"]
-                 [org.slf4j/slf4j-log4j12 "1.7.1"]
-                 [log4j/log4j "1.2.17" :exclusions [javax.mail/mail
-                                                    javax.jms/jms
-                                                    com.sun.jmdk/jmxtools
-                                                    com.sun.jmx/jmxri]]
+ [org.slf4j/slf4j-log4j12 "1.7.1"]
+ [log4j/log4j "1.2.17" :exclusions [javax.mail/mail
+                                    javax.jms/jms
+                                    com.sun.jmdk/jmxtools
+                                    com.sun.jmx/jmxri]]
 ```
 
-Sample log4j.properties file:
+Sample log4j.properties file (Add to classpath):
 ```
 log4j.rootLogger=INFO, console
 log4j.appender.console=org.apache.log4j.ConsoleAppender
