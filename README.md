@@ -28,7 +28,7 @@ use of warn-on-reflection.
 ##[Releases](https://github.com/laforge49/aatree/releases)
 [![Clojars Project](http://clojars.org/aatree/latest-version.svg)](http://clojars.org/aatree)
 
-##Resources: [gitter.im](https://gitter.im/laforge49/aatree), [google group](https://groups.google.com/forum/?hl=en#!forum/agilewikidevelopers)
+##Resources: [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/laforge49/aatree?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge), [google group](https://groups.google.com/forum/?hl=en#!forum/agilewikidevelopers)
 
 ## Wiki
 
