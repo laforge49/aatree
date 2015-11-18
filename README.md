@@ -50,7 +50,8 @@ log4j.appender.console.layout=org.apache.log4j.PatternLayout
 log4j.appender.console.layout.ConversionPattern=%-5p %c: %m%n
 ```
 
-For testing purposes, the above log4j.properties file was added to dev-resources. 
+For testing purposes, the above log4j.properties file was 
+put in the dev-resources folder to keep it from being added to the jar file.
 
 ## Wiki
 
