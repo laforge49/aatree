@@ -14,7 +14,9 @@
   (let [current-time-millis (System/currentTimeMillis)]
     (if (not= current-time-millis old-time-millis)
       current-time-millis
-      (recur old-time-millis))))
+      (do
+        (Thread/yield)
+        (recur old-time-millis)))))
 
 (defn new-timestamp []
   (swap! ts-atom
