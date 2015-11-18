@@ -42,13 +42,15 @@ Logging dependencies:
                                     com.sun.jmx/jmxri]]
 ```
 
-Sample log4j.properties file (Add to classpath):
+Sample log4j.properties file (add to classpath):
 ```
 log4j.rootLogger=INFO, console
 log4j.appender.console=org.apache.log4j.ConsoleAppender
 log4j.appender.console.layout=org.apache.log4j.PatternLayout
 log4j.appender.console.layout.ConversionPattern=%-5p %c: %m%n
 ```
+
+For testing purposes, the above log4j.properties file was added to dev-resources. 
 
 ## Wiki
 
