@@ -161,10 +161,10 @@
           t)))))
 
 (deftype counted-iterator
-         [node
-          ^{:volatile-mutable true Long true} ndx
-          ^Long cnt
-          opts]
+  [node
+   ^{:volatile-mutable true Long true} ndx
+   ^Long cnt
+   opts]
 
   XIterator
   (count [this index]
@@ -196,16 +196,16 @@
 
 (defn ^CountedSequence new-counted-seq
   ([node opts]
-   (let [it (new-counted-iterator node  opts)]
+   (let [it (new-counted-iterator node opts)]
      (CountedSequence/create it (.index it) identity)))
   ([node i opts]
    (let [it (new-counted-iterator node i opts)]
      (CountedSequence/create it (.index it) identity))))
 
 (deftype counted-reverse-iterator
-         [node
-          ^{:volatile-mutable true Long true} ndx
-          opts]
+  [node
+   ^{:volatile-mutable true Long true} ndx
+   opts]
 
   XIterator
   (count [this index]
@@ -249,12 +249,12 @@
     (let [l (left-node n opts)
           p (.getCnt l opts)]
       (split
-       (skew
-        (if (<= i p)
-          (revise n [:left (vector-add l v i opts)] opts)
-          (revise n [:right (vector-add (right-node n opts) v (- i p 1) opts)] opts))
-        opts)
-       opts))))
+        (skew
+          (if (<= i p)
+            (revise n [:left (vector-add l v i opts)] opts)
+            (revise n [:right (vector-add (right-node n opts) v (- i p 1) opts)] opts))
+          opts)
+        opts))))
 
 (defn vector-set [^INode n v i opts]
   (if (empty-node? n)
@@ -262,16 +262,16 @@
     (let [l (left-node n opts)
           p (.getCnt l opts)]
       (split
-       (skew
-        (cond
-          (< i p)
-          (revise n [:left (vector-set l v i opts)] opts)
-          (> i p)
-          (revise n [:right (vector-set (right-node n opts) v (- i p 1) opts)] opts)
-          :else
-          (revise n [:t2 v] opts))
-        opts)
-       opts))))
+        (skew
+          (cond
+            (< i p)
+            (revise n [:left (vector-set l v i opts)] opts)
+            (> i p)
+            (revise n [:right (vector-set (right-node n opts) v (- i p 1) opts)] opts)
+            :else
+            (revise n [:t2 v] opts))
+          opts)
+        opts))))
 
 (defn ^MapEntry get-entry [^INode this opts] (.getT2 this opts))
 
@@ -552,13 +552,13 @@
     (read-string opts sv)))
 
 (defn default-valueLength [this ^WrapperNode wrapper-node opts]
-  (+ 4 ;sval length
-     (* 2 (count (str-val this wrapper-node opts))))) ;sval
+  (+ 4                                                      ;sval length
+     (* 2 (count (str-val this wrapper-node opts)))))       ;sval
 
 (defn default-write-value [^IFactory f
-                            ^WrapperNode wrapper-node
-                            ^ByteBuffer buffer
-                            opts]
+                           ^WrapperNode wrapper-node
+                           ^ByteBuffer buffer
+                           opts]
   (let [^String sv (str-val f wrapper-node opts)
         svl (count sv)
         _ (.putInt buffer svl)
@@ -619,7 +619,7 @@
   default-factory-registry
   nil
   (reify IFactory
-    (factoryId [this] (byte \n));;;;;;;;;;;;;;;;;;;;;;;; n - nil content
+    (factoryId [this] (byte \n))                            ;;;;;;;;;;;;;;;;;;;;;;;; n - nil content
     (instanceClass [this] nil)
     (qualified [this t2 opts] this)
     (valueNode [this node opts] nil)))
@@ -628,7 +628,7 @@
   default-factory-registry
   vector-context
   (reify IFactory
-    (factoryId [this] (byte \e));;;;;;;;;;;;;;;;;;;;;; e - vector default factory
+    (factoryId [this] (byte \e))                            ;;;;;;;;;;;;;;;;;;;;;; e - vector default factory
     (instanceClass [this] nil)
     (qualified [this t2 opts] this)
     (sval [this inode opts]
@@ -651,7 +651,7 @@
   default-factory-registry
   map-context
   (reify IFactory
-    (factoryId [this] (byte \p));;;;;;;;;;;;;;;;;;;;;;;;;;; p - map default factory
+    (factoryId [this] (byte \p))                            ;;;;;;;;;;;;;;;;;;;;;;;;;;; p - map default factory
     (instanceClass [this] nil)
     (qualified [this t2 opts] this)
     (sval [this inode opts]
@@ -676,7 +676,7 @@
   default-factory-registry
   set-context
   (reify IFactory
-    (factoryId [this] (byte \q));;;;;;;;;;;;;;;;;;;;;;;;;;; q - set default factory
+    (factoryId [this] (byte \q))                            ;;;;;;;;;;;;;;;;;;;;;;;;;;; q - set default factory
     (instanceClass [this] nil)
     (qualified [this t2 opts] this)
     (sval [this inode opts]
@@ -750,15 +750,11 @@
         (transcribe-vector val opts))
       val)
     (if (instance? java.util.Map val)
-      (if (instance? clojure.lang.Sorted val)
+      (if (same? val opts)
+        val
+        (transcribe-sorted-map val opts))
+      (if (instance? java.util.Set val)
         (if (same? val opts)
           val
-          (transcribe-sorted-map val opts))
-        val)
-      (if (instance? java.util.Set val)
-        (if (instance? clojure.lang.Sorted val)
-          (if (same? val opts)
-            val
-            (transcribe-sorted-set val opts))
-          val)
+          (transcribe-sorted-set val opts))
         val))))

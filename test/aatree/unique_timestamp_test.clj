@@ -9,4 +9,4 @@
 (time (reduce (fn [_ _] (new-timestamp))
               nil
               (range 10240))) ; Must take more than 10 millis!
-; -> "Elapsed time: 12.8779 msecs"
+; -> "Elapsed time: 12.593512 msecs"
