@@ -6,7 +6,6 @@
   :dependencies [[org.clojure/clojure "1.7.0"]
                  [org.clojure/tools.logging "0.3.1"]
                  [org.apache.logging.log4j/log4j-core "2.4.1"]
-                 [org.apache.logging.log4j/log4j-api "2.4.1"]
                  [org.apache.logging.log4j/log4j-slf4j-impl "2.4.1"]
                  ]
   :aot [aatree.CountedSequence aatree.nodes aatree.AAMap aatree.AAVector aatree.AASet]
