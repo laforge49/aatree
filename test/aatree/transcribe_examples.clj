@@ -43,10 +43,6 @@
 (println)
 
 ; No conversion of unrecognized structures
-(println (class {}))
-; -> clojure.lang.PersistentArrayMap
-(println (class (transcribe {} (basic-opts))))
-; -> clojure.lang.PersistentArrayMap
 (println (class (list)))
 ; -> clojure.lang.PersistentList$EmptyList
 (println (class (transcribe (list) (basic-opts))))
@@ -60,7 +56,7 @@
 ; -> aatree.AAVector
 (println (class (transcribe basic-vec (standard-opts))))
 ; -> clojure.lang.PersistentVector
-(def std-map (conj (sorted-map) [:m (sorted-map)]))
+(def std-map (conj (sorted-map) [:m {}]))
 (def basic-map (transcribe std-map (basic-opts)))
 (println (class (basic-map :m)))
 ; -> aatree.AAMap

@@ -30,27 +30,34 @@ use of warn-on-reflection.
 
 ## Resources: [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/laforge49/aatree?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge), [google group](https://groups.google.com/forum/?hl=en#!forum/agilewikidevelopers)
 
-## Log4J
+## Log4J 2
 
 Logging dependencies:
 ```
- [org.clojure/tools.logging "0.3.1"]
- [org.slf4j/slf4j-log4j12 "1.7.1"]
- [log4j/log4j "1.2.17" :exclusions [javax.mail/mail
-                                    javax.jms/jms
-                                    com.sun.jmdk/jmxtools
-                                    com.sun.jmx/jmxri]]
+                 [org.clojure/tools.logging "0.3.1"]
+                 [org.apache.logging.log4j/log4j-core "2.4.1"]
+                 [org.apache.logging.log4j/log4j-api "2.4.1"]
+                 [org.apache.logging.log4j/log4j-slf4j-impl "2.4.1"]
 ```
 
-Sample log4j.properties file (add to classpath):
+Sample log4j2-test.xml file (add to classpath):
 ```
-log4j.rootLogger=INFO, console
-log4j.appender.console=org.apache.log4j.ConsoleAppender
-log4j.appender.console.layout=org.apache.log4j.PatternLayout
-log4j.appender.console.layout.ConversionPattern=%-5p %c: %m%n
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="INFO">
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+        </Console>
+    </Appenders>
+    <Loggers>
+        <Root level="info">
+            <AppenderRef ref="Console"/>
+        </Root>
+    </Loggers>
+</Configuration>
 ```
 
-For testing purposes, the above log4j.properties file was 
+For testing purposes, the above log4j2-test.xml file was 
 put in the dev-resources folder to keep it from being added to the jar file.
 
 ## Wiki
