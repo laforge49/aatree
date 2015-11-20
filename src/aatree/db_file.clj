@@ -19,9 +19,6 @@
                                         StandardOpenOption/READ
                                         StandardOpenOption/WRITE]))
          opts (assoc opts :db-file-channel file-channel)
-         opts (if (:db-block-size opts)
-                opts
-                (assoc opts :db-block-size 500000))
          opts (assoc opts
                 :db-close
                 (fn []
@@ -31,6 +28,6 @@
                       (log/warn e "exception on close of db-file")))))
          opts (assoc opts
                 :db-file-empty?
-                (fn []
+                (fn [_]
                   (= 0 (.size file-channel))))]
      opts)))

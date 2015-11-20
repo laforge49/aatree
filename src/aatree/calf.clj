@@ -1,6 +1,7 @@
 (ns aatree.calf
   (:require [aatree.core :refer :all]
-            [aatree.nodes :refer :all])
+            [aatree.nodes :refer :all]
+            [aatree.db-file :refer :all])
   (:import (java.nio.channels FileChannel)
            (java.io File)
            (java.nio.file OpenOption StandardOpenOption)
@@ -112,38 +113,19 @@
 (defn- calf-get-sorted-map [opts]
   (:aamap @(:db-agent opts)))
 
-(defn- calf-close [opts]
-  (let [^FileChannel fc (:db-file-channel opts)]
-    (if fc
-      (do
-        (.close fc)
-        (assoc opts :db-file-channel nil))
-      opts)))
-
 (defn calf-open
   ([file block-size] (calf-open file block-size {}))
   ([^File file block-size opts]
-   (if (:db-file-channel opts)
-     opts
-     (let [opts (assoc opts :db-close calf-close)
-           opts (assoc opts :db-get-sorted-map calf-get-sorted-map)
-           opts (assoc opts :db-transaction-count calf-transaction-count)
-           opts (assoc opts :db-send calf-send)
-           opts (assoc opts :db-update calf-update)
-           opts (assoc opts :db-file file)
-           opts (assoc opts :db-block-size block-size)
-           file-channel
-           (FileChannel/open (.toPath file)
-                             (into-array OpenOption
-                                         [StandardOpenOption/CREATE
-                                          StandardOpenOption/READ
-                                          StandardOpenOption/WRITE
-                                          StandardOpenOption/SYNC]))
-           opts (assoc opts :db-file-channel file-channel)
-           opts (if (has-aafactories opts)
-                  opts
-                  (lazy-opts opts))
-           opts (if (= 0 (.size file-channel))
-                  (calf-new opts)
-                  (calf-old opts))]
-       opts))))
+   (let [opts (db-file-open file opts)
+         opts (assoc opts :db-get-sorted-map calf-get-sorted-map)
+         opts (assoc opts :db-transaction-count calf-transaction-count)
+         opts (assoc opts :db-send calf-send)
+         opts (assoc opts :db-update calf-update)
+         opts (assoc opts :db-block-size block-size)
+         opts (if (has-aafactories opts)
+                opts
+                (lazy-opts opts))
+         opts (if ((:db-file-empty? opts))
+                (calf-new opts)
+                (calf-old opts))]
+     opts)))
