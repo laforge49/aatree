@@ -23,7 +23,8 @@
                   (try
                     (.close file-channel)
                     (catch Exception e
-                      (log/warn e "exception on close of db-file")))))
+                      (log/warn e "exception on close of db-file")))
+                  (dissoc opts :db-file-channel)))
          opts (assoc opts
                 :db-file-empty?
                 (fn []
