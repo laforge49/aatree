@@ -4,7 +4,6 @@
            (aatree.nodes IFactory WrapperNode)
            (clojure.lang RT)
            (aatree AAVector AAMap AASet)
-           (java.nio.channels FileChannel)
            (java.lang.ref WeakReference)))
 
 (set! *warn-on-reflection* true)
@@ -186,8 +185,7 @@
         _ (virtual-write virtual-node nbb opts)
         _ (.flip nbb)
         block-position ((:db-allocate opts) opts)
-        ^FileChannel db-file-channel (:db-file-channel opts)
-        _ (.write db-file-channel nbb (long block-position))
+        _ ((:db-file-write opts) nbb (long block-position))
         _ (.flip nbb)
         blen (+ 1                                           ;bode id
                 8                                           ;node-id
@@ -239,8 +237,7 @@
         block-length (.getInt bb)
         ocs (get-cs256 bb)
         ^ByteBuffer nbb (ByteBuffer/allocate block-length)
-        ^FileChannel db-file-channel (:db-file-channel opts)
-        _ (.read db-file-channel nbb (long block-position))
+        _ ((:db-file-read opts) nbb (long block-position))
         _ (.flip nbb)
         cs (compute-cs256 nbb)
         _ (if (not= ocs cs)

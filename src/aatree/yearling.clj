@@ -1,12 +1,12 @@
 (ns aatree.yearling
   (:require [aatree.core :refer :all]
-            [aatree.nodes :refer :all])
+            [aatree.nodes :refer :all]
+            [aatree.db-file :refer :all])
   (:import (java.nio ByteBuffer)
            (java.nio.channels FileChannel)
            (java.util BitSet)
            (clojure.lang Agent)
-           (java.io File)
-           (java.nio.file OpenOption StandardOpenOption)))
+           (java.io File)))
 
 
 (set! *warn-on-reflection* true)
@@ -92,7 +92,7 @@
           (.position bb (+ (.position bb) (* ala-len 8)))
           (put-cs256 bb (compute-cs256 (.flip (.duplicate bb))))
           (.flip bb)
-          (.write db-file-channel bb (long block-position))
+          ((:db-file-write-root opts) bb (long block-position))
           db-state)
         (catch Throwable e
           (yearling-close opts)
@@ -142,12 +142,11 @@
     opts))
 
 (defn- yearling-read [block-position opts]
-  (let [^FileChannel db-file-channel (:db-file-channel opts)
-        db-block-size (:db-block-size opts)
+  (let [db-block-size (:db-block-size opts)
         max-db-size (:max-db-size opts)
         ^ByteBuffer bb (ByteBuffer/allocate db-block-size)
         _ (.limit bb (+ 4 8 4 4 8 8))
-        _ (.read db-file-channel bb (long block-position))
+        _ ((:db-file-read opts) bb (long block-position))
         _ (.flip bb)]
     (if (not= db-block-size (.getInt bb))
       nil
@@ -164,7 +163,7 @@
               last-node-id (.getLong bb)
               input-size (+ (.limit bb) map-size (* ala-len 8) 32)
               _ (.limit bb input-size)
-              _ (.read db-file-channel bb (long (+ block-position 4 8 4 4 8 8)))
+              _ ((:db-file-read opts) bb (long (+ block-position 4 8 4 4 8 8)))
               _ (.flip bb)
               csp (- input-size 32)
               _ (.limit bb csp)
@@ -242,55 +241,36 @@
         (set! *release-pending* (dropn *release-pending* 0))
         (recur age trans opts)))))
 
-(defn- yearling-close [opts]
-  (let [^FileChannel fc (:db-file-channel opts)]
-    (if fc
-      (do
-        (.close fc)
-        (assoc opts :db-file-channel nil))
-      opts)))
-
 (defn yearling-open
   ([file] (yearling-open file {}))
   ([^File file opts]
-   (if (:db-file-channel opts)
-     opts
-     (let [opts (assoc opts :db-close yearling-close)
-           opts (assoc opts :db-get-sorted-map yearling-get-sorted-map)
-           opts (assoc opts :db-transaction-count yearling-transaction-count)
-           opts (assoc opts :db-new-node-id yearling-new-node-id)
-           opts (assoc opts :db-send yearling-send)
-           opts (assoc opts :db-update yearling-update)
-           opts (assoc opts :db-file file)
-           opts (if (:db-block-size opts)
-                  opts
-                  (assoc opts :db-block-size 500000))
-           opts (if (:max-db-size opts)
-                  opts
-                  (assoc opts :max-db-size 100000000000))
-           opts (assoc opts :db-allocated yearling-allocated)
-           opts (assoc opts :db-allocate yearling-allocate)
-           opts (assoc opts :db-release-pending yearling-release-pending)
-           opts (assoc opts :db-release yearling-release)
-           opts (assoc opts :db-process-pending yearling-process-pending)
-           opts (if (:db-pending-age opts)
-                  opts
-                  (assoc opts :db-pending-age 0))
-           opts (if (:db-pending-count opts)
-                  opts
-                  (assoc opts :db-pending-count 2))
-           db-file-channel
-           (FileChannel/open (.toPath file)
-                             (into-array OpenOption
-                                         [StandardOpenOption/CREATE
-                                          StandardOpenOption/READ
-                                          StandardOpenOption/WRITE
-                                          StandardOpenOption/SYNC]))
-           opts (assoc opts :db-file-channel db-file-channel)
-           opts (if (has-aafactories opts)
-                  opts
-                  (virtual-opts opts))
-           opts (if (= 0 (.size db-file-channel))
-                  (yearling-new opts)
-                  (yearling-old opts))]
-       opts))))
+   (let [opts (db-file-open file opts)
+         opts (assoc opts :db-get-sorted-map yearling-get-sorted-map)
+         opts (assoc opts :db-transaction-count yearling-transaction-count)
+         opts (assoc opts :db-new-node-id yearling-new-node-id)
+         opts (assoc opts :db-send yearling-send)
+         opts (assoc opts :db-update yearling-update)
+         opts (if (:db-block-size opts)
+                opts
+                (assoc opts :db-block-size 500000))
+         opts (if (:max-db-size opts)
+                opts
+                (assoc opts :max-db-size 100000000000))
+         opts (assoc opts :db-allocated yearling-allocated)
+         opts (assoc opts :db-allocate yearling-allocate)
+         opts (assoc opts :db-release-pending yearling-release-pending)
+         opts (assoc opts :db-release yearling-release)
+         opts (assoc opts :db-process-pending yearling-process-pending)
+         opts (if (:db-pending-age opts)
+                opts
+                (assoc opts :db-pending-age 0))
+         opts (if (:db-pending-count opts)
+                opts
+                (assoc opts :db-pending-count 2))
+         opts (if (has-aafactories opts)
+                opts
+                (virtual-opts opts))
+         opts (if ((:db-file-empty? opts))
+                (yearling-new opts)
+                (yearling-old opts))]
+     opts)))

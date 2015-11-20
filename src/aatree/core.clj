@@ -171,7 +171,7 @@
       (finally
         (.close fc)))))
 
-(defn db-close [opts] ((:db-close opts) opts))
+(defn db-close [opts] ((:db-close opts)))
 
 (defn db-get-sorted-map [opts] ((:db-get-sorted-map opts) opts))
 

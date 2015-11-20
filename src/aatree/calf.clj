@@ -4,7 +4,6 @@
             [aatree.db-file :refer :all])
   (:import (java.nio.channels FileChannel)
            (java.io File)
-           (java.nio.file OpenOption StandardOpenOption)
            (java.nio ByteBuffer)
            (clojure.lang Agent)))
 
@@ -30,7 +29,7 @@
       (put-aa bb aamap)
       (put-cs256 bb (compute-cs256 (.flip (.duplicate bb))))
       (.flip bb)
-      (.write file-channel bb (long position))
+      ((:db-file-write-root opts) bb (long position))
       db-state)
     (catch Exception e
       (.printStackTrace e)
@@ -62,11 +61,10 @@
     opts))
 
 (defn- calf-read [position opts]
-  (let [^FileChannel file-channel (:db-file-channel opts)
-        block-size (:db-block-size opts)
+  (let [block-size (:db-block-size opts)
         ^ByteBuffer bb (ByteBuffer/allocate block-size)
         _ (.limit bb (+ 4 4 8))
-        _ (.read file-channel bb (long position))
+        _ ((:db-file-read opts) bb (long position))
         _ (.flip bb)]
     (if (not= block-size (.getInt bb))
       nil
@@ -76,7 +74,7 @@
             transaction-count (.getLong bb)
             input-size (+ (.limit bb) map-size 32)
             _ (.limit bb input-size)
-            _ (.read file-channel bb (long (+ position 4 4 8)))
+            _ ((:db-file-read opts) bb (long (+ position 4 4 8)))
             _ (.flip bb)
             csp (- input-size 32)
             _ (.limit bb csp)
