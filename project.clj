@@ -7,6 +7,7 @@
                  [org.clojure/tools.logging "0.3.1"]
                  [org.apache.logging.log4j/log4j-core "2.4.1"]
                  [org.apache.logging.log4j/log4j-slf4j-impl "2.4.1"]
+                 [org.clojure/core.cache "0.6.4"]
                  ]
   :aot [aatree.CountedSequence aatree.nodes aatree.AAMap aatree.AAVector aatree.AASet]
   :plugins  [[lein-cljfmt "0.3.0"]]
