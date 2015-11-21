@@ -146,7 +146,7 @@
         max-db-size (:max-db-size opts)
         ^ByteBuffer bb (ByteBuffer/allocate db-block-size)
         _ (.limit bb (+ 4 8 4 4 8 8))
-        _ ((:db-file-read opts) bb (long block-position))
+        _ (db-file-read opts bb (long block-position))
         _ (.flip bb)]
     (if (not= db-block-size (.getInt bb))
       nil
@@ -163,7 +163,7 @@
               last-node-id (.getLong bb)
               input-size (+ (.limit bb) map-size (* ala-len 8) 32)
               _ (.limit bb input-size)
-              _ ((:db-file-read opts) bb (long (+ block-position 4 8 4 4 8 8)))
+              _ (db-file-read opts bb (long (+ block-position 4 8 4 4 8 8)))
               _ (.flip bb)
               csp (- input-size 32)
               _ (.limit bb csp)

@@ -64,7 +64,7 @@
   (let [block-size (:db-block-size opts)
         ^ByteBuffer bb (ByteBuffer/allocate block-size)
         _ (.limit bb (+ 4 4 8))
-        _ ((:db-file-read opts) bb (long position))
+        _ (db-file-read opts bb (long position))
         _ (.flip bb)]
     (if (not= block-size (.getInt bb))
       nil
@@ -74,7 +74,7 @@
             transaction-count (.getLong bb)
             input-size (+ (.limit bb) map-size 32)
             _ (.limit bb input-size)
-            _ ((:db-file-read opts) bb (long (+ position 4 4 8)))
+            _ (db-file-read opts bb (long (+ position 4 4 8)))
             _ (.flip bb)
             csp (- input-size 32)
             _ (.limit bb csp)
