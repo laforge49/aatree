@@ -178,7 +178,7 @@
 (defn db-file-empty? [opts]
   ((:db-file-empty? opts)))
 
-(defn db-file-read [opts byte-buffer position]
+(defn db-file-read [byte-buffer position opts]
   ((:db-file-read opts) byte-buffer position))
 
 (defn db-get-sorted-map [opts] ((:db-get-sorted-map opts) opts))
