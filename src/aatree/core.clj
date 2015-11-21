@@ -178,8 +178,17 @@
 (defn db-file-empty? [opts]
   ((:db-file-empty? opts)))
 
+(defn db-file-force [opts]
+  ((:db-file-force opts)))
+
 (defn db-file-read [byte-buffer position opts]
   ((:db-file-read opts) byte-buffer position))
+
+(defn db-file-write [byte-buffer position opts]
+  ((:db-file-write opts) byte-buffer position))
+
+(defn db-file-write-root [byte-buffer position opts]
+  ((:db-file-write-root opts) byte-buffer position))
 
 (defn db-get-sorted-map [opts] ((:db-get-sorted-map opts) opts))
 

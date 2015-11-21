@@ -133,7 +133,6 @@
           ]
       db-state)))
 
-
 (defn- yearling-new [opts]
   (let [db-state (create-db-state opts)
         opts (create-db-agent db-state opts)]
