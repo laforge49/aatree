@@ -123,7 +123,7 @@
          opts (if (has-aafactories opts)
                 opts
                 (lazy-opts opts))
-         opts (if ((:db-file-empty? opts))
+         opts (if (db-file-empty? opts)
                 (calf-new opts)
                 (calf-old opts))]
      opts)))

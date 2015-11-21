@@ -175,6 +175,9 @@
   ((:db-close opts))
   (dissoc opts :db-file-channel))
 
+(defn db-file-empty? [opts]
+  ((:db-file-empty? opts)))
+
 (defn db-get-sorted-map [opts] ((:db-get-sorted-map opts) opts))
 
 (defn db-transaction-count [opts] ((:db-transaction-count opts) opts))

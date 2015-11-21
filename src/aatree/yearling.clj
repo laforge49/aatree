@@ -270,7 +270,7 @@
          opts (if (has-aafactories opts)
                 opts
                 (virtual-opts opts))
-         opts (if ((:db-file-empty? opts))
+         opts (if (db-file-empty? opts)
                 (yearling-new opts)
                 (yearling-old opts))]
      opts)))
