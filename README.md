@@ -71,6 +71,8 @@ put in the dev-resources folder to keep it from being added to the jar file.
 
 [Towards Greater Code Reuse](https://github.com/laforge49/aatree/wiki/Towards-Greater-Code-Reuse)
 
+[Clojure Objects](https://github.com/laforge49/aatree/wiki/Clojure-Objects)
+
 ### Durable Applications--File Load and Save
 
 It is not often that you need lazy deserialization when doing a file load. 
