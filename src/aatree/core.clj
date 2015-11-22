@@ -1,7 +1,8 @@
 (ns aatree.core
   (:require [aatree.nodes :refer :all]
             [aatree.lazy-nodes :refer :all]
-            [aatree.virtual-nodes :refer :all])
+            [aatree.virtual-nodes :refer :all]
+            [aatree.closer :refer :all])
   (:import (aatree AAMap AAVector AASet)
            (aatree.nodes FlexVector INoded IFactory)
            (clojure.lang RT MapEntry)
@@ -172,8 +173,7 @@
         (.close fc)))))
 
 (defn db-close [opts]
-  ((:db-close opts))
-  (dissoc opts :db-file-channel))
+  (do-close opts))
 
 (defn db-file-empty? [opts]
   ((:db-file-empty? opts)))
