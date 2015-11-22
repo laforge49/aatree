@@ -6,7 +6,6 @@
 
 (deftest closer
   (defn close-a [opts] (println "close a"))
-  (defn close-b [opts] (println "close b"))
 
   (is (nil? (get-close close-a {})))
 

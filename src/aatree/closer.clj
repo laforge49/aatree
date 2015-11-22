@@ -1,4 +1,5 @@
-(ns aatree.closer)
+(ns aatree.closer
+  (:require [clojure.tools.logging :as log]))
 
 (set! *warn-on-reflection* true)
 
@@ -30,6 +31,9 @@
           opts
           (let [fv (first fvs)]
             (if (compare-and-set! (second fv) false true)
-              ((first fv) opts))
+              (try
+                ((first fv) opts)
+                (catch Exception e
+                  (log/warn e "exception on close"))))
             (compare-and-set! fvs-atom fvs (next fvs))
             (recur opts)))))))
