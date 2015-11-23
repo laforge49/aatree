@@ -3,17 +3,17 @@
 
 (set! *warn-on-reflection* true)
 
-(def closer-lock (Object.))
-
 (defn on-close [f opts]
-  (locking closer-lock
-    (let [fsv (:closer-fsv opts)
-          opts (if fsv
-                 (do
-                   (vreset! fsv (conj @fsv f))
-                   opts)
-                 (assoc opts :closer-fsv (volatile! (list f))))]
-      opts)))
+  (let [fsa (:closer-fsa opts)]
+    (if fsa
+      (do
+        (swap! fsa
+               (fn [fs]
+                 (if fs
+                   (conj fs f)
+                   (atom (list f)))))
+        opts)
+      (assoc opts :closer-fsa (atom (list f))))))
 
 (defn- do-closer [fs opts]
   (when fs
@@ -24,8 +24,9 @@
     (recur (next fs) opts)))
 
 (defn do-close [opts]
-  (locking closer-lock
-    (let [fsv (:closer-fsv opts)]
-      (when fsv
-        (do-closer @fsv opts)
-        (vreset! fsv nil)))))
+  (let [fsa (:closer-fsa opts)]
+    (if fsa
+      (swap! fsa
+             (fn [fs]
+               (do-closer fs opts)
+               nil)))))
