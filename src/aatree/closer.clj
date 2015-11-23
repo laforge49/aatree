@@ -26,7 +26,8 @@
 (defn do-close [opts]
   (let [fsa (:closer-fsa opts)]
     (if fsa
-      (swap! fsa
-             (fn [fs]
-               (do-closer fs opts)
-               nil)))))
+      (let [fs @fsa]
+        (if fs
+          (if (compare-and-set! fsa fs nil)
+            (do-closer fs opts)
+            (recur opts)))))))
