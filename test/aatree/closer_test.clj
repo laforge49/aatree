@@ -3,6 +3,8 @@
 
 (set! *warn-on-reflection* true)
 
+(do-close {})
+
 (defn close-a [opts] (println "  close a"))
 (defn close-b [opts] (println "  close b"))
 (defn close-c [opts] (println "  close c"))
