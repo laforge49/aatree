@@ -3,10 +3,10 @@
 
 (set! *warn-on-reflection* true)
 
-(def lock (Object.))
+(def closer-lock (Object.))
 
 (defn on-close [f opts]
-  (locking lock
+  (locking closer-lock
     (let [fsv (:closer-fsv opts)
           opts (if fsv
                  (do
@@ -24,7 +24,7 @@
     (recur (next fs) opts)))
 
 (defn do-close [opts]
-  (locking lock
+  (locking closer-lock
     (let [fsv (:closer-fsv opts)]
       (when fsv
         (do-closer @fsv opts)
