@@ -1,18 +1,16 @@
 (ns aatree.closer-test
-  (:require [clojure.test :refer :all]
-            [aatree.closer :refer :all]))
+  (:require [aatree.closer :refer :all]))
 
 (set! *warn-on-reflection* true)
 
-(deftest closer
-  (defn close-a [opts] (println "close a"))
+(defn close-a [opts] (println "  close a"))
+(defn close-b [opts] (println "  close b"))
+(defn close-c [opts] (println "  close c"))
 
-  (is (nil? (get-close close-a {})))
-
-  (let [opts (on-close close-a {})]
-    (is (not (nil? (get-close close-a opts))))
-    (do-close opts)
-    (is (nil? (get-close close-a opts)))
-    (do-close opts))
-
-  (Thread/sleep 100))
+(let [opts (on-close close-a {})
+      opts (on-close close-b opts)
+      opts (on-close close-c opts)]
+  (println "first close")
+  (do-close opts)
+  (println "second close")
+  (do-close opts))

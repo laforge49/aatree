@@ -3,37 +3,29 @@
 
 (set! *warn-on-reflection* true)
 
-(defn get-close [f opts]
-  (let [fvs-atom (:closer-fvs-atom opts)]
-    (if fvs-atom
-      (let [fvs @fvs-atom]
-        (if fvs
-          (some #(= f (first %)) fvs)
-          nil))
-      nil)))
+(def lock (Object.))
 
 (defn on-close [f opts]
-  (let [fvs-atom (:closer-fvs-atom opts)
-        opts (if fvs-atom
-               (if (get-close f opts)
-                 opts
-                 (swap! fvs-atom conj [f (atom false)]))
-               (assoc opts :closer-fvs-atom
-                           (atom (list [f (atom false)]))))]
-    opts))
+  (locking lock
+    (let [fsv (:closer-fsv opts)
+          opts (if fsv
+                 (do
+                   (vreset! fsv (conj @fsv f))
+                   opts)
+                 (assoc opts :closer-fsv (volatile! (list f))))]
+      opts)))
+
+(defn- do-closer [fs opts]
+  (when fs
+    (try
+      ((first fs) opts)
+      (catch Exception e
+        (log/warn e "exception on close")))
+    (recur (next fs) opts)))
 
 (defn do-close [opts]
-  (let [fvs-atom (:closer-fvs-atom opts)]
-    (if (nil? fvs-atom)
-      opts
-      (let [fvs @fvs-atom]
-        (if (nil? fvs)
-          opts
-          (let [fv (first fvs)]
-            (if (compare-and-set! (second fv) false true)
-              (try
-                ((first fv) opts)
-                (catch Exception e
-                  (log/warn e "exception on close"))))
-            (compare-and-set! fvs-atom fvs (next fvs))
-            (recur opts)))))))
+  (locking lock
+    (let [fsv (:closer-fsv opts)]
+      (when fsv
+        (do-closer @fsv opts)
+        (vreset! fsv nil)))))
