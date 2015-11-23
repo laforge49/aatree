@@ -1,6 +1,5 @@
 (ns aatree.db-file
-  (:require [clojure.tools.logging :as log]
-            [aatree.closer :refer :all])
+  (:require [aatree.closer :refer :all])
   (:import (java.nio.channels FileChannel)
            (java.nio.file OpenOption StandardOpenOption)))
 
