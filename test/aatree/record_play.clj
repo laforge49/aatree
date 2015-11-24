@@ -24,12 +24,12 @@
 
 (def w (-> {} new-base new-wackel))
 
-(extend wackel
+(extend-type wackel
   gran
-  {:blip (fn [this x y z]
-           ((:blip this) this x y z))
-   :blap (fn [this]
-           ((:blap this) this))})
+  (blip [this x y z]
+    ((:blip this) this x y z))
+  (blap [this]
+    ((:blap this) this)))
 
 (def w (-> {} new-base new-wackel))
 
