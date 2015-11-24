@@ -1,20 +1,7 @@
-(ns aatree.record-play)
+(ns aatree.record-play
+  (:require [aatree.record-play0 :refer :all]))
 
 (set! *warn-on-reflection* true)
-
-(defrecord base [])
-
-(defn new-base [opts]
-  (-> (->base)
-      (into opts)
-      (assoc :blap (fn [this] 42))))
-
-(defrecord wackel [])
-
-(defn new-wackel [opts]
-  (-> (->wackel)
-      (into opts)
-      (assoc :blip (fn [this x y z] (+ x y z)))))
 
 (defprotocol gran
   (blip [this x y z])
@@ -22,7 +9,7 @@
 
 (def w (-> {} new-base new-wackel))
 
-(extend-type wackel
+(extend-type aatree.record_play0.wackel
   gran
   (blip [this x y z]
     ((:blip this) this x y z))
