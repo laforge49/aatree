@@ -33,6 +33,6 @@
 
 (def w (-> {} new-base new-wackel))
 
-(println (blip w 1 2 3)); -> 6
+(println (blip w 1 2 3))                                    ; -> 6
 
-(println (blap w)); -> 42
+(println (blap w))                                          ; -> 42
