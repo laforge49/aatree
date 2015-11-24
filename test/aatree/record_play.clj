@@ -5,18 +5,16 @@
 (defrecord base [])
 
 (defn new-base [opts]
-  (let [b (->base)
-        b (into b opts)
-        b (assoc b :blap (fn [this] 42))]
-    b))
+  (-> (->base)
+      (into opts)
+      (assoc :blap (fn [this] 42))))
 
 (defrecord wackel [])
 
 (defn new-wackel [opts]
-  (let [w (->wackel)
-        w (into w opts)
-        w (assoc w :blip (fn [this x y z] (+ x y z)))]
-    w))
+  (-> (->wackel)
+      (into opts)
+      (assoc :blip (fn [this x y z] (+ x y z)))))
 
 (defprotocol gran
   (blip [this x y z])
