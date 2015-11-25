@@ -5,8 +5,7 @@
 
 (defn on-close [this f name]
   (log/info (str "opening " name))
-  (let [fsa (:closer-fsa this)]
-    (if fsa
+  (if-let [fsa (:closer-fsa this)]
       (do
         (swap! fsa
                (fn [fs]
@@ -14,7 +13,7 @@
                    (conj fs [f name])
                    (atom (list [f name])))))
         this)
-      (assoc this :closer-fsa (atom (list [f name]))))))
+      (assoc this :closer-fsa (atom (list [f name])))))
 
 (defn- do-closer [this fs]
   (when fs
@@ -29,10 +28,9 @@
     (recur this (next fs))))
 
 (defn do-close [this]
-  (let [fsa (:closer-fsa this)]
-    (if fsa
+  (if-let [fsa (:closer-fsa this)]
       (let [fs @fsa]
         (if fs
           (if (compare-and-set! fsa fs nil)
             (do-closer this fs)
-            (recur this)))))))
+            (recur this))))))
