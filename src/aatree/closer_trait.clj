@@ -3,28 +3,29 @@
 
 (set! *warn-on-reflection* true)
 
-(defrecord closer [])
-
-(defn on-close [this f]
+(defn on-close [this f name]
+  (log/info (str "opening " name))
   (let [fsa (:closer-fsa this)]
     (if fsa
       (do
         (swap! fsa
                (fn [fs]
                  (if fs
-                   (conj fs f)
-                   (atom (list f)))))
+                   (conj fs [f name])
+                   (atom (list [f name])))))
         this)
-      (-> (closer.)
-          (into this)
-          (assoc :closer-fsa (atom (list f)))))))
+      (assoc this :closer-fsa (atom (list [f name]))))))
 
 (defn- do-closer [this fs]
   (when fs
-    (try
-      ((first fs) this)
-      (catch Exception e
-        (log/warn e "exception on close")))
+    (let [fv (first fs)
+          f (nth fv 0)
+          name (nth fv 1)]
+      (try
+        (log/info (str "closing " name))
+        (f this)
+        (catch Exception e
+          (log/warn e (str "exception on close of " name)))))
     (recur this (next fs))))
 
 (defn do-close [this]

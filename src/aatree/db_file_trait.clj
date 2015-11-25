@@ -33,7 +33,7 @@
                                             StandardOpenOption/READ
                                             StandardOpenOption/WRITE]))
              this (assoc this :db-file-channel file-channel)
-             this (on-close this (fn [_] (.close file-channel)))
+             this (on-close this (fn [_] (.close file-channel)) (str "file " file))
              this (assoc this
                     :db-file-empty?
                     (fn []
