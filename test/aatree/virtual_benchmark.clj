@@ -6,36 +6,39 @@
 
 (set! *warn-on-reflection* true)
 
-(deftest virtual
-  (.delete (File. "virtual-benchmark.yearling"))
+(comment
 
-  (let [opts (yearling-open (File. "virtual-benchmark.yearling"))
-;        mxi 100000
-        mxi 3
-        mxj 5
-        mxk 2]
-    (time
-      (reduce
-        (fn [_ k]
-          (reduce
-            (fn [_ j]
-              (db-update (fn [aamap opts]
-                           (let [bbmap (reduce (fn [m i]
-                                                 (assoc m (+ i (* mxi j) (* mxi mxj k)) 1))
-                                               aamap
-                                               (range mxi)
-                                               )]
-                             bbmap))
-                         opts))
-            nil
-            (range mxj)))
-        nil
-        (range mxk))); -> "Elapsed time: 39369.950654 msecs"
-    (println "count" (count (db-get-sorted-map opts)))
-    (time (reduce
-      (fn [_ i] (get (db-get-sorted-map opts) i))
-      nil
-      (range (count (db-get-sorted-map opts))))); -> "Elapsed time: 8404.581527 msecs"
-    (db-close opts))
+  (deftest virtual
+    (.delete (File. "virtual-benchmark.yearling"))
 
-  (Thread/sleep 200))
+    (let [opts (yearling-open (File. "virtual-benchmark.yearling"))
+          ;        mxi 100000
+          mxi 3
+          mxj 5
+          mxk 2]
+      (time
+        (reduce
+          (fn [_ k]
+            (reduce
+              (fn [_ j]
+                (db-update (fn [aamap opts]
+                             (let [bbmap (reduce (fn [m i]
+                                                   (assoc m (+ i (* mxi j) (* mxi mxj k)) 1))
+                                                 aamap
+                                                 (range mxi)
+                                                 )]
+                               bbmap))
+                           opts))
+              nil
+              (range mxj)))
+          nil
+          (range mxk))) ; -> "Elapsed time: 39369.950654 msecs"
+      (println "count" (count (db-get-sorted-map opts)))
+      (time (reduce
+              (fn [_ i] (get (db-get-sorted-map opts) i))
+              nil
+              (range (count (db-get-sorted-map opts))))) ; -> "Elapsed time: 8404.581527 msecs"
+      (db-close opts))
+
+    (Thread/sleep 200))
+  )

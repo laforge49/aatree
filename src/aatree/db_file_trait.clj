@@ -6,15 +6,6 @@
 
 (set! *warn-on-reflection* true)
 
-(defprotocol db-file-trait
-  (db-file-empty? [this])
-  (db-file-force [this])
-  (db-file-read [this byte-buffer position])
-  (db-file-write [this byte-buffer position])
-  (db-file-write-root [this byte-buffer position]))
-
-(defrecord db-file [])
-
 (defn db-file-open
   ([this file]
    (db-file-open (assoc this :db-file file)))
@@ -24,8 +15,7 @@
      (do
        (if (not (:db-file this))
          (throw (Exception. "missing :db-file option")))
-       (let [this (-> (db-file.) (into this))
-             ^File file (:db-file this)
+       (let [^File file (:db-file this)
              ^FileChannel file-channel
              (FileChannel/open (.toPath file)
                                (into-array OpenOption

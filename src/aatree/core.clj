@@ -1,8 +1,7 @@
 (ns aatree.core
   (:require [aatree.nodes :refer :all]
             [aatree.lazy-nodes :refer :all]
-            [aatree.virtual-nodes :refer :all]
-            [aatree.closer :refer :all])
+            [aatree.virtual-nodes :refer :all])
   (:import (aatree AAMap AAVector AASet)
            (aatree.nodes FlexVector INoded IFactory)
            (clojure.lang RT MapEntry)
@@ -172,23 +171,20 @@
       (finally
         (.close fc)))))
 
-(defn db-close [opts]
-  (do-close opts))
+(defn db-file-empty? [this]
+  ((:db-file-empty? this)))
 
-(defn db-file-empty? [opts]
-  ((:db-file-empty? opts)))
+(defn db-file-force [this]
+  ((:db-file-force this)))
 
-(defn db-file-force [opts]
-  ((:db-file-force opts)))
+(defn db-file-read [this byte-buffer position]
+  ((:db-file-read this) byte-buffer position))
 
-(defn db-file-read [byte-buffer position opts]
-  ((:db-file-read opts) byte-buffer position))
+(defn db-file-write [this byte-buffer position]
+  ((:db-file-write this) byte-buffer position))
 
-(defn db-file-write [byte-buffer position opts]
-  ((:db-file-write opts) byte-buffer position))
-
-(defn db-file-write-root [byte-buffer position opts]
-  ((:db-file-write-root opts) byte-buffer position))
+(defn db-file-write-root [this byte-buffer position]
+  ((:db-file-write-root this) byte-buffer position))
 
 (defn db-get-sorted-map [opts] ((:db-get-sorted-map opts) opts))
 
