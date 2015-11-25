@@ -186,23 +186,23 @@
 (defn db-file-write-root [this byte-buffer position]
   ((:db-file-write-root this) byte-buffer position))
 
-(defn db-get-sorted-map [opts] ((:db-get-sorted-map opts) opts))
+(defn db-get-sorted-map [this] ((:db-get-sorted-map this) this))
 
-(defn db-transaction-count [opts] ((:db-transaction-count opts) opts))
+(defn db-transaction-count [this] ((:db-transaction-count this) this))
 
-(defn db-send [app-updater opts] ((:db-send opts) app-updater opts))
+(defn db-send [this app-updater] ((:db-send this) this app-updater))
 
-(defn db-update [app-updater opts] ((:db-update opts) app-updater opts))
+(defn db-update [this app-updater] ((:db-update this) this app-updater))
 
-(defn db-allocated [opts] ((:db-allocated opts) opts))
+(defn db-allocated [this] ((:db-allocated this) this))
 
-(defn db-allocate [opts] ((:db-allocate opts) opts))
+(defn db-allocate [this] ((:db-allocate this) this))
 
-(defn db-release-pending [opts] ((:db-release-pending opts) opts))
+(defn db-release-pending [this] ((:db-release-pending this) this))
 
-(defn db-release [block-position opts] ((:db-release opts) block-position opts))
+(defn db-release [this block-position] ((:db-release this) this block-position))
 
-(defn db-process-pending [age trans opts] ((:db-process-pending opts) age trans opts))
+(defn db-process-pending [this age trans] ((:db-process-pending this) this age trans))
 
 (register-factory
   default-factory-registry

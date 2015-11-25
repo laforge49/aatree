@@ -1,31 +1,29 @@
 (ns aatree.calf-test
   (:require [clojure.test :refer :all]
             [aatree.core :refer :all]
-            [aatree.calf :refer :all])
+            [aatree.calf :refer :all]
+            [aatree.closer-trait :refer :all])
   (:import (java.io File)))
 
 (set! *warn-on-reflection* true)
 
-(comment
+(deftest calf
+  (.delete (File. "calf-test.calf"))
 
-  (deftest calf
-    (.delete (File. "calf-test.calf"))
+  (let [calf (calf-open (File. "calf-test.calf") 10000)
+        _ (is (= (db-transaction-count calf) 2))
+        aamap (db-get-sorted-map calf)
+        _ (is (= aamap {}))
+        _ (db-update calf
+                     (fn [calf aamap]
+                       (assoc aamap :fun "Clojure")))
+        aamap (db-get-sorted-map calf)
+        _ (is (= aamap {:fun "Clojure"}))
+        _ (is (= (db-transaction-count calf) 3))
+        _ (do-close calf)])
 
-    (let [opts (calf-open (File. "calf-test.calf") 10000)
-          _ (is (= (db-transaction-count opts) 2))
-          aamap (db-get-sorted-map opts)
-          _ (is (= aamap {}))
-          _ (db-update (fn [aamap opts]
-                         (assoc aamap :fun "Clojure"))
-                       opts)
-          aamap (db-get-sorted-map opts)
-          _ (is (= aamap {:fun "Clojure"}))
-          _ (is (= (db-transaction-count opts) 3))
-          _ (db-close opts)])
-
-    (let [opts (calf-open (File. "calf-test.calf") 10000)
-          _ (is (= (db-transaction-count opts) 3))
-          aamap (db-get-sorted-map opts)
-          _ (is (= aamap {:fun "Clojure"}))
-          _ (db-close opts)]))
-  )
+  (let [calf (calf-open (File. "calf-test.calf") 10000)
+        _ (is (= (db-transaction-count calf) 3))
+        aamap (db-get-sorted-map calf)
+        _ (is (= aamap {:fun "Clojure"}))
+        _ (do-close calf)]))
