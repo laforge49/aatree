@@ -3,7 +3,7 @@
 
 (set! *warn-on-reflection* true)
 
-(defrecord closer-trait [])
+(defrecord closer [])
 
 (defn on-close [this f]
   (let [fsa (:closer-fsa this)]
@@ -15,7 +15,7 @@
                    (conj fs f)
                    (atom (list f)))))
         this)
-      (-> (closer-trait.)
+      (-> (closer.)
           (into this)
           (assoc :closer-fsa (atom (list f)))))))
 
