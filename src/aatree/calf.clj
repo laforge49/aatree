@@ -27,7 +27,7 @@
       (put-aa bb aamap)
       (put-cs256 bb (compute-cs256 (.flip (.duplicate bb))))
       (.flip bb)
-      ((:db-file-write-root this) bb (long position))
+      (db-file-write-root this bb (long position))
       db-state)
     (catch Exception e
       (.printStackTrace e)
