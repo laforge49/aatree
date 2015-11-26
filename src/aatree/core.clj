@@ -12,6 +12,21 @@
 
 (set! *warn-on-reflection* true)
 
+(defn default [map key f]
+  (if (key map)
+    map
+    (f map)))
+
+(defn choice [map cond fx fy]
+  (if (cond map)
+    (fx map)
+    (fy map)))
+
+(defn assoc-default [map key val]
+  (if (key map)
+    map
+    (assoc map key val)))
+
 (defn addn [^FlexVector vec ndx val]
   (.addNode vec ndx val))
 
@@ -69,13 +84,11 @@
 (defn basic-opts
   ([] (basic-opts {}))
   ([opts]
-   (let [opts (if (:comparator opts)
-                opts
-                (assoc opts :comparator RT/DEFAULT_COMPARATOR))]
-     (-> opts
-         (assoc :new-sorted-map new-basic-sorted-map)
-         (assoc :new-vector new-basic-vector)
-         (assoc :new-sorted-set new-basic-sorted-set)))))
+   (-> opts
+       (assoc-default :comparator RT/DEFAULT_COMPARATOR)
+       (assoc :new-sorted-map new-basic-sorted-map)
+       (assoc :new-vector new-basic-vector)
+       (assoc :new-sorted-set new-basic-sorted-set))))
 
 (defn new-lazy-sorted-map [opts]
   (new AAMap emptyLazyNode (map-opts opts)))
@@ -89,21 +102,16 @@
 (defn lazy-opts
   ([] (lazy-opts {}))
   ([opts]
-   (let [opts (if (:comparator opts)
-                opts
-                (assoc opts :comparator RT/DEFAULT_COMPARATOR))
-         opts (if (:factory-registry opts)
-                opts
-                (assoc opts :factory-registry default-factory-registry))
-         opts (-> opts
-                  (assoc :node-read lazy-read)
-                  (assoc :load-vector load-lazy-vector)
-                  (assoc :load-sorted-map load-lazy-sorted-map)
-                  (assoc :load-sorted-set load-lazy-sorted-set)
-                  (assoc :new-sorted-map new-lazy-sorted-map)
-                  (assoc :new-vector new-lazy-vector)
-                  (assoc :new-sorted-set new-lazy-sorted-set))]
-     opts)))
+   (-> opts
+       (assoc-default :comparator RT/DEFAULT_COMPARATOR)
+       (assoc-default :factory-registry default-factory-registry)
+       (assoc :node-read lazy-read)
+       (assoc :load-vector load-lazy-vector)
+       (assoc :load-sorted-map load-lazy-sorted-map)
+       (assoc :load-sorted-set load-lazy-sorted-set)
+       (assoc :new-sorted-map new-lazy-sorted-map)
+       (assoc :new-vector new-lazy-vector)
+       (assoc :new-sorted-set new-lazy-sorted-set))))
 
 (defn new-virtual-sorted-map [opts]
   (new AAMap emptyVirtualNode (map-opts opts)))
@@ -117,23 +125,18 @@
 (defn virtual-opts
   ([] (virtual-opts {}))
   ([opts]
-   (let [opts (if (:comparator opts)
-                opts
-                (assoc opts :comparator RT/DEFAULT_COMPARATOR))
-         opts (if (:factory-registry opts)
-                opts
-                (assoc opts :factory-registry default-factory-registry))
-         opts (-> opts
-                  (assoc :find-dropped-blocks find-dropped-blocks)
-                  (assoc :node-read virtual-read)
-                  (assoc :as-reference virtual-as-reference)
-                  (assoc :load-vector load-virtual-vector)
-                  (assoc :load-sorted-map load-virtual-sorted-map)
-                  (assoc :load-sorted-set load-virtual-sorted-set)
-                  (assoc :new-sorted-map new-virtual-sorted-map)
-                  (assoc :new-vector new-virtual-vector)
-                  (assoc :new-sorted-set new-virtual-sorted-set))]
-     opts)))
+   (-> opts
+       (assoc-default :comparator RT/DEFAULT_COMPARATOR)
+       (assoc-default :factory-registry default-factory-registry)
+       (assoc :find-dropped-blocks find-dropped-blocks)
+       (assoc :node-read virtual-read)
+       (assoc :as-reference virtual-as-reference)
+       (assoc :load-vector load-virtual-vector)
+       (assoc :load-sorted-map load-virtual-sorted-map)
+       (assoc :load-sorted-set load-virtual-sorted-set)
+       (assoc :new-sorted-map new-virtual-sorted-map)
+       (assoc :new-vector new-virtual-vector)
+       (assoc :new-sorted-set new-virtual-sorted-set))))
 
 (defn new-sorted-map [opts]
   ((:new-sorted-map opts) opts))

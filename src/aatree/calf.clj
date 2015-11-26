@@ -112,16 +112,12 @@
 (defn calf-open
   ([file block-size] (calf-open {} file block-size))
   ([this ^File file block-size]
-   (let [this (db-file-open this file)
-         this (assoc this :db-get-sorted-map calf-get-sorted-map)
-         this (assoc this :db-transaction-count calf-transaction-count)
-         this (assoc this :db-send calf-send)
-         this (assoc this :db-update calf-update)
-         this (assoc this :db-block-size block-size)
-         this (if (has-aafactories this)
-                this
-                (lazy-opts this))
-         this (if (db-file-empty? this)
-                (calf-new this)
-                (calf-old this))]
-     this)))
+   (-> this
+       (db-file-open file)
+       (assoc :db-get-sorted-map calf-get-sorted-map)
+       (assoc :db-transaction-count calf-transaction-count)
+       (assoc :db-send calf-send)
+       (assoc :db-update calf-update)
+       (assoc :db-block-size block-size)
+       (default :new-sorted-map lazy-opts)
+       (choice db-file-empty? calf-new calf-old))))
