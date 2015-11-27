@@ -33,18 +33,6 @@
       (.printStackTrace e)
       (throw e))))
 
-(defn- calf-send [this app-updater]
-  (let [^Agent db-agent (:db-agent this)]
-    (send-off db-agent calf-updater this app-updater)))
-
-(defn calf-update [this app-updater]
-  (db-send this app-updater)
-  (let [send-write-timeout (:send-update-timeout this)
-        db-agent (:db-agent this)]
-    (if send-write-timeout
-      (await-for send-write-timeout db-agent)
-      (await db-agent))))
-
 (defn calf-null-updater [this aamap]
   aamap)
 
@@ -104,6 +92,18 @@
 
 (defn- create-db-agent [this initial-state]
   (assoc this :db-agent (apply agent (initial-state this) (get this :db-agent-options []))))
+
+(defn- calf-send [this app-updater]
+  (let [^Agent db-agent (:db-agent this)]
+    (send-off db-agent calf-updater this app-updater)))
+
+(defn calf-update [this app-updater]
+  (db-send this app-updater)
+  (let [send-write-timeout (:send-update-timeout this)
+        db-agent (:db-agent this)]
+    (if send-write-timeout
+      (await-for send-write-timeout db-agent)
+      (await db-agent))))
 
 (defn calf-open
   ([file block-size] (calf-open {} file block-size))
