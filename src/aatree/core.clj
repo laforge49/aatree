@@ -22,6 +22,11 @@
     (fx map)
     (fy map)))
 
+(defn required [map key]
+  (if (key map)
+    map
+    (throw (Exception. (str "missing entry: " key)))))
+
 (defn assoc-default [map key val]
   (if (key map)
     map
