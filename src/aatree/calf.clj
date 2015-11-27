@@ -1,10 +1,10 @@
 (ns aatree.calf
   (:require [aatree.core :refer :all]
             [aatree.nodes :refer :all]
-            [aatree.db-file-trait :refer :all])
+            [aatree.db-file-trait :refer :all]
+            [aatree.db-agent-trait :refer :all])
   (:import (java.io File)
-           (java.nio ByteBuffer)
-           (clojure.lang Agent)))
+           (java.nio ByteBuffer)))
 
 (set! *warn-on-reflection* true)
 
@@ -90,34 +90,19 @@
 (defn- create-initial-state [this]
   (choice this db-file-empty? calf-new calf-old))
 
-(defn- create-db-agent [this initial-state]
-  (assoc this :db-agent (apply agent (initial-state this) (get this :db-agent-options []))))
-
-(defn- calf-send [this app-updater]
-  (let [^Agent db-agent (:db-agent this)]
-    (send-off db-agent calf-updater this app-updater)))
-
-(defn calf-update [this app-updater]
-  (db-send this app-updater)
-  (let [send-write-timeout (:send-update-timeout this)
-        db-agent (:db-agent this)]
-    (if send-write-timeout
-      (await-for send-write-timeout db-agent)
-      (await db-agent))))
-
 (defn calf-open
   ([file block-size] (calf-open {} file block-size))
   ([this ^File file block-size]
-   (-> this
-       (db-file-open file)
-       (assoc :db-block-size block-size)
-       (default :new-sorted-map lazy-opts)
-       (assoc
-         :db-get-sorted-map
-         (fn [calf] (:aamap @(:db-agent calf))))
-       (assoc
-         :db-transaction-count
-         (fn [calf] (:transaction-count @(:db-agent calf))))
-       (create-db-agent create-initial-state)
-       (assoc :db-send calf-send)
-       (assoc :db-update calf-update))))
+   (let [this (-> this
+                  (db-file-open file)
+                  (assoc :db-block-size block-size)
+                  (default :new-sorted-map lazy-opts)
+                  (default :create-db-chan db-agent)
+                  (assoc
+                    :db-get-sorted-map
+                    (fn [calf] (:aamap @(:db-agent calf))))
+                  (assoc
+                    :db-transaction-count
+                    (fn [calf] (:transaction-count @(:db-agent calf))))
+                  (assoc :db-updater calf-updater))]
+     (create-db-chan this create-initial-state))))

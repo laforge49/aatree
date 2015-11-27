@@ -198,6 +198,8 @@
 
 (defn db-transaction-count [this] ((:db-transaction-count this) this))
 
+(defn create-db-chan [this initial-state] ((:create-db-chan this) this initial-state))
+
 (defn db-send [this app-updater] ((:db-send this) this app-updater))
 
 (defn db-update [this app-updater] ((:db-update this) this app-updater))
