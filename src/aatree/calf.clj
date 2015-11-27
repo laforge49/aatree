@@ -45,18 +45,14 @@
       (await-for send-write-timeout db-agent)
       (await db-agent))))
 
-(defn- create-db-agent [this db-state]
-  (assoc this :db-agent (apply agent db-state (get this :db-agent-options []))))
-
 (defn calf-null-updater [this aamap]
   aamap)
 
 (defn- calf-new [this]
   (let [db-state {:transaction-count 0 :aamap (new-sorted-map this)}
-        this (create-db-agent this db-state)]
-    (calf-update this calf-null-updater)
-    (calf-update this calf-null-updater)
-    this))
+        db-state (calf-updater db-state this calf-null-updater)
+        db-state (calf-updater db-state this calf-null-updater)]
+    db-state))
 
 (defn- calf-read [this position]
   (let [block-size (:db-block-size this)
@@ -101,23 +97,27 @@
   (let [block-size (:db-block-size this)
         state0 (calf-read this 0)
         state1 (calf-read this block-size)]
-    (create-db-agent this (choose state0 state1))))
+    (choose state0 state1)))
 
-(defn- calf-transaction-count [this]
-  (:transaction-count @(:db-agent this)))
+(defn- create-initial-state [this]
+  (choice this db-file-empty? calf-new calf-old))
 
-(defn- calf-get-sorted-map [this]
-  (:aamap @(:db-agent this)))
+(defn- create-db-agent [this initial-state]
+  (assoc this :db-agent (apply agent (initial-state this) (get this :db-agent-options []))))
 
 (defn calf-open
   ([file block-size] (calf-open {} file block-size))
   ([this ^File file block-size]
    (-> this
        (db-file-open file)
-       (assoc :db-get-sorted-map calf-get-sorted-map)
-       (assoc :db-transaction-count calf-transaction-count)
-       (assoc :db-send calf-send)
-       (assoc :db-update calf-update)
        (assoc :db-block-size block-size)
        (default :new-sorted-map lazy-opts)
-       (choice db-file-empty? calf-new calf-old))))
+       (assoc
+         :db-get-sorted-map
+         (fn [calf] (:aamap @(:db-agent calf))))
+       (assoc
+         :db-transaction-count
+         (fn [calf] (:transaction-count @(:db-agent calf))))
+       (create-db-agent create-initial-state)
+       (assoc :db-send calf-send)
+       (assoc :db-update calf-update))))
