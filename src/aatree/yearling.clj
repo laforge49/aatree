@@ -29,9 +29,9 @@
 (defn- release-dropped-blocks [this old-uber-map uber-map]
   (let [uber-map (assoc uber-map :release-pending *release-pending*)
         dropped-blocks ((:find-dropped-blocks this)
-                         this
                          (get-inode old-uber-map)
-                         (get-inode uber-map))]
+                         (get-inode uber-map)
+                         this)]
     (if (empty? dropped-blocks)
       uber-map
       (do
@@ -236,8 +236,8 @@
         (recur this age trans)))))
 
 (defn yearling-open
-  ([file] (yearling-open file {}))
-  ([^File file this]
+  ([file] (yearling-open {} file))
+  ([this ^File file]
    (let [this (db-file-open this file)
          this (assoc this :db-get-sorted-map yearling-get-sorted-map)
          this (assoc this :db-transaction-count yearling-transaction-count)
