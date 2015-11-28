@@ -34,16 +34,10 @@ use of warn-on-reflection.
 
 * [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/laforge49/aatree?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 * [google group](https://groups.google.com/forum/?hl=en#!forum/agilewikidevelopers)
-
-## Wiki
-
-[Blog](https://github.com/laforge49/aatree/wiki/Blog)
-
-[API](https://github.com/laforge49/aatree/wiki/API)
-
-[Benchmarks](https://github.com/laforge49/aatree/wiki/Benchmarks)
-
-[Log4J 2](https://github.com/laforge49/aatree/wiki/Log4J-2)
+* [Blog](https://github.com/laforge49/aatree/wiki/Blog)
+* [API](https://github.com/laforge49/aatree/wiki/API)
+* [Benchmarks](https://github.com/laforge49/aatree/wiki/Benchmarks)
+* [Log4J 2](https://github.com/laforge49/aatree/wiki/Log4J-2)
 
 ### Durable Applications--File Load and Save
 
@@ -74,3 +68,4 @@ is also part of Yearling.
 
 Next up will be a database with a transaction log: 
 [Heifer](https://github.com/laforge49/aatree/issues/28).
+But before that we will be breaking calf and yearling into components.
