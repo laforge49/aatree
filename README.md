@@ -25,39 +25,15 @@ Validation has been done using
 Compiled AOT with Clojure 1.7.0. Reflection has been avoided through the
 use of warn-on-reflection.
 
-## [Releases](https://github.com/laforge49/aatree/releases)
-[![Clojars Project](http://clojars.org/aatree/latest-version.svg)](http://clojars.org/aatree)
+## Releases
 
-## Resources: [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/laforge49/aatree?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge), [google group](https://groups.google.com/forum/?hl=en#!forum/agilewikidevelopers)
+* [GitHub](https://github.com/laforge49/aatree/releases)
+* [![Clojars Project](http://clojars.org/aatree/latest-version.svg)](http://clojars.org/aatree)
 
-## Log4J 2
+## Resources 
 
-Logging dependencies:
-```
-                 [org.clojure/tools.logging "0.3.1"]
-                 [org.apache.logging.log4j/log4j-core "2.4.1"]
-                 [org.apache.logging.log4j/log4j-slf4j-impl "2.4.1"]
-```
-
-Sample log4j2-test.xml file (add to classpath):
-```
-<?xml version="1.0" encoding="UTF-8"?>
-<Configuration status="INFO">
-    <Appenders>
-        <Console name="Console" target="SYSTEM_OUT">
-            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
-        </Console>
-    </Appenders>
-    <Loggers>
-        <Root level="info">
-            <AppenderRef ref="Console"/>
-        </Root>
-    </Loggers>
-</Configuration>
-```
-
-For testing purposes, the above log4j2-test.xml file was 
-put in the dev-resources folder to keep it from being added to the jar file.
+* [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/laforge49/aatree?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+* [google group](https://groups.google.com/forum/?hl=en#!forum/agilewikidevelopers)
 
 ## Wiki
 
@@ -66,6 +42,8 @@ put in the dev-resources folder to keep it from being added to the jar file.
 [API](https://github.com/laforge49/aatree/wiki/API)
 
 [Benchmarks](https://github.com/laforge49/aatree/wiki/Benchmarks)
+
+[Log4J 2](https://github.com/laforge49/aatree/wiki/Log4J-2)
 
 ### Durable Applications--File Load and Save
 
