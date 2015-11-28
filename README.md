@@ -67,13 +67,12 @@ put in the dev-resources folder to keep it from being added to the jar file.
 
 [Benchmarks](https://github.com/laforge49/aatree/wiki/Benchmarks)
 
-[Immutable Value, Mutable Form](https://github.com/laforge49/aatree/wiki/Immutable-Value,-Mutable-Form)
+### Blog
 
-[Towards Greater Code Reuse](https://github.com/laforge49/aatree/wiki/Towards-Greater-Code-Reuse)
-
-[Clojure Objects](https://github.com/laforge49/aatree/wiki/Clojure-Objects)
-
-[Ultralight Components](https://github.com/laforge49/aatree/wiki/Ultralight-Components)
+* [Ultralight Components](https://github.com/laforge49/aatree/wiki/Ultralight-Components)
+* [Clojure Objects](https://github.com/laforge49/aatree/wiki/Clojure-Objects)
+* [Towards Greater Code Reuse](https://github.com/laforge49/aatree/wiki/Towards-Greater-Code-Reuse)
+* [Immutable Value, Mutable Form](https://github.com/laforge49/aatree/wiki/Immutable-Value,-Mutable-Form)
 
 ### Durable Applications--File Load and Save
 
