@@ -1,10 +1,10 @@
 (ns aatree.yearling
   (:require [aatree.core :refer :all]
             [aatree.nodes :refer :all]
-            [aatree.db-file-trait :refer :all])
+            [aatree.db-file-trait :refer :all]
+            [aatree.db-agent-trait :refer :all])
   (:import (java.nio ByteBuffer)
            (java.util BitSet)
-           (clojure.lang Agent)
            (java.io File)))
 
 (set! *warn-on-reflection* true)
@@ -94,22 +94,6 @@
           (.printStackTrace e)
           (throw e))))))
 
-(defn- yearling-send [this app-updater]
-  (let [^Agent db-agent (:db-agent this)]
-    (send-off db-agent yearling-updater this app-updater)))
-
-(defn yearling-update [this app-updater]
-  (db-send this app-updater)
-  (let [send-write-timeout (:send-update-timeout this)
-        db-agent (:db-agent this)]
-    (if send-write-timeout
-      (if (not (await-for send-write-timeout db-agent))
-        (throw (Exception. "timeout")))
-      (await db-agent))))
-
-(defn- create-db-agent [this db-state]
-  (assoc this :db-agent (apply agent db-state (get this :db-agent-options []))))
-
 (defn yearling-null-updater [this aamap]
   aamap)
 
@@ -132,7 +116,7 @@
   (let [db-state (create-db-state this)
         db-state (yearling-updater db-state this yearling-null-updater)
         db-state (yearling-updater db-state this yearling-null-updater)]
-    (create-db-agent this db-state)))
+    db-state))
 
 (defn- yearling-read [this block-position]
   (let [db-block-size (:db-block-size this)
@@ -190,7 +174,7 @@
   (let [db-block-size (:db-block-size this)
         state0 (yearling-read this 0)
         state1 (yearling-read this db-block-size)]
-    (create-db-agent this (choose state0 state1))))
+    (choose state0 state1)))
 
 (defn- yearling-transaction-count [this]
   (:transaction-count @(:db-agent this)))
@@ -234,6 +218,9 @@
         (set! *release-pending* (dropn *release-pending* 0))
         (recur this age trans)))))
 
+(defn- create-initial-state [this]
+  (choice this db-file-empty? yearling-new yearling-old))
+
 (defn yearling-open
   ([file] (yearling-open {} file))
   ([this ^File file]
@@ -242,10 +229,9 @@
                   (assoc :db-get-sorted-map yearling-get-sorted-map)
                   (assoc :db-transaction-count yearling-transaction-count)
                   (assoc :db-new-node-id yearling-new-node-id)
-                  (assoc :db-send yearling-send)
-                  (assoc :db-update yearling-update)
                   (assoc-default :db-block-size 500000)
                   (assoc-default :max-db-size 100000000000)
+                  (default :create-db-chan db-agent)
                   (assoc :db-allocated yearling-allocated)
                   (assoc :db-allocate yearling-allocate)
                   (assoc :db-release-pending yearling-release-pending)
@@ -254,5 +240,5 @@
                   (assoc-default :db-pending-age 0)
                   (assoc-default :db-pending-count 2)
                   (default :new-sorted-map virtual-opts)
-                  (choice db-file-empty? yearling-new yearling-old))]
-     this)))
+                  (assoc :db-updater yearling-updater))]
+     (create-db-chan this create-initial-state))))
