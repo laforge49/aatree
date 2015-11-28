@@ -3,16 +3,16 @@
 
 (set! *warn-on-reflection* true)
 
-(do-close {})
+(close-components {})
 
 (defn close-a [this] (println "  close a"))
 (defn close-b [this] (println "  close b"))
 (defn close-c [this] (println "  close c"))
 
-(let [this (on-close {} close-a "a")
-      this (on-close this close-b "b")
-      this (on-close this close-c "c")]
+(let [this (open-component {} "a" close-a)
+      this (open-component this "b" close-b)
+      this (open-component this "c" close-c)]
   (println "first close")
-  (do-close this)
+  (close-components this)
   (println "second close")
-  (do-close this))
+  (close-components this))

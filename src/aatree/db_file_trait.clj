@@ -26,7 +26,7 @@
                             StandardOpenOption/WRITE]))]
          (-> this
              (assoc :db-file-channel file-channel)
-             (on-close (fn [_] (.close file-channel)) (str "db file " file))
+             (open-component (str "db file " file) (fn [_] (.close file-channel)))
              (assoc :db-file-empty?
                     (fn []
                       (= 0 (.size file-channel))))

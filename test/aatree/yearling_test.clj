@@ -36,7 +36,7 @@
         _ (is (= aamap {}))
         _ (is (= (db-allocated yearling) 3))
         _ (is (= (count (db-release-pending yearling)) 1))
-        _ (do-close yearling)])
+        _ (close-components yearling)])
 
   (let [yearling {:db-pending-count 99
                   :max-db-size      100000
@@ -58,6 +58,6 @@
         _ (is (= aamap {}))
         _ (is (= (db-allocated yearling) 2))
         _ (is (= (count (db-release-pending yearling)) 0))
-        _ (do-close yearling)])
+        _ (close-components yearling)])
 
   (Thread/sleep 200))

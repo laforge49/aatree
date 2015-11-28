@@ -20,10 +20,10 @@
         aamap (db-get-sorted-map calf)
         _ (is (= aamap {:fun "Clojure"}))
         _ (is (= (db-transaction-count calf) 3))
-        _ (do-close calf)])
+        _ (close-components calf)])
 
   (let [calf (calf-open (File. "calf-test.calf") 10000)
         _ (is (= (db-transaction-count calf) 3))
         aamap (db-get-sorted-map calf)
         _ (is (= aamap {:fun "Clojure"}))
-        _ (do-close calf)]))
+        _ (close-components calf)]))

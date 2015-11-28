@@ -37,6 +37,6 @@
               (fn [_ i] (get (db-get-sorted-map yearling) i))
               nil
               (range (count (db-get-sorted-map yearling))))) ; -> "Elapsed time: 8404.581527 msecs"
-      (do-close yearling))
+      (close-components yearling))
 
     (Thread/sleep 200))
