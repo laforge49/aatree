@@ -130,10 +130,9 @@
 
 (defn- yearling-new [this]
   (let [db-state (create-db-state this)
-        this (create-db-agent this db-state)]
-    (yearling-update this yearling-null-updater)
-    (yearling-update this yearling-null-updater)
-    this))
+        db-state (yearling-updater db-state this yearling-null-updater)
+        db-state (yearling-updater db-state this yearling-null-updater)]
+    (create-db-agent this db-state)))
 
 (defn- yearling-read [this block-position]
   (let [db-block-size (:db-block-size this)
