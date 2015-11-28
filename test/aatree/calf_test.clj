@@ -15,7 +15,7 @@
         aamap (db-get-sorted-map calf)
         _ (is (= aamap {}))
         _ (db-update calf
-                     (fn [calf aamap]
+                     (fn [db aamap]
                        (assoc aamap :fun "Clojure")))
         aamap (db-get-sorted-map calf)
         _ (is (= aamap {:fun "Clojure"}))

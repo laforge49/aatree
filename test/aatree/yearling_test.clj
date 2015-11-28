@@ -18,8 +18,8 @@
         _ (is (= aamap {}))
         _ (db-update
             yearling
-            (fn [yearling aamap]
-              (assoc aamap :block (db-allocate yearling))))
+            (fn [db aamap]
+              (assoc aamap :block (db-allocate db))))
         aamap (db-get-sorted-map yearling)
         _ (is (= aamap {:block 20000}))
         _ (is (= (db-transaction-count yearling) 3))
@@ -27,9 +27,9 @@
         _ (is (= (count (db-release-pending yearling)) 0))
         _ (db-update
             yearling
-            (fn [yearling aamap]
-              (println "new node id" ((:db-new-node-id yearling)))
-              (db-release yearling (:block aamap))
+            (fn [db aamap]
+              (println "new node id" ((:db-new-node-id db)))
+              (db-release db (:block aamap))
               (dissoc aamap :block)))
         _ (is (= (db-transaction-count yearling) 4))
         aamap (db-get-sorted-map yearling)
@@ -49,9 +49,9 @@
         _ (is (= (count (db-release-pending yearling)) 1))
         _ (db-update
             yearling
-            (fn [yearling aamap]
-              (println "new node id" ((:db-new-node-id yearling)))
-              (db-process-pending yearling 0 1)
+            (fn [db aamap]
+              (println "new node id" ((:db-new-node-id db)))
+              (db-process-pending db 0 1)
               aamap))
         _ (is (= (db-transaction-count yearling) 5))
         aamap (db-get-sorted-map yearling)

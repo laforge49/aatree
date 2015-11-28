@@ -22,7 +22,7 @@
               (fn [_ j]
                 (db-update
                   yearling
-                  (fn [yearling aamap]
+                  (fn [db aamap]
                     (let [bbmap (reduce (fn [m i]
                                           (assoc m (+ i (* mxi j) (* mxi mxj k)) 1))
                                         aamap
