@@ -243,26 +243,16 @@
          this (assoc this :db-new-node-id yearling-new-node-id)
          this (assoc this :db-send yearling-send)
          this (assoc this :db-update yearling-update)
-         this (if (:db-block-size this)
-                this
-                (assoc this :db-block-size 500000))
-         this (if (:max-db-size this)
-                this
-                (assoc this :max-db-size 100000000000))
+         this (assoc-default this :db-block-size 500000)
+         this (assoc-default this :max-db-size 100000000000)
          this (assoc this :db-allocated yearling-allocated)
          this (assoc this :db-allocate yearling-allocate)
          this (assoc this :db-release-pending yearling-release-pending)
          this (assoc this :db-release yearling-release)
          this (assoc this :db-process-pending yearling-process-pending)
-         this (if (:db-pending-age this)
-                this
-                (assoc this :db-pending-age 0))
-         this (if (:db-pending-count this)
-                this
-                (assoc this :db-pending-count 2))
-         this (if (has-aafactories this)
-                this
-                (virtual-opts this))
+         this (assoc-default this :db-pending-age 0)
+         this (assoc-default this :db-pending-count 2)
+         this (default this :new-sorted-map virtual-opts)
          this (if (db-file-empty? this)
                 (yearling-new this)
                 (yearling-old this))]
