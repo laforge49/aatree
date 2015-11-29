@@ -196,7 +196,7 @@
 
 (defn db-get-sorted-map [this] ((:db-get-sorted-map this) this))
 
-(defn db-transaction-count [this] ((:db-transaction-count this) this))
+(defn db-transaction-count [this] (:transaction-count @(:db-agent this)))
 
 (defn create-db-chan [this initial-state] ((:create-db-chan this) this initial-state))
 

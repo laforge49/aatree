@@ -176,9 +176,6 @@
         state1 (yearling-read this db-block-size)]
     (choose state0 state1)))
 
-(defn- yearling-transaction-count [this]
-  (:transaction-count @(:db-agent this)))
-
 (defn- yearling-get-sorted-map [this]
   (:app-map (:uber-map @(:db-agent this))))
 
@@ -227,7 +224,6 @@
    (let [this (-> this
                   (db-file-open file)
                   (assoc :db-get-sorted-map yearling-get-sorted-map)
-                  (assoc :db-transaction-count yearling-transaction-count)
                   (assoc :db-new-node-id yearling-new-node-id)
                   (assoc-default :db-block-size 500000)
                   (assoc-default :max-db-size 100000000000)

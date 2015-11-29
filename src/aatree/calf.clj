@@ -101,8 +101,5 @@
                   (assoc
                     :db-get-sorted-map
                     (fn [calf] (:aamap @(:db-agent calf))))
-                  (assoc
-                    :db-transaction-count
-                    (fn [calf] (:transaction-count @(:db-agent calf))))
                   (assoc :db-updater calf-updater))]
      (create-db-chan this create-initial-state))))
