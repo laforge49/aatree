@@ -177,7 +177,7 @@
     (choose state0 state1)))
 
 (defn- yearling-allocated [this]
-  (let [state @(:db-agent this)
+  (let [state (db-get-state this)
         ^BitSet allocated (:allocated state)]
     (.cardinality allocated)))
 
@@ -187,7 +187,7 @@
     (* avail (:db-block-size this))))
 
 (defn- yearling-release-pending [this]
-  (:release-pending (:uber-map @(:db-agent this))))
+  (:release-pending (:uber-map (db-get-state this))))
 
 (defn- yearling-release [this block-position]
   (let [db-block-size (:db-block-size this)

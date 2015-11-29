@@ -14,6 +14,10 @@
             :db-agent
             (apply agent (initial-state db) (get db :db-agent-options [])))))
       (assoc
+        :db-get-state
+        (fn [db]
+          @(:db-agent db)))
+      (assoc
         :db-send
         (fn [db app-updater]
           (let [^Agent db-agent (:db-agent db)]

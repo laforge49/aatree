@@ -179,6 +179,14 @@
       (finally
         (.close fc)))))
 
+(defn create-db-chan [this initial-state] ((:create-db-chan this) this initial-state))
+
+(defn db-get-state [this] ((:db-get-state this) this))
+
+(defn db-send [this app-updater] ((:db-send this) this app-updater))
+
+(defn db-update [this app-updater] ((:db-update this) this app-updater))
+
 (defn db-file-empty? [this]
   ((:db-file-empty? this)))
 
@@ -194,15 +202,9 @@
 (defn db-file-write-root [this byte-buffer position]
   ((:db-file-write-root this) byte-buffer position))
 
-(defn db-get-sorted-map [this] (:app-map (:uber-map @(:db-agent this))))
+(defn db-get-sorted-map [this] (:app-map (:uber-map (db-get-state this))))
 
-(defn db-transaction-count [this] (:transaction-count @(:db-agent this)))
-
-(defn create-db-chan [this initial-state] ((:create-db-chan this) this initial-state))
-
-(defn db-send [this app-updater] ((:db-send this) this app-updater))
-
-(defn db-update [this app-updater] ((:db-update this) this app-updater))
+(defn db-transaction-count [this] (:transaction-count (db-get-state this)))
 
 (defn db-allocated [this] ((:db-allocated this) this))
 

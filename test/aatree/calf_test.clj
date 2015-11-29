@@ -15,8 +15,8 @@
         aamap (db-get-sorted-map calf)
         _ (is (= aamap {}))
         _ (db-update calf
-                     (fn [db aamap]
-                       (assoc aamap :fun "Clojure")))
+                     (fn [db db-state]
+                       (assoc-in db-state [:uber-map :app-map :fun] "Clojure")))
         aamap (db-get-sorted-map calf)
         _ (is (= aamap {:fun "Clojure"}))
         _ (is (= (db-transaction-count calf) 3))
