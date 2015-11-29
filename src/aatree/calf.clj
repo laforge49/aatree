@@ -10,21 +10,24 @@
 
 (defn- calf-updater [db-state this app-updater]
   (try
-    (let [aamap (app-updater this (:aamap db-state))
+    (let [uber-map (:uber-map db-state)
+          app-map (:app-map uber-map)
+          app-map (app-updater this app-map)
+          uber-map (assoc uber-map :app-map app-map)
           transaction-count (:transaction-count db-state)
           block-size (:db-block-size this)
           position (* block-size (mod transaction-count 2))
           transaction-count (+ transaction-count 1)
           db-state (assoc db-state :transaction-count transaction-count)
-          db-state (assoc db-state :aamap aamap)
+          db-state (assoc db-state :uber-map uber-map)
           ^ByteBuffer bb (ByteBuffer/allocate block-size)
-          map-size (byte-length aamap)]
+          map-size (byte-length uber-map)]
       (if (< block-size (+ 4 4 8 map-size 32))
         (throw (Exception. "block-size exceeded on write")))
       (.putInt bb block-size)
       (.putInt bb map-size)
       (.putLong bb transaction-count)
-      (put-aa bb aamap)
+      (put-aa bb uber-map)
       (put-cs256 bb (compute-cs256 (.flip (.duplicate bb))))
       (.flip bb)
       (db-file-write-root this bb (long position))
@@ -33,11 +36,13 @@
       (.printStackTrace e)
       (throw e))))
 
-(defn calf-null-updater [this aamap]
-  aamap)
+(defn calf-null-updater [this app-map]
+  app-map)
 
 (defn- calf-new [this]
-  (let [db-state {:transaction-count 0 :aamap (new-sorted-map this)}
+  (let [uber-map (new-sorted-map this)
+        uber-map (assoc uber-map :app-map (new-sorted-map this))
+        db-state {:transaction-count 0 :uber-map uber-map}
         db-state (calf-updater db-state this calf-null-updater)
         db-state (calf-updater db-state this calf-null-updater)]
     db-state))
@@ -65,10 +70,10 @@
             ocs (get-cs256 bb)
             _ (.position bb (+ 4 4 8))
             _ (.limit bb csp)
-            aamap (load-sorted-map bb this)]
+            uber-map (load-sorted-map bb this)]
         (if (not= cs ocs)
           nil
-          {:transaction-count transaction-count :aamap aamap})))))
+          {:transaction-count transaction-count :uber-map uber-map})))))
 
 (defn- choose [state0 state1]
   (if state0
@@ -100,6 +105,6 @@
                   (default :create-db-chan db-agent)
                   (assoc
                     :db-get-sorted-map
-                    (fn [calf] (:aamap @(:db-agent calf))))
+                    (fn [calf] (:app-map (:uber-map @(:db-agent calf)))))
                   (assoc :db-updater calf-updater))]
      (create-db-chan this create-initial-state))))
