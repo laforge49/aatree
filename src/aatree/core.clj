@@ -194,7 +194,7 @@
 (defn db-file-write-root [this byte-buffer position]
   ((:db-file-write-root this) byte-buffer position))
 
-(defn db-get-sorted-map [this] ((:db-get-sorted-map this) this))
+(defn db-get-sorted-map [this] (:app-map (:uber-map @(:db-agent this))))
 
 (defn db-transaction-count [this] (:transaction-count @(:db-agent this)))
 

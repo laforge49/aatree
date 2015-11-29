@@ -103,8 +103,5 @@
                   (assoc :db-block-size block-size)
                   (default :new-sorted-map lazy-opts)
                   (default :create-db-chan db-agent)
-                  (assoc
-                    :db-get-sorted-map
-                    (fn [calf] (:app-map (:uber-map @(:db-agent calf)))))
                   (assoc :db-updater calf-updater))]
      (create-db-chan this create-initial-state))))
