@@ -13,7 +13,7 @@
   (let [calf (calf-open (File. "calf-test.calf") 10000)
         _ (is (= (db-transaction-count calf) 2))
         aamap (db-get-sorted-map calf)
-        _ (is (= aamap {}))
+        _ (is (= aamap nil))
         _ (db-update calf
                      (fn [db db-state]
                        (assoc-in db-state [:uber-map :app-map :fun] "Clojure")))

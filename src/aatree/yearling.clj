@@ -54,9 +54,8 @@
               *time-millis* (System/currentTimeMillis)]
       (try
         (yearling-process-pending this (:db-pending-age this) (:db-pending-count this))
-        (let [app-map (:app-map old-uber-map)
-              app-map (app-updater this app-map)
-              uber-map (assoc old-uber-map :app-map app-map)
+        (let [db-state (app-updater this db-state)
+              uber-map (:uber-map db-state)
 
               uber-map (release-dropped-blocks this old-uber-map uber-map)
               map-size (byte-length uber-map)
@@ -101,7 +100,6 @@
   (binding [*last-node-id* 0]
     (let [uber-map (new-sorted-map this)
           uber-map (assoc uber-map :release-pending (new-vector this))
-          uber-map (assoc uber-map :app-map (new-sorted-map this))
           ^BitSet allocated (BitSet.)
           _ (.set allocated 0)
           _ (.set allocated 1)

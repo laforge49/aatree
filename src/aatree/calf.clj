@@ -38,7 +38,6 @@
 
 (defn- calf-new [this]
   (let [uber-map (new-sorted-map this)
-        uber-map (assoc uber-map :app-map (new-sorted-map this))
         db-state {:transaction-count 0 :uber-map uber-map}
         db-state (calf-updater db-state this calf-null-updater)
         db-state (calf-updater db-state this calf-null-updater)]
