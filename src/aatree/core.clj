@@ -181,7 +181,9 @@
 
 (defn create-db-chan [this initial-state] ((:create-db-chan this) this initial-state))
 
-(defn db-get-state [this] ((:db-get-state this) this))
+(defn db-get-state
+  ([this] ((:db-get-state this) this))
+  ([this keys] (get-in (db-get-state this) keys)))
 
 (defn db-send [this app-updater] ((:db-send this) this app-updater))
 
@@ -201,8 +203,6 @@
 
 (defn db-file-write-root [this byte-buffer position]
   ((:db-file-write-root this) byte-buffer position))
-
-(defn db-get-sorted-map [this] (:app-map (:uber-map (db-get-state this))))
 
 (defn db-transaction-count [this] (:transaction-count (db-get-state this)))
 

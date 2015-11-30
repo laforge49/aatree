@@ -12,18 +12,18 @@
 
   (let [calf (calf-open (File. "calf-test.calf") 10000)
         _ (is (= (db-transaction-count calf) 2))
-        aamap (db-get-sorted-map calf)
-        _ (is (= aamap nil))
+        app-map (db-get-state calf [:uber-map :app-map])
+        _ (is (= app-map nil))
         _ (db-update calf
                      (fn [db db-state]
                        (assoc-in db-state [:uber-map :app-map :fun] "Clojure")))
-        aamap (db-get-sorted-map calf)
-        _ (is (= aamap {:fun "Clojure"}))
+        fun (db-get-state calf [:uber-map :app-map :fun])
+        _ (is (= fun "Clojure"))
         _ (is (= (db-transaction-count calf) 3))
         _ (close-components calf)])
 
   (let [calf (calf-open (File. "calf-test.calf") 10000)
         _ (is (= (db-transaction-count calf) 3))
-        aamap (db-get-sorted-map calf)
-        _ (is (= aamap {:fun "Clojure"}))
+        fun (db-get-state calf [:uber-map :app-map :fun])
+        _ (is (= fun "Clojure"))
         _ (close-components calf)]))
