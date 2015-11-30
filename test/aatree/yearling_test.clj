@@ -31,7 +31,7 @@
         _ (db-update
             yearling
             (fn [db db-state]
-              (println "new node id" ((:db-new-node-id db)))
+              (println "new node id" (db-new-node-id db))
               (db-release db block)
               (dissoc-in db-state [:uber-map :app-map :block])))
         db-state (db-get-state yearling)
@@ -53,7 +53,7 @@
         _ (db-update
             yearling
             (fn [db db-state]
-              (println "new node id" ((:db-new-node-id db)))
+              (println "new node id" (db-new-node-id db))
               (db-process-pending db 0 1)
               db-state))
         db-state (db-get-state yearling)

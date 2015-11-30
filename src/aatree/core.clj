@@ -214,6 +214,8 @@
 
 (defn db-process-pending [this age trans] ((:db-process-pending this) this age trans))
 
+(defn db-new-node-id [this] ((:db-new-node-id this)))
+
 (register-factory
   default-factory-registry
   vector-context
