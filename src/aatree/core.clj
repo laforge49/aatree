@@ -204,8 +204,6 @@
 (defn db-file-write-root [this byte-buffer position]
   ((:db-file-write-root this) byte-buffer position))
 
-(defn db-transaction-count [this] (:transaction-count (db-get-state this)))
-
 (defn db-allocated [this] ((:db-allocated this) this))
 
 (defn db-allocate [this] ((:db-allocate this) this))

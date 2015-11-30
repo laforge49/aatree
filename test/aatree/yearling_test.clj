@@ -14,16 +14,18 @@
   (let [yearling {:max-db-size   100000
                   :db-block-size 10000}
         yearling (yearling-open yearling (File. "yearling-test.yearling"))
-        _ (is (= (db-transaction-count yearling) 2))
-        app-map (db-get-state yearling [:uber-map :app-map])
-        _ (is (= app-map nil))
+        db-state (db-get-state yearling)
+        _ (is (= (:transaction-count db-state) 2))
+        _ (is (= (get-in db-state [:uber-map :app-map]) nil))
+        _ (is (= (db-allocated yearling) 2))
         _ (db-update
             yearling
             (fn [db db-state]
               (assoc-in db-state [:uber-map :app-map :block] (db-allocate db))))
-        block (db-get-state yearling [:uber-map :app-map :block])
+        db-state (db-get-state yearling)
+        _ (is (= (:transaction-count db-state) 3))
+        block (get-in db-state [:uber-map :app-map :block])
         _ (is (= block 20000))
-        _ (is (= (db-transaction-count yearling) 3))
         _ (is (= (db-allocated yearling) 3))
         _ (is (= (count (db-release-pending yearling)) 0))
         _ (db-update
@@ -32,9 +34,9 @@
               (println "new node id" ((:db-new-node-id db)))
               (db-release db block)
               (dissoc-in db-state [:uber-map :app-map :block])))
-        _ (is (= (db-transaction-count yearling) 4))
-        app-map (db-get-state yearling [:uber-map :app-map])
-        _ (is (= app-map nil))
+        db-state (db-get-state yearling)
+        _ (is (= (:transaction-count db-state) 4))
+        _ (is (= (get-in db-state [:uber-map :app-map]) nil))
         _ (is (= (db-allocated yearling) 3))
         _ (is (= (count (db-release-pending yearling)) 1))
         _ (close-components yearling)])
@@ -43,9 +45,9 @@
                   :max-db-size      100000
                   :db-block-size    10000}
         yearling (yearling-open yearling (File. "yearling-test.yearling"))
-        _ (is (= (db-transaction-count yearling) 4))
-        app-map (db-get-state yearling [:uber-map :app-map])
-        _ (is (= app-map nil))
+        db-state (db-get-state yearling)
+        _ (is (= (:transaction-count db-state) 4))
+        _ (is (= (get-in db-state [:uber-map :app-map]) nil))
         _ (is (= (db-allocated yearling) 3))
         _ (is (= (count (db-release-pending yearling)) 1))
         _ (db-update
@@ -54,9 +56,9 @@
               (println "new node id" ((:db-new-node-id db)))
               (db-process-pending db 0 1)
               db-state))
-        _ (is (= (db-transaction-count yearling) 5))
-        app-map (db-get-state yearling [:uber-map :app-map])
-        _ (is (= app-map nil))
+        db-state (db-get-state yearling)
+        _ (is (= (:transaction-count db-state) 5))
+        _ (is (= (get-in db-state [:uber-map :app-map]) nil))
         _ (is (= (db-allocated yearling) 2))
         _ (is (= (count (db-release-pending yearling)) 0))
         _ (close-components yearling)])
