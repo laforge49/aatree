@@ -43,7 +43,7 @@
           @(:db-agent db)))
       (assoc
         :db-update-state-in
-        (fn [db new-state ks f]
+        (fn [db ks f]
           (let [db-state (:db-update-vstate db)]
             (db-vstate-clear db)
             (db-vstate-set db (assoc-in db-state ks (f (get-in db-state ks)))))))

@@ -185,6 +185,9 @@
   ([this] ((:db-get-state this) this))
   ([this keys] (get-in (db-get-state this) keys)))
 
+(defn db-update-state-in [this keys f]
+  ((:db-update-state-in this) this keys f))
+
 (defn db-send [this app-updater] ((:db-send this) this app-updater))
 
 (defn db-update [this app-updater] ((:db-update this) this app-updater))
