@@ -185,14 +185,8 @@
   ([this] ((:db-get-state this) this))
   ([this keys] (get-in (db-get-state this) keys)))
 
-(defn update-get [this]
-  @(:db-update-vstate this))
-
 (defn update-get-in [this ks]
   (get-in @(:db-update-vstate this) ks))
-
-(defn update-reset [this v]
-  (vreset! (:db-update-vstate this) v))
 
 (defn update-assoc-in [this ks v]
   (let [db-update-vstate (:db-update-vstate this)]
