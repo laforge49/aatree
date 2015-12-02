@@ -185,8 +185,22 @@
   ([this] ((:db-get-state this) this))
   ([this keys] (get-in (db-get-state this) keys)))
 
-(defn db-update-state-in [this keys f]
-  ((:db-update-state-in this) this keys f))
+(defn update-get [this]
+  @(:db-update-vstate this))
+
+(defn update-get-in [this ks]
+  (get-in @(:db-update-vstate this) ks))
+
+(defn update-reset [this v]
+  (vreset! (:db-update-vstate this) v))
+
+(defn update-assoc-in [this ks v]
+  (let [db-update-vstate (:db-update-vstate this)]
+    (vreset! db-update-vstate (assoc-in @db-update-vstate ks v))))
+
+(defn update-dissoc-in [this ks]
+  (let [db-update-vstate (:db-update-vstate this)]
+    (vreset! db-update-vstate (dissoc @db-update-vstate ks))))
 
 (defn db-send [this app-updater] ((:db-send this) this app-updater))
 

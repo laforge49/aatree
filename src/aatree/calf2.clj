@@ -11,28 +11,25 @@
 (defn- calf-updater [this app-updater]
   (try
     (app-updater this)
-    (db-update-state-in
-      this
-      []
-      (fn [db db-state]
-        (let [transaction-count (:transaction-count db-state)
-              block-size (:db-block-size db)
-              position (* block-size (mod transaction-count 2))
-              transaction-count (+ transaction-count 1)
-              db-state (assoc db-state :transaction-count transaction-count)
-              ^ByteBuffer bb (ByteBuffer/allocate block-size)
-              uber-map (:uber-map db-state)
-              map-size (byte-length uber-map)]
-          (if (< block-size (+ 4 4 8 map-size 32))
-            (throw (Exception. "block-size exceeded on write")))
-          (.putInt bb block-size)
-          (.putInt bb map-size)
-          (.putLong bb transaction-count)
-          (put-aa bb uber-map)
-          (put-cs256 bb (compute-cs256 (.flip (.duplicate bb))))
-          (.flip bb)
-          (db-file-write-root db bb (long position))
-          db-state)))
+    (let [db-state (update-get this)
+          transaction-count (:transaction-count db-state)
+          block-size (:db-block-size this)
+          position (* block-size (mod transaction-count 2))
+          transaction-count (+ transaction-count 1)
+          db-state (assoc db-state :transaction-count transaction-count)
+          ^ByteBuffer bb (ByteBuffer/allocate block-size)
+          uber-map (:uber-map db-state)
+          map-size (byte-length uber-map)]
+      (if (< block-size (+ 4 4 8 map-size 32))
+        (throw (Exception. "block-size exceeded on write")))
+      (.putInt bb block-size)
+      (.putInt bb map-size)
+      (.putLong bb transaction-count)
+      (put-aa bb uber-map)
+      (put-cs256 bb (compute-cs256 (.flip (.duplicate bb))))
+      (.flip bb)
+      (db-file-write-root this bb (long position))
+      (update-reset this db-state))
     (catch Exception e
       (.printStackTrace e)
       (throw e))))

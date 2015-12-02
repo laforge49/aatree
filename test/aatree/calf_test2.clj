@@ -16,11 +16,10 @@
         _ (is (= (get-in db-state [:uber-map :app-map]) nil))
         _ (db-update calf
                      (fn [db]
-                       (db-update-state-in
+                       (update-assoc-in
                          db
                          [:uber-map :app-map :fun]
-                         (fn [this old]
-                           "Clojure"))))
+                         "Clojure")))
         db-state (db-get-state calf)
         _ (is (= (get-in db-state [:uber-map :app-map :fun]) "Clojure"))
         _ (is (= (:transaction-count db-state) 3))
