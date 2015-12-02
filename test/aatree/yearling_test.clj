@@ -1,6 +1,5 @@
 (ns aatree.yearling-test
   (:require [clojure.test :refer :all]
-            [medley.core :refer :all]
             [aatree.core :refer :all]
             [aatree.yearling :refer :all]
             [aatree.closer-trait :refer :all])
@@ -20,8 +19,8 @@
         _ (is (= (db-allocated yearling) 2))
         _ (db-update
             yearling
-            (fn [db db-state]
-              (assoc-in db-state [:uber-map :app-map :block] (db-allocate db))))
+            (fn [db]
+              (update-assoc-in db [:uber-map :app-map :block] (db-allocate db))))
         db-state (db-get-state yearling)
         _ (is (= (:transaction-count db-state) 3))
         block (get-in db-state [:uber-map :app-map :block])
@@ -30,10 +29,10 @@
         _ (is (= (count (db-release-pending yearling)) 0))
         _ (db-update
             yearling
-            (fn [db db-state]
+            (fn [db]
               (println "new node id" (db-new-node-id db))
               (db-release db block)
-              (dissoc-in db-state [:uber-map :app-map :block])))
+              (update-dissoc-in db [:uber-map :app-map :block])))
         db-state (db-get-state yearling)
         _ (is (= (:transaction-count db-state) 4))
         _ (is (= (get-in db-state [:uber-map :app-map]) nil))
@@ -52,10 +51,9 @@
         _ (is (= (count (db-release-pending yearling)) 1))
         _ (db-update
             yearling
-            (fn [db db-state]
+            (fn [db]
               (println "new node id" (db-new-node-id db))
-              (db-process-pending db 0 1)
-              db-state))
+              (db-process-pending db 0 1)))
         db-state (db-get-state yearling)
         _ (is (= (:transaction-count db-state) 5))
         _ (is (= (get-in db-state [:uber-map :app-map]) nil))

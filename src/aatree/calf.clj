@@ -8,18 +8,19 @@
 
 (set! *warn-on-reflection* true)
 
-(defn- calf-updater [db-state this app-updater]
+(defn- calf-updater [this app-updater]
   (try
-    (let [db-state (app-updater this db-state)
-          transaction-count (:transaction-count db-state)
-          block-size (:db-block-size this)
+    (app-updater this)
+    (let [block-size (:db-block-size this)
+          transaction-count (update-get-in this [:transaction-count])
           position (* block-size (mod transaction-count 2))
           transaction-count (+ transaction-count 1)
-          db-state (assoc db-state :transaction-count transaction-count)
-          ^ByteBuffer bb (ByteBuffer/allocate block-size)
-          uber-map (:uber-map db-state)
-          map-size (byte-length uber-map)]
-      (if (< block-size (+ 4 4 8 map-size 32))
+          _ (update-assoc-in this [:transaction-count] transaction-count)
+          uber-map (update-get-in this [:uber-map])
+          map-size (byte-length uber-map)
+          buffer-size (+ 4 4 8 map-size 32)
+          ^ByteBuffer bb (ByteBuffer/allocate buffer-size)]
+      (if (< block-size buffer-size)
         (throw (Exception. "block-size exceeded on write")))
       (.putInt bb block-size)
       (.putInt bb map-size)
@@ -27,20 +28,22 @@
       (put-aa bb uber-map)
       (put-cs256 bb (compute-cs256 (.flip (.duplicate bb))))
       (.flip bb)
-      (db-file-write-root this bb (long position))
-      db-state)
+      (db-file-write-root this bb (long position)))
     (catch Exception e
       (.printStackTrace e)
       (throw e))))
 
-(defn calf-null-updater [this db-state]
-  db-state)
+(defn calf-null-updater [this])
 
 (defn- calf-new [this]
   (let [uber-map (new-sorted-map this)
         db-state {:transaction-count 0 :uber-map uber-map}
-        db-state (calf-updater db-state this calf-null-updater)
-        db-state (calf-updater db-state this calf-null-updater)]
+        db-update-vstate (:db-update-vstate this)
+        _ (vreset! db-update-vstate db-state)
+        _ (calf-updater this calf-null-updater)
+        _ (calf-updater this calf-null-updater)
+        db-state @db-update-vstate]
+    (vreset! db-update-vstate nil)
     db-state))
 
 (defn- calf-read [this position]

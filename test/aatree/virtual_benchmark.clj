@@ -22,13 +22,13 @@
               (fn [_ j]
                 (db-update
                   yearling
-                  (fn [db db-state]
-                    (let [aamap (get-in db-state [:uber-map :app-map])
+                  (fn [db]
+                    (let [aamap (update-get-in db [:uber-map :app-map])
                           bbmap (reduce (fn [m i]
                                           (assoc m (+ i (* mxi j) (* mxi mxj k)) 1))
                                         aamap
                                         (range mxi))]
-                      (assoc-in db-state [:uber-map :app-map] bbmap)))))
+                      (update-assoc-in db [:uber-map :app-map] bbmap)))))
               nil
               (range mxj)))
           nil

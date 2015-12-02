@@ -40,22 +40,22 @@
                 dropped-blocks)
         (recur this uber-map uber-map)))))
 
-(defn- yearling-updater [db-state this app-updater]
-  (let [old-uber-map (:uber-map db-state)
-        transaction-count (:transaction-count db-state)
+(defn- yearling-updater [this app-updater]
+  (let [old-uber-map (update-get-in this [:uber-map])
+        transaction-count (update-get-in this [:transaction-count])
         db-block-size (:db-block-size this)
         mx-allocated-longs (max-allocated-longs this)
         block-position (* db-block-size (mod transaction-count 2))
         max-db-size (:max-db-size this)]
-    (binding [*allocated* (:allocated db-state)
+    (binding [*allocated* (update-get-in this [:allocated])
               *transaction-count* (+ transaction-count 1)
-              *last-node-id* (:last-node-id db-state)
+              *last-node-id* (update-get-in this [:last-node-id])
               *release-pending* (:release-pending old-uber-map)
               *time-millis* (System/currentTimeMillis)]
       (try
         (yearling-process-pending this (:db-pending-age this) (:db-pending-count this))
-        (let [db-state (app-updater this db-state)
-              uber-map (:uber-map db-state)
+        (app-updater this)
+        (let [uber-map (update-get-in this [:uber-map])
 
               uber-map (release-dropped-blocks this old-uber-map uber-map)
               map-size (byte-length uber-map)
@@ -70,12 +70,11 @@
               ala-len (alength allocated-long-array)
               _ (if (< mx-allocated-longs ala-len)
                   (throw (Exception. (str "allocated size exceeded on write: " mx-allocated-longs ", " ala-len))))
-              ^ByteBuffer bb (ByteBuffer/allocate db-block-size)
-              db-state (assoc db-state :transaction-count *transaction-count*)
-              db-state (assoc db-state :last-node-id *last-node-id*)
-              db-state (assoc db-state :uber-map uber-map)
-              db-state (assoc db-state :allocated *allocated*)
-              ]
+              ^ByteBuffer bb (ByteBuffer/allocate db-block-size)]
+          (update-assoc-in this [:transaction-count] *transaction-count*)
+          (update-assoc-in this [:last-node-id] *last-node-id*)
+          (update-assoc-in this [:uber-map] uber-map)
+          (update-assoc-in this [:allocated] *allocated*)
           (.putInt bb db-block-size)
           (.putLong bb max-db-size)
           (.putInt bb map-size)
@@ -87,14 +86,12 @@
           (.position bb (+ (.position bb) (* ala-len 8)))
           (put-cs256 bb (compute-cs256 (.flip (.duplicate bb))))
           (.flip bb)
-          ((:db-file-write-root this) bb (long block-position))
-          db-state)
+          ((:db-file-write-root this) bb (long block-position)))
         (catch Throwable e
           (.printStackTrace e)
           (throw e))))))
 
-(defn yearling-null-updater [this aamap]
-  aamap)
+(defn yearling-null-updater [this])
 
 (defn- create-db-state [this]
   (binding [*last-node-id* 0]
@@ -111,9 +108,12 @@
       db-state)))
 
 (defn- yearling-new [this]
-  (let [db-state (create-db-state this)
-        db-state (yearling-updater db-state this yearling-null-updater)
-        db-state (yearling-updater db-state this yearling-null-updater)]
+  (let [db-update-vstate (:db-update-vstate this)
+        _ (vreset! db-update-vstate (create-db-state this))
+        _ (yearling-updater this yearling-null-updater)
+        _ (yearling-updater this yearling-null-updater)
+        db-state @db-update-vstate]
+    (vreset! db-update-vstate nil)
     db-state))
 
 (defn- yearling-read [this block-position]
