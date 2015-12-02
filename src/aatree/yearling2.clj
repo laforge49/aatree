@@ -54,6 +54,7 @@
               *time-millis* (System/currentTimeMillis)]
       (try
         (yearling-process-pending this (:db-pending-age this) (:db-pending-count this))
+        (app-updater this)
         (let [uber-map (update-get-in this [:uber-map])
 
               uber-map (release-dropped-blocks this old-uber-map uber-map)
@@ -90,8 +91,7 @@
           (.printStackTrace e)
           (throw e))))))
 
-(defn yearling-null-updater [this aamap]
-  aamap)
+(defn yearling-null-updater [this])
 
 (defn- create-db-state [this]
   (binding [*last-node-id* 0]
