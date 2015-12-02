@@ -55,7 +55,7 @@
               db-agent
               (fn [db-state]
                 (db-vstate-set db db-state)
-                ((:db-updater db) db)
+                ((:db-updater db) db app-updater)
                 (let [db-state (:db-update-vstate db)]
                   (db-vstate-clear db)
                   db-state))))))
