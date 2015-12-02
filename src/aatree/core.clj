@@ -1,7 +1,8 @@
 (ns aatree.core
   (:require [aatree.nodes :refer :all]
             [aatree.lazy-nodes :refer :all]
-            [aatree.virtual-nodes :refer :all])
+            [aatree.virtual-nodes :refer :all]
+            [medley.core :refer :all])
   (:import (aatree AAMap AAVector AASet)
            (aatree.nodes FlexVector INoded IFactory)
            (clojure.lang RT MapEntry)
@@ -193,8 +194,9 @@
     (vreset! db-update-vstate (assoc-in @db-update-vstate ks v))))
 
 (defn update-dissoc-in [this ks]
-  (let [db-update-vstate (:db-update-vstate this)]
-    (vreset! db-update-vstate (dissoc @db-update-vstate ks))))
+  (let [db-update-vstate (:db-update-vstate this)
+        new-db-state (dissoc-in @db-update-vstate ks)]
+    (vreset! db-update-vstate new-db-state)))
 
 (defn db-send [this app-updater] ((:db-send this) this app-updater))
 
