@@ -46,7 +46,7 @@
         (fn [db ks f]
           (let [db-state (:db-update-vstate db)]
             (db-vstate-clear db)
-            (db-vstate-set db (assoc-in db-state ks (f (get-in db-state ks)))))))
+            (db-vstate-set db (assoc-in db-state ks (f db (get-in db-state ks)))))))
       (assoc
         :db-send
         (fn [db app-updater]
