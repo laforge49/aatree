@@ -11,16 +11,16 @@
 (defn- calf-updater [this app-updater]
   (try
     (app-updater this)
-    (let [db-state (update-get this)
-          transaction-count (:transaction-count db-state)
-          block-size (:db-block-size this)
+    (let [block-size (:db-block-size this)
+          transaction-count (update-get-in this [:transaction-count])
           position (* block-size (mod transaction-count 2))
           transaction-count (+ transaction-count 1)
-          db-state (assoc db-state :transaction-count transaction-count)
-          ^ByteBuffer bb (ByteBuffer/allocate block-size)
-          uber-map (:uber-map db-state)
-          map-size (byte-length uber-map)]
-      (if (< block-size (+ 4 4 8 map-size 32))
+          _ (update-assoc-in this [:transaction-count] transaction-count)
+          uber-map (update-get-in this [:uber-map])
+          map-size (byte-length uber-map)
+          buffer-size (+ 4 4 8 map-size 32)
+          ^ByteBuffer bb (ByteBuffer/allocate buffer-size)]
+      (if (< block-size buffer-size)
         (throw (Exception. "block-size exceeded on write")))
       (.putInt bb block-size)
       (.putInt bb map-size)
@@ -28,8 +28,7 @@
       (put-aa bb uber-map)
       (put-cs256 bb (compute-cs256 (.flip (.duplicate bb))))
       (.flip bb)
-      (db-file-write-root this bb (long position))
-      (update-reset this db-state))
+      (db-file-write-root this bb (long position)))
     (catch Exception e
       (.printStackTrace e)
       (throw e))))
