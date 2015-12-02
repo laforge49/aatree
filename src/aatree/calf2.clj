@@ -37,8 +37,7 @@
       (.printStackTrace e)
       (throw e))))
 
-(defn calf-null-updater [this db-state]
-  db-state)
+(defn calf-null-updater [this])
 
 (defn- calf-new [this]
   (let [uber-map (new-sorted-map this)
