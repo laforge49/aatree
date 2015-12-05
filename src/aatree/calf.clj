@@ -12,10 +12,10 @@
   (try
     (app-updater this)
     (let [block-size (:db-block-size this)
-          transaction-count (update-get-in this [:transaction-count])
-          position (* block-size (mod transaction-count 2))
-          transaction-count (+ transaction-count 1)
-          _ (update-assoc-in this [:transaction-count] transaction-count)
+          position (* block-size (mod (get-transaction-count this) 2))
+          _ (swap!
+              (:transaction-count-atom this)
+              (fn [old] (+ old 1)))
           uber-map (update-get-in this [:uber-map])
           map-size (byte-length uber-map)
           buffer-size (+ 4 4 8 map-size 32)
@@ -24,7 +24,7 @@
         (throw (Exception. "block-size exceeded on write")))
       (.putInt bb block-size)
       (.putInt bb map-size)
-      (.putLong bb transaction-count)
+      (.putLong bb (get-transaction-count this))
       (put-aa bb uber-map)
       (put-cs256 bb (compute-cs256 (.flip (.duplicate bb))))
       (.flip bb)
@@ -37,7 +37,7 @@
 
 (defn- calf-new [this]
   (let [uber-map (new-sorted-map this)
-        db-state {:transaction-count 0 :uber-map uber-map}
+        db-state {:uber-map uber-map}
         db-update-vstate (:db-update-vstate this)
         _ (vreset! db-update-vstate db-state)
         _ (calf-updater this calf-null-updater)
@@ -74,22 +74,24 @@
           nil
           {:transaction-count transaction-count :uber-map uber-map})))))
 
-(defn- choose [state0 state1]
-  (if state0
-    (if state1
-      (if (> (:transaction-count state0) (:transaction-count state1))
-        state0
-        state1)
-      state0)
-    (if state1
-      state1
-      (throw (Exception. "corrupted database")))))
+(defn- choose [this state0 state1]
+  (let [state (if state0
+                 (if state1
+                   (if (> (:transaction-count state0) (:transaction-count state1))
+                     state0
+                     state1)
+                   state0)
+                 (if state1
+                   state1
+                   (throw (Exception. "corrupted database"))))]
+  (reset! (:transaction-count-atom this) (:transaction-count state))
+  state))
 
 (defn- calf-old [this]
   (let [block-size (:db-block-size this)
         state0 (calf-read this 0)
         state1 (calf-read this block-size)]
-    (choose state0 state1)))
+    (choose this state0 state1)))
 
 (defn- create-initial-state [this]
   (choice this db-file-empty? calf-new calf-old))
@@ -102,5 +104,6 @@
                   (assoc :db-block-size block-size)
                   (default :new-sorted-map lazy-opts)
                   (default :create-db-chan db-agent)
-                  (assoc :db-updater calf-updater))]
+                  (assoc :db-updater calf-updater)
+                  (assoc :transaction-count-atom (atom 0)))]
      (create-db-chan this create-initial-state))))

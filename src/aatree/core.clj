@@ -182,6 +182,9 @@
 
 (defn create-db-chan [this initial-state] ((:create-db-chan this) this initial-state))
 
+(defn get-transaction-count [this]
+  @(:transaction-count-atom this))
+
 (defn db-get-state
   ([this] ((:db-get-state this) this))
   ([this keys] (get-in (db-get-state this) keys)))
