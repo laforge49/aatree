@@ -36,7 +36,8 @@
 (defn calf-null-updater [this])
 
 (defn- calf-new [this]
-  (let [uber-map (new-sorted-map this)
+  (let [this (assoc this :transaction-count-atom (atom 0))
+        uber-map (new-sorted-map this)
         db-state {:uber-map uber-map}
         db-update-vstate (:db-update-vstate this)
         _ (vreset! db-update-vstate db-state)
@@ -83,8 +84,8 @@
                    state0)
                  (if state1
                    state1
-                   (throw (Exception. "corrupted database"))))]
-  (reset! (:transaction-count-atom this) (:transaction-count state))
+                   (throw (Exception. "corrupted database"))))
+        this (assoc this :transaction-count-atom (atom (:transaction-count state)))]
   [this state]))
 
 (defn- calf-old [this]
@@ -101,7 +102,6 @@
                   (assoc :db-block-size block-size)
                   (default :new-sorted-map lazy-opts)
                   (default :create-db-chan db-agent)
-                  (assoc :db-updater calf-updater)
-                  (assoc :transaction-count-atom (atom 0)))
+                  (assoc :db-updater calf-updater))
          [this db-state] (choice this db-file-empty? calf-new calf-old)]
      (create-db-chan this db-state))))

@@ -92,18 +92,19 @@
 (defn yearling-null-updater [this])
 
 (defn- create-db-state [this]
-    (let [uber-map (new-sorted-map this)
-          uber-map (assoc uber-map :release-pending (new-vector this))
-          ^BitSet allocated (BitSet.)
-          _ (.set allocated 0)
-          _ (.set allocated 1)
-          db-state {:uber-map          uber-map
-                    :allocated         allocated}
-          ]
-      db-state))
+  (let [uber-map (new-sorted-map this)
+        uber-map (assoc uber-map :release-pending (new-vector this))
+        ^BitSet allocated (BitSet.)
+        _ (.set allocated 0)
+        _ (.set allocated 1)
+        db-state {:uber-map  uber-map
+                  :allocated allocated}
+        ]
+    db-state))
 
 (defn- yearling-new [this]
-  (let [db-update-vstate (:db-update-vstate this)
+  (let [this (assoc this :transaction-count-atom (atom 0))
+        db-update-vstate (:db-update-vstate this)
         _ (vreset! db-update-vstate (create-db-state this))
         _ (yearling-updater this yearling-null-updater)
         _ (yearling-updater this yearling-null-updater)
@@ -154,15 +155,15 @@
 
 (defn- choose [this state0 state1]
   (let [state (if state0
-    (if state1
-      (if (> (:transaction-count state0) (:transaction-count state1))
-        state0
-        state1)
-      state0)
-    (if state1
-      state1
-      (throw (Exception. "corrupted database"))))]
-    (reset! (:transaction-count-atom this) (:transaction-count state))
+                (if state1
+                  (if (> (:transaction-count state0) (:transaction-count state1))
+                    state0
+                    state1)
+                  state0)
+                (if state1
+                  state1
+                  (throw (Exception. "corrupted database"))))
+        this (assoc this :transaction-count-atom (atom (:transaction-count state)))]
     (reset! (:last-node-id-atom this) (:last-node-id state))
     [this state]))
 
@@ -226,7 +227,6 @@
                   (assoc-default :db-pending-count 2)
                   (default :new-sorted-map virtual-opts)
                   (assoc :db-updater yearling-updater)
-                  (assoc :transaction-count-atom (atom 0))
                   (assoc :last-node-id-atom (atom 0)))
          [this db-state] (choice this db-file-empty? yearling-new yearling-old)]
      (create-db-chan this db-state))))
