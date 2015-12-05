@@ -109,7 +109,7 @@
         _ (yearling-updater this yearling-null-updater)
         db-state @db-update-vstate]
     (vreset! db-update-vstate nil)
-    db-state))
+    [this db-state]))
 
 (defn- yearling-read [this block-position]
   (let [db-block-size (:db-block-size this)
@@ -164,7 +164,7 @@
       (throw (Exception. "corrupted database"))))]
     (reset! (:transaction-count-atom this) (:transaction-count state))
     (reset! (:last-node-id-atom this) (:last-node-id state))
-    state))
+    [this state]))
 
 (defn- yearling-old [this]
   (let [db-block-size (:db-block-size this)
@@ -228,5 +228,5 @@
                   (assoc :db-updater yearling-updater)
                   (assoc :transaction-count-atom (atom 0))
                   (assoc :last-node-id-atom (atom 0)))
-         db-state (choice this db-file-empty? yearling-new yearling-old)]
+         [this db-state] (choice this db-file-empty? yearling-new yearling-old)]
      (create-db-chan this db-state))))

@@ -44,7 +44,7 @@
         _ (calf-updater this calf-null-updater)
         db-state @db-update-vstate]
     (vreset! db-update-vstate nil)
-    db-state))
+    [this db-state]))
 
 (defn- calf-read [this position]
   (let [block-size (:db-block-size this)
@@ -85,7 +85,7 @@
                    state1
                    (throw (Exception. "corrupted database"))))]
   (reset! (:transaction-count-atom this) (:transaction-count state))
-  state))
+  [this state]))
 
 (defn- calf-old [this]
   (let [block-size (:db-block-size this)
@@ -103,5 +103,5 @@
                   (default :create-db-chan db-agent)
                   (assoc :db-updater calf-updater)
                   (assoc :transaction-count-atom (atom 0)))
-         db-state (choice this db-file-empty? calf-new calf-old)]
+         [this db-state] (choice this db-file-empty? calf-new calf-old)]
      (create-db-chan this db-state))))
