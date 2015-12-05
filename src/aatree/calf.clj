@@ -93,9 +93,6 @@
         state1 (calf-read this block-size)]
     (choose this state0 state1)))
 
-(defn- create-initial-state [this]
-  (choice this db-file-empty? calf-new calf-old))
-
 (defn calf-open
   ([file block-size] (calf-open {} file block-size))
   ([this ^File file block-size]
@@ -106,5 +103,5 @@
                   (default :create-db-chan db-agent)
                   (assoc :db-updater calf-updater)
                   (assoc :transaction-count-atom (atom 0)))
-         db-state (create-initial-state this)]
+         db-state (choice this db-file-empty? calf-new calf-old)]
      (create-db-chan this db-state))))

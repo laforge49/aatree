@@ -208,9 +208,6 @@
         (set! *release-pending* (dropn *release-pending* 0))
         (recur this age trans)))))
 
-(defn- create-initial-state [this]
-  (choice this db-file-empty? yearling-new yearling-old))
-
 (defn yearling-open
   ([file] (yearling-open {} file))
   ([this ^File file]
@@ -231,5 +228,5 @@
                   (assoc :db-updater yearling-updater)
                   (assoc :transaction-count-atom (atom 0))
                   (assoc :last-node-id-atom (atom 0)))
-         db-state (create-initial-state this)]
+         db-state (choice this db-file-empty? yearling-new yearling-old)]
      (create-db-chan this db-state))))
