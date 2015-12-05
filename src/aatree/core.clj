@@ -185,6 +185,9 @@
 (defn get-transaction-count [this]
   @(:transaction-count-atom this))
 
+(defn get-last-node-id [this]
+  @(:last-node-id-atom this))
+
 (defn db-get-state
   ([this] ((:db-get-state this) this))
   ([this keys] (get-in (db-get-state this) keys)))
@@ -230,7 +233,7 @@
 
 (defn db-process-pending [this age trans] ((:db-process-pending this) this age trans))
 
-(defn db-new-node-id [this] ((:db-new-node-id this)))
+(defn db-new-node-id [this] ((:db-new-node-id this) this))
 
 (register-factory
   default-factory-registry

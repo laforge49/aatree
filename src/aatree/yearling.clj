@@ -12,7 +12,6 @@
 (def ^:dynamic ^BitSet *allocated*)
 (def ^:dynamic *release-pending*)
 (def ^:dynamic *time-millis*)
-(def ^:dynamic *last-node-id*)
 
 (declare yearling-release
          yearling-process-pending
@@ -22,8 +21,10 @@
 
 (defn- max-allocated-longs [this] (quot (+ (max-blocks this) 7) 8))
 
-(defn- yearling-new-node-id []
-  (set! *last-node-id* (+ 1 *last-node-id*)))
+(defn- yearling-new-node-id [this]
+  (swap!
+    (:last-node-id-atom this)
+    (fn [old] (+ old 1))))
 
 (defn- release-dropped-blocks [this old-uber-map uber-map]
   (let [uber-map (assoc uber-map :release-pending *release-pending*)
@@ -49,7 +50,6 @@
             (fn [old] (+ old 1)))
         max-db-size (:max-db-size this)]
     (binding [*allocated* (update-get-in this [:allocated])
-              *last-node-id* (update-get-in this [:last-node-id])
               *release-pending* (:release-pending old-uber-map)
               *time-millis* (System/currentTimeMillis)]
       (try
@@ -71,7 +71,6 @@
               _ (if (< mx-allocated-longs ala-len)
                   (throw (Exception. (str "allocated size exceeded on write: " mx-allocated-longs ", " ala-len))))
               ^ByteBuffer bb (ByteBuffer/allocate db-block-size)]
-          (update-assoc-in this [:last-node-id] *last-node-id*)
           (update-assoc-in this [:uber-map] uber-map)
           (update-assoc-in this [:allocated] *allocated*)
           (.putInt bb db-block-size)
@@ -79,7 +78,7 @@
           (.putInt bb map-size)
           (.putInt bb ala-len)
           (.putLong bb (get-transaction-count this))
-          (.putLong bb *last-node-id*)
+          (.putLong bb (get-last-node-id this))
           (put-aa bb uber-map)
           (.put (.asLongBuffer bb) allocated-long-array)
           (.position bb (+ (.position bb) (* ala-len 8)))
@@ -93,17 +92,15 @@
 (defn yearling-null-updater [this])
 
 (defn- create-db-state [this]
-  (binding [*last-node-id* 0]
     (let [uber-map (new-sorted-map this)
           uber-map (assoc uber-map :release-pending (new-vector this))
           ^BitSet allocated (BitSet.)
           _ (.set allocated 0)
           _ (.set allocated 1)
-          db-state {:last-node-id      *last-node-id*
-                    :uber-map          uber-map
+          db-state {:uber-map          uber-map
                     :allocated         allocated}
           ]
-      db-state)))
+      db-state))
 
 (defn- yearling-new [this]
   (let [db-update-vstate (:db-update-vstate this)
@@ -166,6 +163,7 @@
       state1
       (throw (Exception. "corrupted database"))))]
     (reset! (:transaction-count-atom this) (:transaction-count state))
+    (reset! (:last-node-id-atom this) (:last-node-id state))
     state))
 
 (defn- yearling-old [this]
@@ -231,5 +229,6 @@
                   (assoc-default :db-pending-count 2)
                   (default :new-sorted-map virtual-opts)
                   (assoc :db-updater yearling-updater)
-                  (assoc :transaction-count-atom (atom 0)))]
+                  (assoc :transaction-count-atom (atom 0))
+                  (assoc :last-node-id-atom (atom 0)))]
      (create-db-chan this create-initial-state))))

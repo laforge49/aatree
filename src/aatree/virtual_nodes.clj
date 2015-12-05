@@ -28,7 +28,7 @@
   (newNode [this t2 level left right cnt opts]
     (let [d (->Node t2 level left right cnt)
           f (factory-for-instance t2 opts)
-          node-id ((:db-new-node-id opts))
+          node-id ((:db-new-node-id opts) opts)
           vn (->VirtualNode node-id
                             (atom nil)
                             (atom d)
