@@ -188,6 +188,9 @@
 (defn get-last-node-id [this]
   @(:last-node-id-atom this))
 
+(defn get-time-millis [this]
+  @(:time-millis-volatile this))
+
 (defn db-get-state
   ([this] ((:db-get-state this) this))
   ([this keys] (get-in (db-get-state this) keys)))

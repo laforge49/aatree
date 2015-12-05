@@ -11,7 +11,6 @@
 
 (def ^:dynamic ^BitSet *allocated*)
 (def ^:dynamic *release-pending*)
-(def ^:dynamic *time-millis*)
 
 (declare yearling-release
          yearling-process-pending
@@ -49,9 +48,9 @@
             (:transaction-count-atom this)
             (fn [old] (+ old 1)))
         max-db-size (:max-db-size this)]
+    (vreset! (:time-millis-volatile this) (System/currentTimeMillis))
     (binding [*allocated* (update-get-in this [:allocated])
-              *release-pending* (:release-pending old-uber-map)
-              *time-millis* (System/currentTimeMillis)]
+              *release-pending* (:release-pending old-uber-map)]
       (try
         (yearling-process-pending this (:db-pending-age this) (:db-pending-count this))
         (app-updater this)
@@ -190,7 +189,7 @@
   (let [db-block-size (:db-block-size this)
         block (quot block-position db-block-size)
         vec (new-vector this)
-        vec (conj vec *time-millis* (get-transaction-count this) block)]
+        vec (conj vec (get-time-millis this) (get-transaction-count this) block)]
     (if (not= 0 (mod block-position db-block-size))
       (throw (Exception. (str "block-position is not at start of block: " block-position))))
     (if (not (.get *allocated* block))
@@ -201,7 +200,7 @@
 (defn- yearling-process-pending [this age trans]
   (when (not (empty? *release-pending*))
     (let [oldest (*release-pending* 0)]
-      (when (and (<= (+ (oldest 0) age) *time-millis*)
+      (when (and (<= (+ (oldest 0) age) (get-time-millis this))
                  (<= (+ (oldest 1) trans) (get-transaction-count this)))
         (if (not (.get *allocated* (oldest 2)))
           (throw (Exception. (str "already available: " (oldest 2)))))
@@ -227,6 +226,7 @@
                   (assoc-default :db-pending-count 2)
                   (default :new-sorted-map virtual-opts)
                   (assoc :db-updater yearling-updater)
-                  (assoc :last-node-id-atom (atom 0)))
+                  (assoc :last-node-id-atom (atom 0))
+                  (assoc :time-millis-volatile (volatile! 0)))
          [this db-state] (choice this db-file-empty? yearling-new yearling-old)]
      (create-db-chan this db-state))))
