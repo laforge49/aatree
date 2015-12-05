@@ -12,7 +12,6 @@
 (def ^:dynamic ^BitSet *allocated*)
 (def ^:dynamic *release-pending*)
 (def ^:dynamic *time-millis*)
-(def ^:dynamic *transaction-count*)
 (def ^:dynamic *last-node-id*)
 
 (declare yearling-release
@@ -42,13 +41,14 @@
 
 (defn- yearling-updater [this app-updater]
   (let [old-uber-map (update-get-in this [:uber-map])
-        transaction-count (update-get-in this [:transaction-count])
         db-block-size (:db-block-size this)
         mx-allocated-longs (max-allocated-longs this)
-        block-position (* db-block-size (mod transaction-count 2))
+        block-position (* db-block-size (mod (get-transaction-count this) 2))
+        _ (swap!
+            (:transaction-count-atom this)
+            (fn [old] (+ old 1)))
         max-db-size (:max-db-size this)]
     (binding [*allocated* (update-get-in this [:allocated])
-              *transaction-count* (+ transaction-count 1)
               *last-node-id* (update-get-in this [:last-node-id])
               *release-pending* (:release-pending old-uber-map)
               *time-millis* (System/currentTimeMillis)]
@@ -71,7 +71,6 @@
               _ (if (< mx-allocated-longs ala-len)
                   (throw (Exception. (str "allocated size exceeded on write: " mx-allocated-longs ", " ala-len))))
               ^ByteBuffer bb (ByteBuffer/allocate db-block-size)]
-          (update-assoc-in this [:transaction-count] *transaction-count*)
           (update-assoc-in this [:last-node-id] *last-node-id*)
           (update-assoc-in this [:uber-map] uber-map)
           (update-assoc-in this [:allocated] *allocated*)
@@ -79,7 +78,7 @@
           (.putLong bb max-db-size)
           (.putInt bb map-size)
           (.putInt bb ala-len)
-          (.putLong bb *transaction-count*)
+          (.putLong bb (get-transaction-count this))
           (.putLong bb *last-node-id*)
           (put-aa bb uber-map)
           (.put (.asLongBuffer bb) allocated-long-array)
@@ -100,8 +99,7 @@
           ^BitSet allocated (BitSet.)
           _ (.set allocated 0)
           _ (.set allocated 1)
-          db-state {:transaction-count 0
-                    :last-node-id      *last-node-id*
+          db-state {:last-node-id      *last-node-id*
                     :uber-map          uber-map
                     :allocated         allocated}
           ]
@@ -157,8 +155,8 @@
              :allocated         allocated
              :last-node-id      last-node-id}))))))
 
-(defn- choose [state0 state1]
-  (if state0
+(defn- choose [this state0 state1]
+  (let [state (if state0
     (if state1
       (if (> (:transaction-count state0) (:transaction-count state1))
         state0
@@ -166,13 +164,15 @@
       state0)
     (if state1
       state1
-      (throw (Exception. "corrupted database")))))
+      (throw (Exception. "corrupted database"))))]
+    (reset! (:transaction-count-atom this) (:transaction-count state))
+    state))
 
 (defn- yearling-old [this]
   (let [db-block-size (:db-block-size this)
         state0 (yearling-read this 0)
         state1 (yearling-read this db-block-size)]
-    (choose state0 state1)))
+    (choose this state0 state1)))
 
 (defn- yearling-allocated [this]
   (let [state (db-get-state this)
@@ -191,7 +191,7 @@
   (let [db-block-size (:db-block-size this)
         block (quot block-position db-block-size)
         vec (new-vector this)
-        vec (conj vec *time-millis* *transaction-count* block)]
+        vec (conj vec *time-millis* (get-transaction-count this) block)]
     (if (not= 0 (mod block-position db-block-size))
       (throw (Exception. (str "block-position is not at start of block: " block-position))))
     (if (not (.get *allocated* block))
@@ -203,7 +203,7 @@
   (when (not (empty? *release-pending*))
     (let [oldest (*release-pending* 0)]
       (when (and (<= (+ (oldest 0) age) *time-millis*)
-                 (<= (+ (oldest 1) trans) *transaction-count*))
+                 (<= (+ (oldest 1) trans) (get-transaction-count this)))
         (if (not (.get *allocated* (oldest 2)))
           (throw (Exception. (str "already available: " (oldest 2)))))
         (.clear *allocated* (oldest 2))
@@ -230,5 +230,6 @@
                   (assoc-default :db-pending-age 0)
                   (assoc-default :db-pending-count 2)
                   (default :new-sorted-map virtual-opts)
-                  (assoc :db-updater yearling-updater))]
+                  (assoc :db-updater yearling-updater)
+                  (assoc :transaction-count-atom (atom 0)))]
      (create-db-chan this create-initial-state))))
