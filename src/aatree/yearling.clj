@@ -230,5 +230,6 @@
                   (default :new-sorted-map virtual-opts)
                   (assoc :db-updater yearling-updater)
                   (assoc :transaction-count-atom (atom 0))
-                  (assoc :last-node-id-atom (atom 0)))]
-     (create-db-chan this (create-initial-state this)))))
+                  (assoc :last-node-id-atom (atom 0)))
+         db-state (create-initial-state this)]
+     (create-db-chan this db-state))))

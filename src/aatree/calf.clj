@@ -105,5 +105,6 @@
                   (default :new-sorted-map lazy-opts)
                   (default :create-db-chan db-agent)
                   (assoc :db-updater calf-updater)
-                  (assoc :transaction-count-atom (atom 0)))]
-     (create-db-chan this (create-initial-state this)))))
+                  (assoc :transaction-count-atom (atom 0)))
+         db-state (create-initial-state this)]
+     (create-db-chan this db-state))))
