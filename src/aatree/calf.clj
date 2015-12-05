@@ -106,4 +106,4 @@
                   (default :create-db-chan db-agent)
                   (assoc :db-updater calf-updater)
                   (assoc :transaction-count-atom (atom 0)))]
-     (create-db-chan this create-initial-state))))
+     (create-db-chan this (create-initial-state this)))))

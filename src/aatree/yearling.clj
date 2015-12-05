@@ -231,4 +231,4 @@
                   (assoc :db-updater yearling-updater)
                   (assoc :transaction-count-atom (atom 0))
                   (assoc :last-node-id-atom (atom 0)))]
-     (create-db-chan this create-initial-state))))
+     (create-db-chan this (create-initial-state this)))))

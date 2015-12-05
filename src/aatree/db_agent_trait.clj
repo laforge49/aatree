@@ -36,7 +36,7 @@
           (assoc
             db
             :db-agent
-            (apply agent (initial-state db) (get db :db-agent-options [])))))
+            (apply agent initial-state (get db :db-agent-options [])))))
       (assoc
         :db-get-state
         (fn [db]
