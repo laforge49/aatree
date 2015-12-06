@@ -199,6 +199,9 @@
   ([this] ((:db-get-state this) this))
   ([this keys] (get-in (db-get this) keys)))
 
+(defn update-get [this]
+  @(:db-update-vstate this))
+
 (defn update-get-in [this ks]
   (get-in @(:db-update-vstate this) ks))
 
