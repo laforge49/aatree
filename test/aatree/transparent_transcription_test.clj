@@ -16,8 +16,8 @@
         yearling-b (yearling-open file-b)
         _ (db-update yearling-a
                      (fn [db]
-                       (update-assoc-in db [:uber-map :app-map :v] [1 2 3])))
-        va (db-get-in yearling-a [:uber-map :app-map :v])
+                       (update-assoc-in! db [:app-map :v] [1 2 3])))
+        va (db-get-in yearling-a [:app-map :v])
         _ (is (= "aatree.AAVector" (.getName (class va))))
         va-opts (aa-opts va)
         ^File va-file (:db-file va-opts)
@@ -25,8 +25,8 @@
         _ (is (= va-file-name (.toString file-a)))
         _ (db-update yearling-b
                      (fn [db]
-                       (update-assoc-in db [:uber-map :app-map :v] va)))
-        vb (db-get-in yearling-b [:uber-map :app-map :v])
+                       (update-assoc-in! db [:app-map :v] va)))
+        vb (db-get-in yearling-b [:app-map :v])
         _ (is (= "aatree.AAVector" (.getName (class vb))))
         vb-opts (aa-opts vb)
         ^File vb-file (:db-file vb-opts)

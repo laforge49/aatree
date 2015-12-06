@@ -205,11 +205,11 @@
 (defn update-get-in [this ks]
   (get-in @(:db-update-vstate this) ks))
 
-(defn update-assoc-in [this ks v]
+(defn update-assoc-in! [this ks v]
   (let [db-update-vstate (:db-update-vstate this)]
     (vreset! db-update-vstate (assoc-in @db-update-vstate ks v))))
 
-(defn update-dissoc-in [this ks]
+(defn update-dissoc-in! [this ks]
   (let [db-update-vstate (:db-update-vstate this)
         new-db-state (dissoc-in @db-update-vstate ks)]
     (vreset! db-update-vstate new-db-state)))

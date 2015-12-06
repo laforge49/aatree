@@ -23,22 +23,22 @@
                 (db-update
                   yearling
                   (fn [db]
-                    (let [aamap (update-get-in db [:uber-map :app-map])
+                    (let [aamap (update-get-in db [:app-map])
                           bbmap (reduce (fn [m i]
                                           (assoc m (+ i (* mxi j) (* mxi mxj k)) 1))
                                         aamap
                                         (range mxi))]
-                      (update-assoc-in db [:uber-map :app-map] bbmap)))))
+                      (update-assoc-in! db [:app-map] bbmap)))))
               nil
               (range mxj)))
           nil
           (range mxk)))                                     ; -> "Elapsed time: 39369.950654 msecs"
-      (println "count" (count (db-get-in yearling [:uber-map :app-map])))
-      (let [app-map (db-get-in yearling [:uber-map :app-map])]
+      (println "count" (count (db-get-in yearling [:app-map])))
+      (let [app-map (db-get-in yearling [:app-map])]
         (time (reduce
                 (fn [_ i] (get app-map i))
                 nil
-                (range (count (db-get-in yearling [:uber-map :app-map])))))) ; -> "Elapsed time: 8404.581527 msecs"
+                (range (count (db-get-in yearling [:app-map])))))) ; -> "Elapsed time: 8404.581527 msecs"
       (close-components yearling))
 
     (Thread/sleep 200))

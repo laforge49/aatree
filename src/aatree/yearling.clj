@@ -39,7 +39,7 @@
         (recur this uber-map uber-map)))))
 
 (defn- yearling-updater [this app-updater]
-  (let [old-uber-map (update-get-in this [:uber-map])
+  (let [old-uber-map (update-get this)
         db-block-size (:db-block-size this)
         mx-allocated-longs (max-allocated-longs this)
         block-position (* db-block-size (mod (get-transaction-count this) 2))
@@ -52,7 +52,7 @@
       (try
         (yearling-process-pending this (:db-pending-age this) (:db-pending-count this))
         (app-updater this)
-        (let [uber-map (update-get-in this [:uber-map])
+        (let [uber-map (update-get this)
 
               uber-map (release-dropped-blocks this old-uber-map uber-map)
               map-size (byte-length uber-map)
@@ -68,7 +68,7 @@
               _ (if (< mx-allocated-longs ala-len)
                   (throw (Exception. (str "allocated size exceeded on write: " mx-allocated-longs ", " ala-len))))
               ^ByteBuffer bb (ByteBuffer/allocate db-block-size)]
-          (update-assoc-in this [:uber-map] uber-map)
+          (vreset! (:db-update-vstate this) uber-map)
           (.putInt bb db-block-size)
           (.putLong bb max-db-size)
           (.putInt bb map-size)
@@ -87,27 +87,21 @@
 
 (defn yearling-null-updater [this])
 
-(defn- create-db-state [this]
-  (let [uber-map (new-sorted-map this)
-        uber-map (assoc uber-map :release-pending (new-vector this))
-        db-state {:uber-map  uber-map
-                  :allocated (get-allocated-bit-set this)}
-        ]
-    db-state))
-
 (defn- yearling-new [this]
   (let [this (assoc this :transaction-count-atom (atom 0))
         ^BitSet allocated (BitSet.)
         _ (.set allocated 0)
         _ (.set allocated 1)
         this (assoc this :allocated-bit-set allocated)
+        uber-map (new-sorted-map this)
+        uber-map (assoc uber-map :release-pending (new-vector this))
         db-update-vstate (:db-update-vstate this)
-        _ (vreset! db-update-vstate (create-db-state this))
+        _ (vreset! db-update-vstate uber-map)
         _ (yearling-updater this yearling-null-updater)
         _ (yearling-updater this yearling-null-updater)
-        db-state @db-update-vstate]
+        uber-map @db-update-vstate]
     (vreset! db-update-vstate nil)
-    [this db-state]))
+    [this uber-map]))
 
 (defn- yearling-read [this block-position]
   (let [db-block-size (:db-block-size this)
@@ -163,7 +157,7 @@
         this (assoc this :transaction-count-atom (atom (:transaction-count state)))
         this (assoc this :allocated-bit-set (:allocated state))]
     (reset! (:last-node-id-atom this) (:last-node-id state))
-    [this state]))
+    [this (:uber-map state)]))
 
 (defn- yearling-old [this]
   (let [db-block-size (:db-block-size this)
@@ -182,7 +176,7 @@
     (* avail (:db-block-size this))))
 
 (defn- yearling-release-pending [this]
-  (:release-pending (:uber-map (db-get this))))
+  (:release-pending (db-get this)))
 
 (defn- yearling-release [this block-position]
   (let [db-block-size (:db-block-size this)

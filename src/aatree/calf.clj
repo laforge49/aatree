@@ -16,7 +16,7 @@
           _ (swap!
               (:transaction-count-atom this)
               (fn [old] (+ old 1)))
-          uber-map (update-get-in this [:uber-map])
+          uber-map (update-get this)
           map-size (byte-length uber-map)
           buffer-size (+ 4 4 8 map-size 32)
           ^ByteBuffer bb (ByteBuffer/allocate buffer-size)]
@@ -38,14 +38,13 @@
 (defn- calf-new [this]
   (let [this (assoc this :transaction-count-atom (atom 0))
         uber-map (new-sorted-map this)
-        db-state {:uber-map uber-map}
         db-update-vstate (:db-update-vstate this)
-        _ (vreset! db-update-vstate db-state)
+        _ (vreset! db-update-vstate uber-map)
         _ (calf-updater this calf-null-updater)
         _ (calf-updater this calf-null-updater)
-        db-state @db-update-vstate]
+        uber-map @db-update-vstate]
     (vreset! db-update-vstate nil)
-    [this db-state]))
+    [this uber-map]))
 
 (defn- calf-read [this position]
   (let [block-size (:db-block-size this)
@@ -86,7 +85,7 @@
                    state1
                    (throw (Exception. "corrupted database"))))
         this (assoc this :transaction-count-atom (atom (:transaction-count state)))]
-  [this state]))
+  [this (:uber-map state)]))
 
 (defn- calf-old [this]
   (let [block-size (:db-block-size this)
@@ -103,5 +102,5 @@
                   (default :new-sorted-map lazy-opts)
                   (default :create-db-chan db-agent)
                   (assoc :db-updater calf-updater))
-         [this db-state] (choice this db-file-empty? calf-new calf-old)]
-     (create-db-chan this db-state))))
+         [this uber-map] (choice this db-file-empty? calf-new calf-old)]
+     (create-db-chan this uber-map))))

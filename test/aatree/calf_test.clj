@@ -11,22 +11,22 @@
   (.delete (File. "calf-test.calf"))
 
   (let [calf (calf-open (File. "calf-test.calf") 10000)
-        db-state (db-get calf)
+        app-map (db-get-in calf [:app-map])
         _ (is (= (get-transaction-count calf) 2))
-        _ (is (= (get-in db-state [:uber-map :app-map]) nil))
+        _ (is (= app-map nil))
         _ (db-update calf
                      (fn [db]
-                       (update-assoc-in
+                       (update-assoc-in!
                          db
-                         [:uber-map :app-map :fun]
+                         [:app-map :fun]
                          "Clojure")))
-        db-state (db-get calf)
-        _ (is (= (get-in db-state [:uber-map :app-map :fun]) "Clojure"))
+        fun (db-get-in calf [:app-map :fun])
+        _ (is (= fun "Clojure"))
         _ (is (= (get-transaction-count calf) 3))
         _ (close-components calf)])
 
   (let [calf (calf-open (File. "calf-test.calf") 10000)
-        db-state (db-get calf)
+        fun (db-get-in calf [:app-map :fun])
         _ (is (= (get-transaction-count calf) 3))
-        _ (is (= (get-in db-state [:uber-map :app-map :fun]) "Clojure"))
+        _ (is (= fun "Clojure"))
         _ (close-components calf)]))
