@@ -9,7 +9,8 @@
            (java.io File)
            (java.nio ByteBuffer LongBuffer)
            (java.nio.file StandardOpenOption OpenOption)
-           (java.nio.channels FileChannel)))
+           (java.nio.channels FileChannel)
+           (java.util BitSet)))
 
 (set! *warn-on-reflection* true)
 
@@ -190,6 +191,9 @@
 
 (defn get-time-millis [this]
   @(:time-millis-volatile this))
+
+(defn ^BitSet get-allocated-bit-set [this]
+  (:allocated-bit-set this))
 
 (defn db-get-state
   ([this] ((:db-get-state this) this))

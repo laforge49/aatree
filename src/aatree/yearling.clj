@@ -9,7 +9,6 @@
 
 (set! *warn-on-reflection* true)
 
-(def ^:dynamic ^BitSet *allocated*)
 (def ^:dynamic *release-pending*)
 
 (declare yearling-release
@@ -49,8 +48,7 @@
             (fn [old] (+ old 1)))
         max-db-size (:max-db-size this)]
     (vreset! (:time-millis-volatile this) (System/currentTimeMillis))
-    (binding [*allocated* (update-get-in this [:allocated])
-              *release-pending* (:release-pending old-uber-map)]
+    (binding [*release-pending* (:release-pending old-uber-map)]
       (try
         (yearling-process-pending this (:db-pending-age this) (:db-pending-count this))
         (app-updater this)
@@ -65,13 +63,12 @@
                   (throw (Exception. (str "block-size exceeded on write: " map-size))))
 
               map-size (byte-length uber-map)
-              allocated-long-array (.toLongArray *allocated*)
+              allocated-long-array (.toLongArray (get-allocated-bit-set this))
               ala-len (alength allocated-long-array)
               _ (if (< mx-allocated-longs ala-len)
                   (throw (Exception. (str "allocated size exceeded on write: " mx-allocated-longs ", " ala-len))))
               ^ByteBuffer bb (ByteBuffer/allocate db-block-size)]
           (update-assoc-in this [:uber-map] uber-map)
-          (update-assoc-in this [:allocated] *allocated*)
           (.putInt bb db-block-size)
           (.putLong bb max-db-size)
           (.putInt bb map-size)
@@ -93,16 +90,17 @@
 (defn- create-db-state [this]
   (let [uber-map (new-sorted-map this)
         uber-map (assoc uber-map :release-pending (new-vector this))
-        ^BitSet allocated (BitSet.)
-        _ (.set allocated 0)
-        _ (.set allocated 1)
         db-state {:uber-map  uber-map
-                  :allocated allocated}
+                  :allocated (get-allocated-bit-set this)}
         ]
     db-state))
 
 (defn- yearling-new [this]
   (let [this (assoc this :transaction-count-atom (atom 0))
+        ^BitSet allocated (BitSet.)
+        _ (.set allocated 0)
+        _ (.set allocated 1)
+        this (assoc this :allocated-bit-set allocated)
         db-update-vstate (:db-update-vstate this)
         _ (vreset! db-update-vstate (create-db-state this))
         _ (yearling-updater this yearling-null-updater)
@@ -162,7 +160,8 @@
                 (if state1
                   state1
                   (throw (Exception. "corrupted database"))))
-        this (assoc this :transaction-count-atom (atom (:transaction-count state)))]
+        this (assoc this :transaction-count-atom (atom (:transaction-count state)))
+        this (assoc this :allocated-bit-set (:allocated state))]
     (reset! (:last-node-id-atom this) (:last-node-id state))
     [this state]))
 
@@ -173,13 +172,13 @@
     (choose this state0 state1)))
 
 (defn- yearling-allocated [this]
-  (let [state (db-get-state this)
-        ^BitSet allocated (:allocated state)]
+  (let [^BitSet allocated (get-allocated-bit-set this)]
     (.cardinality allocated)))
 
 (defn- yearling-allocate [this]
-  (let [avail (.nextClearBit *allocated* 0)]
-    (.set *allocated* avail)
+  (let [^BitSet allocated (get-allocated-bit-set this)
+        avail (.nextClearBit allocated 0)]
+    (.set allocated avail)
     (* avail (:db-block-size this))))
 
 (defn- yearling-release-pending [this]
@@ -192,19 +191,20 @@
         vec (conj vec (get-time-millis this) (get-transaction-count this) block)]
     (if (not= 0 (mod block-position db-block-size))
       (throw (Exception. (str "block-position is not at start of block: " block-position))))
-    (if (not (.get *allocated* block))
+    (if (not (.get (get-allocated-bit-set this) block))
       (throw (Exception. (str "block has not been allocated: " block " " (:db-block-size this)))))
     (set! *release-pending* (conj *release-pending* vec))
     ))
 
 (defn- yearling-process-pending [this age trans]
   (when (not (empty? *release-pending*))
-    (let [oldest (*release-pending* 0)]
+    (let [allocated (get-allocated-bit-set this)
+          oldest (*release-pending* 0)]
       (when (and (<= (+ (oldest 0) age) (get-time-millis this))
                  (<= (+ (oldest 1) trans) (get-transaction-count this)))
-        (if (not (.get *allocated* (oldest 2)))
+        (if (not (.get allocated (oldest 2)))
           (throw (Exception. (str "already available: " (oldest 2)))))
-        (.clear *allocated* (oldest 2))
+        (.clear allocated (oldest 2))
         (set! *release-pending* (dropn *release-pending* 0))
         (recur this age trans)))))
 
