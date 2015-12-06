@@ -33,12 +33,12 @@
               (range mxj)))
           nil
           (range mxk)))                                     ; -> "Elapsed time: 39369.950654 msecs"
-      (println "count" (count (db-get-state yearling [:uber-map :app-map])))
-      (let [app-map (db-get-state yearling [:uber-map :app-map])]
+      (println "count" (count (db-get yearling [:uber-map :app-map])))
+      (let [app-map (db-get yearling [:uber-map :app-map])]
         (time (reduce
                 (fn [_ i] (get app-map i))
                 nil
-                (range (count (db-get-state yearling [:uber-map :app-map])))))) ; -> "Elapsed time: 8404.581527 msecs"
+                (range (count (db-get yearling [:uber-map :app-map])))))) ; -> "Elapsed time: 8404.581527 msecs"
       (close-components yearling))
 
     (Thread/sleep 200))

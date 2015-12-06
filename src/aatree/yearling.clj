@@ -182,7 +182,7 @@
     (* avail (:db-block-size this))))
 
 (defn- yearling-release-pending [this]
-  (:release-pending (:uber-map (db-get-state this))))
+  (:release-pending (:uber-map (db-get this))))
 
 (defn- yearling-release [this block-position]
   (let [db-block-size (:db-block-size this)

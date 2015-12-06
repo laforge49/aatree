@@ -13,7 +13,7 @@
   (let [yearling {:max-db-size   100000
                   :db-block-size 10000}
         yearling (yearling-open yearling (File. "yearling-test.yearling"))
-        db-state (db-get-state yearling)
+        db-state (db-get yearling)
         _ (is (= (get-transaction-count yearling) 2))
         _ (is (= (get-in db-state [:uber-map :app-map]) nil))
         _ (is (= (db-allocated yearling) 2))
@@ -21,7 +21,7 @@
             yearling
             (fn [db]
               (update-assoc-in db [:uber-map :app-map :block] (db-allocate db))))
-        db-state (db-get-state yearling)
+        db-state (db-get yearling)
         _ (is (= (get-transaction-count yearling) 3))
         block (get-in db-state [:uber-map :app-map :block])
         _ (is (= block 20000))
@@ -33,7 +33,7 @@
               (println "new node id" (db-new-node-id db))
               (db-release db block)
               (update-dissoc-in db [:uber-map :app-map :block])))
-        db-state (db-get-state yearling)
+        db-state (db-get yearling)
         _ (is (= (get-transaction-count yearling) 4))
         _ (is (= (get-in db-state [:uber-map :app-map]) nil))
         _ (is (= (db-allocated yearling) 3))
@@ -44,7 +44,7 @@
                   :max-db-size      100000
                   :db-block-size    10000}
         yearling (yearling-open yearling (File. "yearling-test.yearling"))
-        db-state (db-get-state yearling)
+        db-state (db-get yearling)
         _ (is (= (get-transaction-count yearling) 4))
         _ (is (= (get-in db-state [:uber-map :app-map]) nil))
         _ (is (= (db-allocated yearling) 3))
@@ -54,7 +54,7 @@
             (fn [db]
               (println "new node id" (db-new-node-id db))
               (db-process-pending db 0 1)))
-        db-state (db-get-state yearling)
+        db-state (db-get yearling)
         _ (is (= (get-transaction-count yearling) 5))
         _ (is (= (get-in db-state [:uber-map :app-map]) nil))
         _ (is (= (db-allocated yearling) 2))
