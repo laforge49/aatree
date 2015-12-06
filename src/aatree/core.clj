@@ -195,9 +195,9 @@
 (defn ^BitSet get-allocated-bit-set [this]
   (:allocated-bit-set this))
 
-(defn db-get
-  ([this] ((:db-get-state this) this))
-  ([this keys] (get-in (db-get this) keys)))
+(defn db-get [this] ((:db-get-state this) this))
+
+(defn db-get-in [this keys] (get-in (db-get this) keys))
 
 (defn update-get [this]
   @(:db-update-vstate this))
