@@ -25,7 +25,7 @@
         _ (is (= (get-transaction-count yearling) 3))
         _ (is (= block 20000))
         _ (is (= (db-allocated yearling) 3))
-        _ (is (= (count (db-release-pending yearling)) 0))
+        _ (is (= (count (db-get-in yearling [:release-pending])) 0))
         _ (db-update
             yearling
             (fn [db]
@@ -36,7 +36,7 @@
         _ (is (= (get-transaction-count yearling) 4))
         _ (is (= app-map nil))
         _ (is (= (db-allocated yearling) 3))
-        _ (is (= (count (db-release-pending yearling)) 1))
+        _ (is (= (count (db-get-in yearling [:release-pending])) 1))
         _ (close-components yearling)])
 
   (let [yearling {:db-pending-count 99
@@ -47,7 +47,7 @@
         _ (is (= (get-transaction-count yearling) 4))
         _ (is (= app-map nil))
         _ (is (= (db-allocated yearling) 3))
-        _ (is (= (count (db-release-pending yearling)) 1))
+        _ (is (= (count (db-get-in yearling [:release-pending])) 1))
         _ (db-update
             yearling
             (fn [db]
@@ -57,7 +57,7 @@
         _ (is (= (get-transaction-count yearling) 5))
         _ (is (= app-map nil))
         _ (is (= (db-allocated yearling) 2))
-        _ (is (= (count (db-release-pending yearling)) 0))
+        _ (is (= (count (db-get-in yearling [:release-pending])) 0))
         _ (close-components yearling)])
 
   (Thread/sleep 200))

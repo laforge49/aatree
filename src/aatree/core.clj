@@ -237,8 +237,6 @@
 
 (defn db-allocate [this] ((:db-allocate this) this))
 
-(defn db-release-pending [this] ((:db-release-pending this) this))
-
 (defn db-release [this block-position] ((:db-release this) this block-position))
 
 (defn db-process-pending [this age trans] ((:db-process-pending this) this age trans))

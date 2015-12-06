@@ -173,9 +173,6 @@
     (.set allocated avail)
     (* avail (:db-block-size this))))
 
-(defn- yearling-release-pending [this]
-  (:release-pending (db-get this)))
-
 (defn- yearling-release [this block-position]
   (let [db-block-size (:db-block-size this)
         block (quot block-position db-block-size)
@@ -211,7 +208,6 @@
                   (default :create-db-chan db-agent)
                   (assoc :db-allocated yearling-allocated)
                   (assoc :db-allocate yearling-allocate)
-                  (assoc :db-release-pending yearling-release-pending)
                   (assoc :db-release yearling-release)
                   (assoc :db-process-pending yearling-process-pending)
                   (assoc-default :db-pending-age 0)
