@@ -9,8 +9,6 @@
 
 (set! *warn-on-reflection* true)
 
-(def ^:dynamic *release-pending*)
-
 (declare yearling-release
          yearling-process-pending
          yearling-close)
@@ -25,8 +23,7 @@
     (fn [old] (+ old 1))))
 
 (defn- release-dropped-blocks [this old-uber-map uber-map]
-  (let [uber-map (assoc uber-map :release-pending *release-pending*)
-        dropped-blocks ((:find-dropped-blocks this)
+  (let [dropped-blocks ((:find-dropped-blocks this)
                          (get-inode old-uber-map)
                          (get-inode uber-map)
                          this)]
@@ -48,42 +45,43 @@
             (fn [old] (+ old 1)))
         max-db-size (:max-db-size this)]
     (vreset! (:time-millis-volatile this) (System/currentTimeMillis))
-    (binding [*release-pending* (:release-pending old-uber-map)]
-      (try
-        (yearling-process-pending this (:db-pending-age this) (:db-pending-count this))
-        (app-updater this)
-        (let [uber-map (update-get this)
+    (try
+      (yearling-process-pending this (:db-pending-age this) (:db-pending-count this))
+      (app-updater this)
+      (let [uber-map (update-get this)
 
-              uber-map (release-dropped-blocks this old-uber-map uber-map)
-              map-size (byte-length uber-map)
-              _ (when (< db-block-size (+ 4 8 4 4 8 8 map-size (* mx-allocated-longs 8) 32))
-                  ((:as-reference this) (get-inode uber-map) this))
-              map-size (byte-length uber-map)
-              _ (if (< db-block-size (+ 4 8 4 4 8 8 map-size (* mx-allocated-longs 8) 32))
-                  (throw (Exception. (str "block-size exceeded on write: " map-size))))
+            uber-map (release-dropped-blocks this old-uber-map uber-map)
+            map-size (byte-length uber-map)
+            _ (when (< db-block-size (+ 4 8 4 4 8 8 map-size (* mx-allocated-longs 8) 32))
+                ((:as-reference this) (get-inode uber-map) this))
+            map-size (byte-length uber-map)
+            _ (if (< db-block-size (+ 4 8 4 4 8 8 map-size (* mx-allocated-longs 8) 32))
+                (throw (Exception. (str "block-size exceeded on write: " map-size))))
 
-              map-size (byte-length uber-map)
-              allocated-long-array (.toLongArray (get-allocated-bit-set this))
-              ala-len (alength allocated-long-array)
-              _ (if (< mx-allocated-longs ala-len)
-                  (throw (Exception. (str "allocated size exceeded on write: " mx-allocated-longs ", " ala-len))))
-              ^ByteBuffer bb (ByteBuffer/allocate db-block-size)]
-          (vreset! (:db-update-vstate this) uber-map)
-          (.putInt bb db-block-size)
-          (.putLong bb max-db-size)
-          (.putInt bb map-size)
-          (.putInt bb ala-len)
-          (.putLong bb (get-transaction-count this))
-          (.putLong bb (get-last-node-id this))
-          (put-aa bb uber-map)
-          (.put (.asLongBuffer bb) allocated-long-array)
-          (.position bb (+ (.position bb) (* ala-len 8)))
-          (put-cs256 bb (compute-cs256 (.flip (.duplicate bb))))
-          (.flip bb)
-          ((:db-file-write-root this) bb (long block-position)))
-        (catch Throwable e
-          (.printStackTrace e)
-          (throw e))))))
+            map-size (byte-length uber-map)
+            allocated-long-array (.toLongArray (get-allocated-bit-set this))
+            ala-len (alength allocated-long-array)
+            _ (if (< mx-allocated-longs ala-len)
+                (throw
+                  (Exception.
+                    (str "allocated size exceeded on write: " mx-allocated-longs ", " ala-len))))
+            ^ByteBuffer bb (ByteBuffer/allocate db-block-size)]
+        (vreset! (:db-update-vstate this) uber-map)
+        (.putInt bb db-block-size)
+        (.putLong bb max-db-size)
+        (.putInt bb map-size)
+        (.putInt bb ala-len)
+        (.putLong bb (get-transaction-count this))
+        (.putLong bb (get-last-node-id this))
+        (put-aa bb uber-map)
+        (.put (.asLongBuffer bb) allocated-long-array)
+        (.position bb (+ (.position bb) (* ala-len 8)))
+        (put-cs256 bb (compute-cs256 (.flip (.duplicate bb))))
+        (.flip bb)
+        ((:db-file-write-root this) bb (long block-position)))
+      (catch Throwable e
+        (.printStackTrace e)
+        (throw e)))))
 
 (defn yearling-null-updater [this])
 
@@ -187,20 +185,20 @@
       (throw (Exception. (str "block-position is not at start of block: " block-position))))
     (if (not (.get (get-allocated-bit-set this) block))
       (throw (Exception. (str "block has not been allocated: " block " " (:db-block-size this)))))
-    (set! *release-pending* (conj *release-pending* vec))
-    ))
+    (update-assoc-in! this [:release-pending] (conj (update-get-in this [:release-pending]) vec))))
 
 (defn- yearling-process-pending [this age trans]
-  (when (not (empty? *release-pending*))
+  (when-let [release-pending (update-get-in this [:release-pending])]
+    (and release-pending (not (empty? release-pending))
     (let [allocated (get-allocated-bit-set this)
-          oldest (*release-pending* 0)]
+          oldest (release-pending 0)]
       (when (and (<= (+ (oldest 0) age) (get-time-millis this))
                  (<= (+ (oldest 1) trans) (get-transaction-count this)))
         (if (not (.get allocated (oldest 2)))
           (throw (Exception. (str "already available: " (oldest 2)))))
         (.clear allocated (oldest 2))
-        (set! *release-pending* (dropn *release-pending* 0))
-        (recur this age trans)))))
+        (update-assoc-in! this [:release-pending] (dropn release-pending 0))
+        (recur this age trans))))))
 
 (defn yearling-open
   ([file] (yearling-open {} file))
