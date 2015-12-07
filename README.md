@@ -32,6 +32,7 @@ use of warn-on-reflection.
 
 ## Resources 
 
+* [clojure aatree](https://clojurians.slack.com/messages/aatree/) (slack)
 * [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/laforge49/aatree?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 * [google group](https://groups.google.com/forum/?hl=en#!forum/agilewikidevelopers)
 * [Blog](https://github.com/laforge49/aatree/wiki/Blog)
