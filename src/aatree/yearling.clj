@@ -2,7 +2,7 @@
   (:require [aatree.core :refer :all]
             [aatree.nodes :refer :all]
             [aatree.db-file-trait :refer :all]
-            [aatree.db-agent-trait :refer :all])
+            [aatree.db-chan-trait :refer :all])
   (:import (java.nio ByteBuffer)
            (java.util BitSet)
            (java.io File)))
@@ -200,7 +200,7 @@
                   (assoc :db-new-node-id yearling-new-node-id)
                   (assoc-default :db-block-size 500000)
                   (assoc-default :max-db-size 100000000000)
-                  (default :create-db-chan db-agent)
+                  (default :create-db-chan db-chan)
                   (assoc :db-allocated yearling-allocated)
                   (assoc :db-allocate yearling-allocate)
                   (assoc :db-release yearling-release)
