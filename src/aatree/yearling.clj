@@ -10,8 +10,7 @@
 (set! *warn-on-reflection* true)
 
 (declare yearling-release
-         yearling-process-pending
-         yearling-close)
+         yearling-process-pending)
 
 (defn- max-blocks [this] (quot (:max-db-size this) (:db-block-size this)))
 
