@@ -9,29 +9,25 @@
 (set! *warn-on-reflection* true)
 
 (defn- calf-updater [this app-updater]
-  (try
-    (app-updater this)
-    (let [block-size (:db-block-size this)
-          position (* block-size (mod (get-transaction-count this) 2))
-          _ (swap!
-              (:transaction-count-atom this)
-              (fn [old] (+ old 1)))
-          uber-map (update-get this)
-          map-size (byte-length uber-map)
-          buffer-size (+ 4 4 8 map-size 32)
-          ^ByteBuffer bb (ByteBuffer/allocate buffer-size)]
-      (if (< block-size buffer-size)
-        (throw (Exception. "block-size exceeded on write")))
-      (.putInt bb block-size)
-      (.putInt bb map-size)
-      (.putLong bb (get-transaction-count this))
-      (put-aa bb uber-map)
-      (put-cs256 bb (compute-cs256 (.flip (.duplicate bb))))
-      (.flip bb)
-      (db-file-write-root this bb (long position)))
-    (catch Exception e
-      (.printStackTrace e)
-      (throw e))))
+  (app-updater this)
+  (let [block-size (:db-block-size this)
+        position (* block-size (mod (get-transaction-count this) 2))
+        _ (swap!
+            (:transaction-count-atom this)
+            (fn [old] (+ old 1)))
+        uber-map (update-get this)
+        map-size (byte-length uber-map)
+        buffer-size (+ 4 4 8 map-size 32)
+        ^ByteBuffer bb (ByteBuffer/allocate buffer-size)]
+    (if (< block-size buffer-size)
+      (throw (Exception. "block-size exceeded on write")))
+    (.putInt bb block-size)
+    (.putInt bb map-size)
+    (.putLong bb (get-transaction-count this))
+    (put-aa bb uber-map)
+    (put-cs256 bb (compute-cs256 (.flip (.duplicate bb))))
+    (.flip bb)
+    (db-file-write-root this bb (long position))))
 
 (defn calf-null-updater [this])
 
@@ -76,16 +72,16 @@
 
 (defn- choose [this state0 state1]
   (let [state (if state0
-                 (if state1
-                   (if (> (:transaction-count state0) (:transaction-count state1))
-                     state0
-                     state1)
-                   state0)
-                 (if state1
-                   state1
-                   (throw (Exception. "corrupted database"))))
+                (if state1
+                  (if (> (:transaction-count state0) (:transaction-count state1))
+                    state0
+                    state1)
+                  state0)
+                (if state1
+                  state1
+                  (throw (Exception. "corrupted database"))))
         this (assoc this :transaction-count-atom (atom (:transaction-count state)))]
-  [this (:uber-map state)]))
+    [this (:uber-map state)]))
 
 (defn- calf-old [this]
   (let [block-size (:db-block-size this)

@@ -10,9 +10,7 @@
     (:db-update-vstate db)
     (fn [db-update-state]
       (if db-update-state
-        (let [e (Exception. "db-update-vstate not nil")]
-          (log/warn e "db update failure")
-          (throw e)))
+        (throw (Exception. "db-update-vstate not nil")))
       new-db-update-state)))
 
 (defn- db-vstate-clear! [db]
@@ -20,9 +18,7 @@
     (:db-update-vstate db)
     (fn [db-update-state]
       (if (not db-update-state)
-        (let [e (Exception. "db-update-vstate nil")]
-          (log/warn e "db update failure")
-          (throw e)))
+        (throw (Exception. "db-update-vstate nil")))
       nil)))
 
 (defn db-agent [this]
@@ -48,11 +44,15 @@
             (send-off
               db-agent
               (fn [db-state]
-                (db-vstate-set! db db-state)
-                ((:db-updater db) db app-updater)
-                (let [db-state @(:db-update-vstate db)]
-                  (db-vstate-clear! db)
-                  db-state))))))
+                (try
+                  (db-vstate-set! db db-state)
+                  ((:db-updater db) db app-updater)
+                  (let [db-state @(:db-update-vstate db)]
+                    (db-vstate-clear! db)
+                    db-state)
+                  (catch Throwable t
+                    (log/error t "db update failure")
+                    (throw t))))))))
       (assoc
         :db-update
         (fn [db app-updater]
