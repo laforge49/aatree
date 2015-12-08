@@ -70,8 +70,10 @@
       (assoc
         :db-update
         (fn [db app-updater]
-          (let [rchan (chan 1)]
-            (>!! (:db-chan db) [app-updater rchan])
-            (if-let [send-update-timeout (:send-update-timeout db)]
-              (first (alts!! [rchan (timeout send-update-timeout)]))
-              (<!! rchan)))))))
+          (let [rchan (chan)
+                _ (>!! (:db-chan db) [app-updater rchan])
+                send-update-timeout (:send-update-timeout db)
+                rsp (if send-update-timeout
+                      (first (alts!! [rchan (timeout send-update-timeout)]))
+                      (<!! rchan))]
+            (close! rchan))))))
