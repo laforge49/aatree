@@ -34,7 +34,7 @@
       (when-let [msg (<!! db-chan)]
         msg
         (let [[app-updater rchan] msg]
-          (app-updater this)
+          ((:db-updater this) this app-updater)
           (when rchan
             (>!! rchan true)))
         (recur)))))

@@ -9,7 +9,9 @@
 (deftest chan-trait
   (try
     (println "#######################")
-    (let [db (-> {}
+    (let [db (-> {:db-updater
+                  (fn [this app-updater]
+                    (app-updater this))}
                  (db-chan)
                  (create-db-chan nil))]
       (db-send db (fn [_] (println ":-)")))
