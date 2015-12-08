@@ -5,7 +5,7 @@
 
 (set! *warn-on-reflection* true)
 
-(defn- db-vstate-set [db, new-db-update-state]
+(defn- db-vstate-set! [db, new-db-update-state]
   (vswap!
     (:db-update-vstate db)
     (fn [db-update-state]
@@ -15,7 +15,7 @@
           (throw e)))
       new-db-update-state)))
 
-(defn- db-vstate-clear [db]
+(defn- db-vstate-clear! [db]
   (vswap!
     (:db-update-vstate db)
     (fn [db-update-state]
@@ -48,10 +48,10 @@
             (send-off
               db-agent
               (fn [db-state]
-                (db-vstate-set db db-state)
+                (db-vstate-set! db db-state)
                 ((:db-updater db) db app-updater)
                 (let [db-state @(:db-update-vstate db)]
-                  (db-vstate-clear db)
+                  (db-vstate-clear! db)
                   db-state))))))
       (assoc
         :db-update
