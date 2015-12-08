@@ -2,7 +2,7 @@
   (:require [aatree.core :refer :all]
             [aatree.nodes :refer :all]
             [aatree.db-file-trait :refer :all]
-            [aatree.db-agent-trait :refer :all])
+            [aatree.db-chan-trait :refer :all])
   (:import (java.io File)
            (java.nio ByteBuffer)))
 
@@ -96,7 +96,7 @@
                   (db-file-open file)
                   (assoc :db-block-size block-size)
                   (default :new-sorted-map lazy-opts)
-                  (default :create-db-chan db-agent)
+                  (default :create-db-chan db-chan)
                   (assoc :db-updater calf-updater))
          [this uber-map] (choice this db-file-empty? calf-new calf-old)]
      (create-db-chan this uber-map))))
