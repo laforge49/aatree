@@ -33,47 +33,58 @@
     (loop []
       (when-let [msg (<!! db-chan)]
         msg
-        (let [[app-updater rchan] msg]
-          ((:db-updater this) this app-updater)
-          (when rchan
-            (>!! rchan true)))
-        (recur)))))
+        (try
+          (let [old-db-state @db-state-atom
+                [app-updater rchan] msg]
+            (db-vstate-set! this old-db-state)
+            ((:db-updater this) this app-updater)
+            (let [db-state @(:db-update-vstate this)]
+              (db-vstate-clear! this)
+              (if (not (compare-and-set! db-state-atom old-db-state db-state))
+                (throw (Exception. "db-state changed unexpectedly"))))
+            (when rchan
+              (>!! rchan true)))
+          (catch Throwable t
+            (log/error t "db update failure")
+            (close-components this)
+            ))
+          (recur)))))
 
-(defn db-chan [this]
-  (-> this
-      (assoc
-        :db-update-vstate
-        (volatile! nil))
-      (assoc
-        :create-db-chan
-        (fn [db initial-state]
-          (let [db (-> db
-              (assoc
-                :db-state-atom
-                (atom initial-state))
-              (assoc
-                :db-chan
-                (chan (:db-buf-or-n db)))
-              (open-component
-                "db-chan"
-                (fn [d] (close! (:db-chan d)))))]
-            (thread (process-chan db))
-            db)))
-      (assoc
-        :db-get-state
-        (fn [db]
-          @(:db-state-atom db)))
-      (assoc
-        :db-send
-        (fn [db app-updater]
-          (>!! (:db-chan db) [app-updater nil])))
-      (assoc
-        :db-update
-        (fn [db app-updater]
-          (let [rchan (chan)
-                _ (>!! (:db-chan db) [app-updater rchan])
-                send-update-timeout (:send-update-timeout db)
-                rsp (if send-update-timeout
-                      (first (alts!! [rchan (timeout send-update-timeout)]))
-                      (<!! rchan))]
-            (close! rchan))))))
+  (defn db-chan [this]
+    (-> this
+        (assoc
+          :db-update-vstate
+          (volatile! nil))
+        (assoc
+          :create-db-chan
+          (fn [db initial-state]
+            (let [db (-> db
+                         (assoc
+                           :db-state-atom
+                           (atom initial-state))
+                         (assoc
+                           :db-chan
+                           (chan (:db-buf-or-n db)))
+                         (open-component
+                           "db-chan"
+                           (fn [d] (close! (:db-chan d)))))]
+              (thread (process-chan db))
+              db)))
+        (assoc
+          :db-get-state
+          (fn [db]
+            @(:db-state-atom db)))
+        (assoc
+          :db-send
+          (fn [db app-updater]
+            (>!! (:db-chan db) [app-updater nil])))
+        (assoc
+          :db-update
+          (fn [db app-updater]
+            (let [rchan (chan)
+                  _ (>!! (:db-chan db) [app-updater rchan])
+                  send-update-timeout (:send-update-timeout db)
+                  rsp (if send-update-timeout
+                        (first (alts!! [rchan (timeout send-update-timeout)]))
+                        (<!! rchan))]
+              (close! rchan))))))

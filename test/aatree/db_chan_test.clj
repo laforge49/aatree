@@ -13,7 +13,7 @@
                   (fn [this app-updater]
                     (app-updater this))}
                  (db-chan)
-                 (create-db-chan nil))]
+                 (create-db-chan {}))]
       (db-send db (fn [_] (println ":-)")))
       (db-send db (fn [_] (println ":D")))
       (println (db-update db (fn [_] (println ";-}"))))
