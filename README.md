@@ -69,4 +69,8 @@ is also part of Yearling.
 
 Next up will be a database with a transaction log: 
 [Heifer](https://github.com/laforge49/aatree/issues/28).
-But before that we will be breaking calf and yearling into components.
+To reduce code duplication when writing Heifer, Calf and Yearling
+have been broken into reusable traits.
+
+A trait has also been developed to use an asynchronous channel instead of an agent.
+Later this will allow us to implement a pipeline for logging.
