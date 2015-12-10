@@ -220,6 +220,15 @@
 
 (defn db-block-size [this] (:db-block-size this))
 
+(defn block-read [this block-nbr byte-buffer]
+  ((:block-read this) this block-nbr byte-buffer))
+
+(defn block-write [this block-nbr byte-buffer]
+  ((:block-write this) this block-nbr byte-buffer))
+
+(defn block-clear [this block-nbr]
+  ((:block-clear this) this block-nbr))
+
 (defn db-file-empty? [this]
   ((:db-file-empty? this)))
 

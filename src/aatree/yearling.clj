@@ -2,6 +2,7 @@
   (:require [aatree.core :refer :all]
             [aatree.nodes :refer :all]
             [aatree.db-file-trait :refer :all]
+            [aatree.null-db-cache-trait :refer :all]
             [aatree.db-chan-trait :refer :all])
   (:import (java.nio ByteBuffer)
            (java.util BitSet)
@@ -170,14 +171,15 @@
 
 (defn- yearling-release [this block-position]
   (let [db-block-size (:db-block-size this)
-        block (quot block-position db-block-size)
+        block-nbr (quot block-position db-block-size)
         vec (new-vector this)
-        vec (conj vec (get-time-millis this) (get-transaction-count this) block)]
+        vec (conj vec (get-time-millis this) (get-transaction-count this) block-nbr)]
     (if (not= 0 (mod block-position db-block-size))
       (throw (Exception. (str "block-position is not at start of block: " block-position))))
-    (if (not (.get (get-allocated-bit-set this) block))
-      (throw (Exception. (str "block has not been allocated: " block " " (:db-block-size this)))))
-    (update-assoc-in! this [:release-pending] (conj (update-get-in this [:release-pending]) vec))))
+    (if (not (.get (get-allocated-bit-set this) block-nbr))
+      (throw (Exception. (str "block has not been allocated: " block-nbr " " (:db-block-size this)))))
+    (update-assoc-in! this [:release-pending] (conj (update-get-in this [:release-pending]) vec))
+    (block-clear this block-nbr)))
 
 (defn- yearling-process-pending [this age trans]
   (when-let [release-pending (update-get-in this [:release-pending])]
@@ -201,6 +203,7 @@
                   (assoc-default :db-block-size 500000)
                   (assoc-default :max-db-size 100000000000)
                   (default :create-db-chan db-chan)
+                  (default :block-clear null-db-cache)
                   (assoc :db-allocated yearling-allocated)
                   (assoc :db-allocate yearling-allocate)
                   (assoc :db-release yearling-release)
