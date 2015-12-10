@@ -218,6 +218,8 @@
 
 (defn db-update [this app-updater] ((:db-update this) this app-updater))
 
+(defn db-block-size [this] (:db-block-size this))
+
 (defn db-file-empty? [this]
   ((:db-file-empty? this)))
 
