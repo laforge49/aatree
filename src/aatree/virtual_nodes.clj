@@ -184,8 +184,8 @@
         ^ByteBuffer nbb (ByteBuffer/allocate bl)
         _ (virtual-write virtual-node nbb opts)
         _ (.flip nbb)
-        block-position ((:db-allocate opts) opts)
-        _ ((:db-file-write opts) nbb (long block-position))
+        block-nbr ((:db-allocate opts) opts)
+        _ ((:block-write opts) opts (long block-nbr) nbb)
         _ (.flip nbb)
         blen (+ 1                                           ;bode id
                 8                                           ;node-id
@@ -200,7 +200,7 @@
     (.putLong bb (.-node_id virtual-node))
     (.putInt bb (- blen 13))
     (.put bb (byte 1))
-    (.putLong bb block-position)
+    (.putLong bb block-nbr)
     (.putInt bb bl)
     (put-cs256 bb (compute-cs256 nbb))
     (.flip bb)
@@ -233,15 +233,15 @@
           f)))))
 
 (defn fetch [^ByteBuffer bb opts]
-  (let [block-position (.getLong bb)
+  (let [block-nbr (.getLong bb)
         block-length (.getInt bb)
         ocs (get-cs256 bb)
         ^ByteBuffer nbb (ByteBuffer/allocate block-length)
-        _ ((:db-file-read opts) nbb (long block-position))
+        _ ((:block-read opts) opts (long block-nbr) nbb)
         _ (.flip nbb)
         cs (compute-cs256 nbb)
         _ (if (not= ocs cs)
-            (throw (Exception. (str "corrupted database, fetching block-position " block-position))))
+            (throw (Exception. (str "corrupted database, fetching block " block-nbr))))
         ]
     (.flip nbb)
     (.position nbb (+ 1 8 4 1))

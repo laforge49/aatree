@@ -23,7 +23,7 @@
               (update-assoc-in! db [:app-map :block] (db-allocate db))))
         block (db-get-in yearling [:app-map :block])
         _ (is (= (get-transaction-count yearling) 3))
-        _ (is (= block 20000))
+        _ (is (= block 2))
         _ (is (= (db-allocated yearling) 3))
         _ (is (= (count (db-get-in yearling [:release-pending])) 0))
         _ (db-update

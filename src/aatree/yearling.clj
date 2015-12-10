@@ -167,15 +167,11 @@
   (let [^BitSet allocated (get-allocated-bit-set this)
         avail (.nextClearBit allocated 0)]
     (.set allocated avail)
-    (* avail (:db-block-size this))))
+    avail))
 
-(defn- yearling-release [this block-position]
-  (let [db-block-size (:db-block-size this)
-        block-nbr (quot block-position db-block-size)
-        vec (new-vector this)
+(defn- yearling-release [this block-nbr]
+  (let [vec (new-vector this)
         vec (conj vec (get-time-millis this) (get-transaction-count this) block-nbr)]
-    (if (not= 0 (mod block-position db-block-size))
-      (throw (Exception. (str "block-position is not at start of block: " block-position))))
     (if (not (.get (get-allocated-bit-set this) block-nbr))
       (throw (Exception. (str "block has not been allocated: " block-nbr " " (:db-block-size this)))))
     (update-assoc-in! this [:release-pending] (conj (update-get-in this [:release-pending]) vec))

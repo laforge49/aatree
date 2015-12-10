@@ -11,8 +11,8 @@
     (.delete (File. "virtual-benchmark.yearling"))
 
     (let [yearling (yearling-open (File. "virtual-benchmark.yearling"))
-          ;        mxi 100000
-          mxi 3
+          ;mxi 100000
+          mxi 2000
           mxj 5
           mxk 2]
       (time
