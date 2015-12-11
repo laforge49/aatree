@@ -237,7 +237,6 @@
         block-length (.getInt bb)
         ocs (get-cs256 bb)
         ^ByteBuffer nbb ((:block-read opts) opts (long block-nbr) block-length)
-        _ (.flip nbb)
         cs (compute-cs256 nbb)
         _ (if (not= ocs cs)
             (throw (Exception. (str "corrupted database, fetching block " block-nbr))))

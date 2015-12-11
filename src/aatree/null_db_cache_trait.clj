@@ -11,6 +11,7 @@
             (throw (Exception. (str "block length is too big:" block-length))))
           (let [^ByteBuffer byte-buffer (ByteBuffer/allocate block-length)]
             (db-file-read db byte-buffer (* block-nbr (db-block-size db)))
+            (.flip byte-buffer)
             byte-buffer)))
       (assoc
         :block-write
