@@ -220,6 +220,12 @@
 
 (defn db-block-size [this] (:db-block-size this))
 
+(defn check-buffer-size [this ^ByteBuffer byte-buffer]
+  (let [db-block-size (db-block-size this)
+        limit (.limit byte-buffer)]
+    (if (> limit db-block-size)
+      (throw (Exception. (str "byte buffer is too big:" limit))))))
+
 (defn block-read [this block-nbr byte-buffer]
   ((:block-read this) this block-nbr byte-buffer))
 
