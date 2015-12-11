@@ -2,7 +2,7 @@
   (:require [aatree.core :refer :all]
             [aatree.nodes :refer :all]
             [aatree.db-file-trait :refer :all]
-            [aatree.db-cache-trait :refer :all]
+            [aatree.lru-db-cache-trait :refer :all]
             [aatree.db-chan-trait :refer :all])
   (:import (java.nio ByteBuffer)
            (java.util BitSet)
@@ -199,7 +199,7 @@
                   (assoc-default :db-block-size 500000)
                   (assoc-default :max-db-size 100000000000)
                   (default :create-db-chan db-chan)
-                  (default :block-clear db-cache)
+                  (default :block-clear lru-db-cache)
                   (assoc :db-allocated yearling-allocated)
                   (assoc :db-allocate yearling-allocate)
                   (assoc :db-release yearling-release)

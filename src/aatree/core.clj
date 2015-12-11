@@ -226,8 +226,8 @@
     (if (> limit db-block-size)
       (throw (Exception. (str "byte buffer is too big:" limit))))))
 
-(defn block-read [this block-nbr byte-buffer]
-  ((:block-read this) this block-nbr byte-buffer))
+(defn block-read [this block-nbr block-length]
+  ((:block-read this) this block-nbr block-length))
 
 (defn block-write [this block-nbr byte-buffer]
   ((:block-write this) this block-nbr byte-buffer))
