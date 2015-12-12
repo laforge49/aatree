@@ -65,12 +65,8 @@ that are larger than will fit in memory.
 [Disk Space Management](https://github.com/laforge49/aatree/wiki/Disk-Space-Management)
 is also part of Yearling.
 
-### The Heifer Database
+### Robustness
 
-Next up will be a database with a transaction log: 
-[Heifer](https://github.com/laforge49/aatree/issues/28).
-To reduce code duplication when writing Heifer, Calf and Yearling
-have been broken into reusable traits.
-
-A trait has also been developed to use an asynchronous channel instead of an agent.
-Later this will allow us to implement a pipeline for logging.
+There is still a ways to go before we have a production-ready database. 
+The biggest failing is that there is no recovery from a failed transaction except to 
+restart the database. That's just not good enough.
