@@ -83,5 +83,7 @@
      (.getKey e)))
   ([^AASet this var1 var2]
    (let [^AAMap mpl (.-impl this)
-         ^MapEntry e (.nth mpl var1 var2)]
-     (.getKey e))))
+         n (.nth mpl var1 var2)]
+     (if (identical? var2 n)
+       n
+       (key n)))))

@@ -169,3 +169,6 @@
                    (new-sorted-set (lazy-opts))
                    gen-element
                    {:base (sorted-set) :ordered? true}))
+
+(deftest nth-of-set
+  (is (= :not-found (nth (conj (new-sorted-set (basic-opts)) 1 2 3) 4 :not-found))))
